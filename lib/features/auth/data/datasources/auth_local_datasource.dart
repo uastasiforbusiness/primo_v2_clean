@@ -39,8 +39,12 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   @override
   Future<Employee> loginWithPin(String pin) async {
     try {
+      logger.d('🔐 Login attempt with PIN: $pin');
       final pinHash = Pin.fromPlainText(pin).toHash();
+      logger.d('🔑 Generated hash: $pinHash');
+
       final employee = await database.getEmployeeByPinHash(pinHash);
+      logger.d('👤 Employee found: ${employee != null ? employee.id : 'null'}');
 
       if (employee == null) {
         await logAuditEvent(

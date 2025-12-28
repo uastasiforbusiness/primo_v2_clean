@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
+import 'package:logger/logger.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 
@@ -17,9 +18,12 @@ class Employees extends Table {
   TextColumn get emergencyPhone => text().named('emergency_phone')();
   TextColumn get role => text()();
   TextColumn get pinHash => text().named('pin_hash')();
-  BoolColumn get isActive => boolean().named('is_active').withDefault(const Constant(true))();
-  DateTimeColumn get createdAt => dateTime().named('created_at').withDefault(currentDateAndTime)();
-  DateTimeColumn get updatedAt => dateTime().named('updated_at').withDefault(currentDateAndTime)();
+  BoolColumn get isActive =>
+      boolean().named('is_active').withDefault(const Constant(true))();
+  DateTimeColumn get createdAt =>
+      dateTime().named('created_at').withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt =>
+      dateTime().named('updated_at').withDefault(currentDateAndTime)();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -28,8 +32,10 @@ class Employees extends Table {
 class CashRegisters extends Table {
   TextColumn get id => text()();
   TextColumn get name => text()();
-  BoolColumn get isActive => boolean().named('is_active').withDefault(const Constant(true))();
-  DateTimeColumn get createdAt => dateTime().named('created_at').withDefault(currentDateAndTime)();
+  BoolColumn get isActive =>
+      boolean().named('is_active').withDefault(const Constant(true))();
+  DateTimeColumn get createdAt =>
+      dateTime().named('created_at').withDefault(currentDateAndTime)();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -37,11 +43,14 @@ class CashRegisters extends Table {
 
 class Shifts extends Table {
   TextColumn get id => text()();
-  TextColumn get employeeId => text().named('employee_id').references(Employees, #id)();
-  TextColumn get cashRegisterId => text().named('cash_register_id').references(CashRegisters, #id)();
+  TextColumn get employeeId =>
+      text().named('employee_id').references(Employees, #id)();
+  TextColumn get cashRegisterId =>
+      text().named('cash_register_id').references(CashRegisters, #id)();
   RealColumn get initialCash => real().named('initial_cash')();
   RealColumn get finalCash => real().named('final_cash').nullable()();
-  DateTimeColumn get startedAt => dateTime().named('started_at').withDefault(currentDateAndTime)();
+  DateTimeColumn get startedAt =>
+      dateTime().named('started_at').withDefault(currentDateAndTime)();
   DateTimeColumn get endedAt => dateTime().named('ended_at').nullable()();
 
   @override
@@ -51,7 +60,8 @@ class Shifts extends Table {
 class Breaks extends Table {
   TextColumn get id => text()();
   TextColumn get shiftId => text().named('shift_id').references(Shifts, #id)();
-  DateTimeColumn get startedAt => dateTime().named('started_at').withDefault(currentDateAndTime)();
+  DateTimeColumn get startedAt =>
+      dateTime().named('started_at').withDefault(currentDateAndTime)();
   DateTimeColumn get endedAt => dateTime().named('ended_at').nullable()();
 
   @override
@@ -61,9 +71,11 @@ class Breaks extends Table {
 class AuditEvents extends Table {
   TextColumn get id => text()();
   TextColumn get eventType => text().named('event_type')();
-  TextColumn get employeeId => text().named('employee_id').nullable().references(Employees, #id)();
+  TextColumn get employeeId =>
+      text().named('employee_id').nullable().references(Employees, #id)();
   TextColumn get metadata => text().nullable()(); // JSON string
-  DateTimeColumn get createdAt => dateTime().named('created_at').withDefault(currentDateAndTime)();
+  DateTimeColumn get createdAt =>
+      dateTime().named('created_at').withDefault(currentDateAndTime)();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -96,6 +108,9 @@ class AppDatabase extends _$AppDatabase {
       );
 
   Future<void> _seedInitialData() async {
+    final logger = Logger();
+    logger.i('🌱 Seeding initial data...');
+
     // Default cash register
     await into(cashRegisters).insert(
       CashRegistersCompanion.insert(
@@ -103,6 +118,7 @@ class AppDatabase extends _$AppDatabase {
         name: 'Caja Principal',
       ),
     );
+    logger.i('✅ Cash register created: default-register');
 
     // Default admin user (PIN: 1234)
     // Hash SHA-256 de "1234": 03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4
@@ -113,10 +129,12 @@ class AppDatabase extends _$AppDatabase {
         lastName: 'Sistema',
         emergencyPhone: '000000000',
         role: 'ADMIN',
-        pinHash: '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', 
+        pinHash:
+            '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4',
         email: const Value('admin@primo.com'),
       ),
     );
+    logger.i('✅ Admin user created: admin-001 with PIN hash');
   }
 
   // ==================== EMPLOYEE QUERIES ====================
@@ -130,15 +148,16 @@ class AppDatabase extends _$AppDatabase {
       (select(employees)..where((e) => e.id.equals(id))).getSingleOrNull();
 
   Future<Employee?> getEmployeeByPinHash(String pinHash) =>
-      (select(employees)..where((e) => e.pinHash.equals(pinHash))).getSingleOrNull();
+      (select(employees)..where((e) => e.pinHash.equals(pinHash)))
+          .getSingleOrNull();
 
   Future<bool> isPinUnique(String pinHash, {String? excludeEmployeeId}) async {
     final query = select(employees)..where((e) => e.pinHash.equals(pinHash));
-    
+
     if (excludeEmployeeId != null) {
       query.where((e) => e.id.equals(excludeEmployeeId).not());
     }
-    
+
     final result = await query.getSingleOrNull();
     return result == null;
   }
@@ -161,8 +180,7 @@ class AppDatabase extends _$AppDatabase {
             ..where((s) => s.endedAt.isNull()))
           .getSingleOrNull();
 
-  Future<int> insertShift(ShiftsCompanion shift) =>
-      into(shifts).insert(shift);
+  Future<int> insertShift(ShiftsCompanion shift) => into(shifts).insert(shift);
 
   Future<int> closeShift(String shiftId, double finalCash) =>
       (update(shifts)..where((s) => s.id.equals(shiftId))).write(
@@ -174,11 +192,10 @@ class AppDatabase extends _$AppDatabase {
 
   // ==================== BREAK QUERIES ====================
 
-  Future<Break?> getActiveBreakByShiftId(String shiftId) =>
-      (select(breaks)
-            ..where((b) => b.shiftId.equals(shiftId))
-            ..where((b) => b.endedAt.isNull()))
-          .getSingleOrNull();
+  Future<Break?> getActiveBreakByShiftId(String shiftId) => (select(breaks)
+        ..where((b) => b.shiftId.equals(shiftId))
+        ..where((b) => b.endedAt.isNull()))
+      .getSingleOrNull();
 
   Future<int> insertBreak(BreaksCompanion breakEntry) =>
       into(breaks).insert(breakEntry);
