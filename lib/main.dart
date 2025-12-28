@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logger/logger.dart';
+import 'core/router/app_router.dart';
 import 'di/injection_container.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
-import 'features/auth/presentation/pages/login_page.dart';
+import 'features/shifts/presentation/bloc/shift_bloc.dart';
 import 'features/database/data/app_database.dart';
 
 void main() async {
@@ -54,9 +55,12 @@ class PrimoApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<AuthBloc>(),
-      child: MaterialApp(
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<AuthBloc>(create: (_) => sl<AuthBloc>()),
+        BlocProvider<ShiftBloc>(create: (_) => sl<ShiftBloc>()),
+      ],
+      child: MaterialApp.router(
         title: 'PRIMO V2',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
@@ -64,11 +68,9 @@ class PrimoApp extends StatelessWidget {
             seedColor: Colors.deepPurple,
           ),
           useMaterial3: true,
-          cardTheme: CardThemeData(
+          cardTheme: const CardThemeData(
             elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
+            color: Colors.white,
           ),
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
@@ -83,7 +85,7 @@ class PrimoApp extends StatelessWidget {
             ),
           ),
         ),
-        home: const LoginPage(),
+        routerConfig: AppRouter.router,
       ),
     );
   }

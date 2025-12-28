@@ -1,0 +1,53 @@
+# =============================================================================
+# AGENTE ESPECIALIZADO: CORRECCIÓN DE BUGS
+# =============================================================================
+# Este agente está configurado para diagnosticar y corregir bugs
+# en el proyecto PRIMO V2.
+# =============================================================================
+
+active_model = "devstral-2"
+
+system_prompt_id = "primo-debug"
+
+# =============================================================================
+# PERMISOS DE HERRAMIENTAS - MÁS PERMISIVOS PARA DEBUGGING
+# =============================================================================
+
+[tools.bash]
+permission = "ask"
+description = "Ejecutar tests y comandos de debugging"
+
+[tools.read_file]
+permission = "always"
+description = "Leer archivos relevantes al bug"
+
+[tools.search_replace]
+permission = "ask"
+description = "Aplicar correcciones de bugs"
+
+[tools.write_file]
+permission = "never"
+description = "Crear archivos solo con aprobación"
+
+[tools.grep]
+permission = "always"
+description = "Buscar patrones relacionados con el bug"
+
+[tools.todo]
+permission = "always"
+description = "Documentar proceso de debugging"
+
+enabled_tools = [
+    "bash",
+    "read_file",
+    "search_replace",
+    "write_file",
+    "grep",
+    "todo",
+]
+
+disabled_tools = [
+    "web_fetch",
+    "image_gen",
+    "image_edit",
+]

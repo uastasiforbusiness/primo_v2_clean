@@ -1,0 +1,56 @@
+# =============================================================================
+# AGENTE ESPECIALIZADO: REFACTORIZACIÓN
+# =============================================================================
+# Este agente está configurado para tareas de refactorización y mejora
+# de código existente en PRIMO V2.
+# =============================================================================
+
+# Usa un modelo optimizado para código
+active_model = "devstral-2"
+
+# Prompt especializado para refactorización
+system_prompt_id = "primo-refactor"
+
+# =============================================================================
+# PERMISOS DE HERRAMIENTAS
+# =============================================================================
+
+[tools.bash]
+permission = "ask"
+description = "Ejecutar análisis estático y comandos de refactor"
+
+[tools.read_file]
+permission = "always"
+description = "Leer archivos a refactorizar"
+
+[tools.search_replace]
+permission = "ask"
+description = "Aplicar cambios de refactorización"
+
+[tools.write_file]
+permission = "never"
+description = "Crear nuevos archivos solo con aprobación explícita"
+
+[tools.grep]
+permission = "always"
+description = "Buscar código duplicado y patrones a mejorar"
+
+[tools.todo]
+permission = "always"
+description = "Planificar pasos de refactorización"
+
+# Solo herramientas necesarias para refactorización
+enabled_tools = [
+    "bash",
+    "read_file",
+    "search_replace",
+    "grep",
+    "todo",
+]
+
+disabled_tools = [
+    "write_file",
+    "web_fetch",
+    "image_gen",
+    "image_edit",
+]

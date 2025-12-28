@@ -6,20 +6,20 @@ import '../bloc/employee_bloc.dart';
 import '../bloc/employee_event.dart' as employee_event;
 import '../widgets/employee_form_dialog.dart';
 
-class EmployeeListPage extends StatelessWidget {
-  const EmployeeListPage({super.key});
+class EmployeesPage extends StatelessWidget {
+  const EmployeesPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => sl<EmployeeBloc>()..add(const employee_event.LoadEmployees()),
-      child: const _EmployeeListView(),
+      child: const _EmployeesView(),
     );
   }
 }
 
-class _EmployeeListView extends StatelessWidget {
-  const _EmployeeListView();
+class _EmployeesView extends StatelessWidget {
+  const _EmployeesView();
 
   @override
   Widget build(BuildContext context) {

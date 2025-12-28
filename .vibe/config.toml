@@ -1,0 +1,153 @@
+# =============================================================================
+# CONFIGURACIÓN DE VIBE - PRIMO V2 (CORREGIDA)
+# =============================================================================
+
+# Modelo activo
+active_model = "devstral-2"
+
+# ID del prompt de sistema
+system_prompt_id = "primo-flutter-dev"
+
+# =============================================================================
+# CONFIGURACIÓN DE SERVIDORES MCP (CORREGIDA CON TUS RUTAS)
+# =============================================================================
+
+# 1. FETCH (Para leer documentación web)
+[[mcp_servers]]
+name = "fetch"
+transport = "stdio"
+command = "uvx"
+args = ["mcp-server-fetch"]
+
+# 2. FILESYSTEM (Apuntando a TU carpeta primo_v2_clean)
+[[mcp_servers]]
+name = "filesystem"
+transport = "stdio"
+command = "uvx"
+args = [
+    "mcp-server-filesystem", 
+    "C:\\Users\\gabriele\\Documents\\primo_v2_clean"
+]
+
+# 3. SQLITE (Apuntando a TU base de datos primo_v2.db)
+[[mcp_servers]]
+name = "sqlite"
+transport = "stdio"
+command = "uvx"
+args = [
+    "mcp-server-sqlite",
+    "--db-path",
+    "C:\\Users\\gabriele\\Documents\\primo_v2.db"
+]
+
+# 4. GITHUB (Opcional - Requiere Token si descomentas env)
+[[mcp_servers]]
+name = "github"
+transport = "stdio"
+command = "uvx"
+args = ["mcp-github"]
+# env = { GITHUB_TOKEN = "PON_TU_TOKEN_AQUI_SI_LO_USAS" }
+
+
+# =============================================================================
+# PERMISOS DE HERRAMIENTAS (MCP)
+# =============================================================================
+# Nota: Vibe suele detectar las herramientas automáticamente, pero estas
+# secciones ayudan a definir descripciones y permisos por defecto.
+
+[tools.fetch_get]
+permission = "ask"
+description = "Obtener contenido de URLs"
+
+[tools.filesystem_read_file]
+permission = "always"
+description = "Leer archivos"
+
+[tools.filesystem_write_file]
+permission = "ask"
+description = "Escribir archivos"
+
+[tools.filesystem_list_directory]
+permission = "always"
+description = "Listar directorios"
+
+[tools.sqlite_query]
+permission = "ask"
+description = "Ejecutar SQL en primo_v2.db"
+
+[tools.sqlite_list_tables]
+permission = "always"
+description = "Ver tablas de la DB"
+
+# =============================================================================
+# PERMISOS DE HERRAMIENTAS NATIVAS
+# =============================================================================
+
+[tools.bash]
+permission = "ask"
+description = "Ejecutar comandos de shell (flutter run, etc)"
+
+[tools.read_file]
+permission = "always"
+description = "Leer archivos del proyecto"
+
+[tools.search_replace]
+permission = "ask"
+description = "Buscar y reemplazar texto"
+
+# ¡OJO! CAMBIADO DE 'never' A 'ask' PARA QUE PUEDA PROGRAMAR
+[tools.write_file]
+permission = "ask"
+description = "Crear nuevos archivos" 
+
+[tools.grep]
+permission = "always"
+description = "Buscar en el código"
+
+[tools.todo]
+permission = "always"
+description = "Gestionar lista de tareas"
+
+[tools.ls]
+permission = "always"
+description = "Listar archivos"
+
+# =============================================================================
+# HERRAMIENTAS HABILITADAS
+# =============================================================================
+
+enabled_tools = [
+    "bash",
+    "read_file",
+    "search_replace",
+    "write_file",
+    "grep",
+    "todo",
+    "ls",
+    "fetch_*",
+    "filesystem_*",
+    "sqlite_*",
+    "github_*",
+]
+
+disabled_tools = [
+    "image_gen",
+    "image_edit",
+]
+
+# =============================================================================
+# CONFIGURACIÓN VISUAL Y DE LOGS
+# =============================================================================
+
+show_thoughts = true
+log_level = "info"
+log_timestamp_format = "%Y-%m-%d %H:%M:%S"
+
+include_git_status = true
+include_project_structure = true
+include_recent_files = true
+recent_files_limit = 10
+
+bash_timeout = 300
+max_diff_lines = 100
+preferred_encoding = "utf-8"

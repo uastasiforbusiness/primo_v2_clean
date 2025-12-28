@@ -1,0 +1,96 @@
+# =============================================================================
+# AGENTE DE CODING EXPERTO - PRIMO V2
+# =============================================================================
+# Agente especializado en desarrollo Flutter avanzado para PRIMO V2
+# Sistema POS con arquitectura hexagonal, BLoC y Drift
+# =============================================================================
+
+# Modelo activo - optimizado para desarrollo de codigo complejo
+active_model = "devstral-2"
+
+# Prompt de sistema personalizado para este agente
+system_prompt_id = "primo-coding-expert"
+
+# =============================================================================
+# PERMISOS DE HERRAMIENTAS
+# =============================================================================
+
+[tools.bash]
+permission = "ask"
+description = "Ejecutar comandos de Flutter (flutter run, build, analyze, tests)"
+
+[tools.read_file]
+permission = "always"
+description = "Leer archivos del proyecto para analisis y contexto"
+
+[tools.search_replace]
+permission = "ask"
+description = "Buscar y reemplazar texto - confirmar antes de aplicar cambios"
+
+[tools.write_file]
+permission = "never"
+description = "Crear nuevos archivos solo con aprobacion manual explicita"
+
+[tools.grep]
+permission = "always"
+description = "Buscar en el codigo para encontrar usages, imports, patrones"
+
+[tools.todo]
+permission = "always"
+description = "Gestionar lista de tareas y progreso del desarrollo"
+
+[tools.ls]
+permission = "always"
+description = "Listar archivos y estructura del proyecto"
+
+[tools.fetch_get]
+permission = "ask"
+description = "Obtener documentacion de Flutter/Dart de la web"
+
+# =============================================================================
+# CONFIGURACION DE HERRAMIENTAS HABILITADAS
+# =============================================================================
+
+enabled_tools = [
+    "bash",
+    "read_file",
+    "search_replace",
+    "write_file",
+    "grep",
+    "todo",
+    "ls",
+    "fetch_*",
+]
+
+disabled_tools = [
+    "image_gen",
+    "image_edit",
+]
+
+# =============================================================================
+# CONFIGURACION DE SESION
+# =============================================================================
+
+show_thoughts = true
+log_level = "info"
+
+include_git_status = true
+include_project_structure = true
+include_recent_files = true
+recent_files_limit = 10
+
+bash_timeout = 300
+max_diff_lines = 100
+
+# =============================================================================
+# NOTAS DE USO
+# =============================================================================
+# Este agente esta optimizado para desarrollo Flutter avanzado.
+# Uso: vibe --agent coding "tu solicitud"
+#
+# Caracteristicas principales:
+# - Conocimiento profundo de arquitectura hexagonal
+# - Experto en patrones BLoC y state management
+# - Dominio de Drift/SQLite y programacion funcional
+# - Enfoque en codigo limpio y mantenible
+# =============================================================================

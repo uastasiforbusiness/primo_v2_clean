@@ -1,0 +1,96 @@
+# =============================================================================
+# AGENTE UI DESIGN - PRIMO V2
+# =============================================================================
+# Agente especializado en diseno de interfaces modernas para Flutter
+# Estilo POS profesional, limpio y minimalista
+# =============================================================================
+
+active_model = "devstral-2"
+
+system_prompt_id = "primo-ui-design"
+
+# =============================================================================
+# PERMISOS DE HERRAMIENTAS
+# =============================================================================
+
+[tools.bash]
+permission = "ask"
+description = "Ejecutar comandos de Flutter (flutter run, analyze)"
+
+[tools.read_file]
+permission = "always"
+description = "Leer widgets existentes para entender contexto"
+
+[tools.search_replace]
+permission = "ask"
+description = "Implementar cambios de UI y widgets"
+
+[tools.write_file]
+permission = "never"
+description = "Crear archivos solo con aprobacion manual"
+
+[tools.grep]
+permission = "always"
+description = "Buscar widgets y componentes de UI"
+
+[tools.todo]
+permission = "always"
+description = "Planificar estructura de UI"
+
+[tools.ls]
+permission = "always"
+description = "Listar estructura de archivos"
+
+[tools.fetch_get]
+permission = "ask"
+description = "Obtener documentacion de Flutter widgets"
+
+# =============================================================================
+# CONFIGURACION DE HERRAMIENTAS
+# =============================================================================
+
+enabled_tools = [
+    "bash",
+    "read_file",
+    "search_replace",
+    "write_file",
+    "grep",
+    "todo",
+    "ls",
+    "fetch_*",
+]
+
+disabled_tools = [
+    "image_gen",
+    "image_edit",
+]
+
+# =============================================================================
+# CONFIGURACION DE SESION
+# =============================================================================
+
+show_thoughts = true
+log_level = "info"
+
+include_git_status = true
+include_project_structure = true
+include_recent_files = true
+recent_files_limit = 10
+
+bash_timeout = 300
+max_diff_lines = 100
+
+# =============================================================================
+# NOTAS DE USO
+# =============================================================================
+# Este agente esta optimizado para diseno de UI moderno estilo POS.
+# Uso: vibe --agent ui "tu solicitud"
+#
+# Caracteristicas:
+# - Three-column layout profesional
+# - Card UI moderno y limpio
+# - Colores profesionales con acentos
+# - Tipografia limpia sans-serif
+# - Touch-friendly con large tap targets
+# - Visual hierarchy claro
+# =============================================================================
