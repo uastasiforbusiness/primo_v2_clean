@@ -1,10 +1,10 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/shared_kernel/money.dart';
-import '../repositories/auth_repository.dart';
+import '../repositories/shift_repository.dart';
 
 class ClockOutUseCase {
-  final AuthRepository repository;
+  final ShiftRepository repository;
 
   ClockOutUseCase(this.repository);
 
@@ -21,7 +21,7 @@ class ClockOutUseCase {
 
     // Check if there's an active break
     final hasActiveBreakResult = await repository.hasActiveBreak(shiftId);
-    
+
     return hasActiveBreakResult.fold(
       Left.new,
       (hasBreak) {

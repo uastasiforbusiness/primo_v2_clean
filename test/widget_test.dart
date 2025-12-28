@@ -1,30 +1,21 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
+// Basic app initialization test for PRIMO V2 POS system
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:primo_v2/main.dart';
+import 'package:primo_v2/di/injection_container.dart';
+import 'package:primo_v2/features/database/data/app_database.dart';
+import 'package:primo_v2/features/auth/domain/repositories/auth_repository.dart';
+import 'package:primo_v2/features/shifts/domain/repositories/shift_repository.dart';
+import 'package:primo_v2/features/employees/domain/repositories/employee_repository.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const PrimoApp());
+  test('Dependency injection initializes without errors', () async {
+    // Test that all dependencies can be registered
+    await initDependencies();
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Verify that critical dependencies are registered
+    expect(sl.isRegistered<AppDatabase>(), true);
+    expect(sl.isRegistered<AuthRepository>(), true);
+    expect(sl.isRegistered<ShiftRepository>(), true);
+    expect(sl.isRegistered<EmployeeRepository>(), true);
   });
 }

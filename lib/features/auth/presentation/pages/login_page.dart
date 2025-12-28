@@ -4,8 +4,8 @@ import '../../../../di/injection_container.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
-import '../bloc/shift/shift_bloc.dart';
-import '../bloc/shift/shift_event.dart';
+import '../../../shifts/presentation/bloc/shift_bloc.dart';
+import '../../../shifts/presentation/bloc/shift_event.dart';
 import '../widgets/numpad_widget.dart';
 import '../../../employees/presentation/pages/dashboard_page.dart';
 

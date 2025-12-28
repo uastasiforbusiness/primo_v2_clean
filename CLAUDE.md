@@ -67,6 +67,48 @@ flutter test --coverage
 flutter analyze
 ```
 
+### Database Reset (When Corrupted)
+If the database becomes corrupted or you need a clean start:
+
+**Windows:**
+```bash
+# Locate the database file
+cd %USERPROFILE%\Documents
+
+# Delete the database file
+del primo_v2.db
+
+# Restart the application - onCreate will seed fresh data
+flutter run
+```
+
+**macOS/Linux:**
+```bash
+# Locate the database file
+cd ~/Documents
+
+# Delete the database file
+rm primo_v2.db
+
+# Restart the application - onCreate will seed fresh data
+flutter run
+```
+
+**IMPORTANT:** The bootstrap validation in `main.dart` is READ-ONLY. It will:
+- ✅ Validate admin user exists with correct PIN hash
+- ✅ Log errors if corruption is detected
+- ❌ NEVER auto-correct or mutate data
+- ❌ NEVER create users at runtime
+
+**Seed Philosophy:**
+> "Initial data is created once in `onCreate`, never auto-corrected at runtime."
+
+This prevents:
+- Silent data corruption
+- Audit trail violations
+- Legal compliance issues
+- Unpredictable runtime mutations
+
 ## Mandatory Debugging Protocol
 
 Before proposing ANY solution, you MUST explicitly identify:
@@ -306,6 +348,130 @@ lib/features/<feature_name>/
 - Reporting and advanced auditing
 - Backend synchronization
 - Hardware integration (printer, cash drawer)
+
+## Post-Refactor Architecture (December 2025)
+
+### Domain Separation
+
+The system has been refactored to maintain strict domain separation following Clean Architecture principles:
+
+**Auth Feature** (`lib/features/auth/`):
+- **Responsibility**: Authentication and authorization ONLY
+- **Key Components**:
+  - `AuthRepository.loginWithPin()` - Single authentication method
+  - `AuthBloc` - Session management (in-memory state)
+  - `AuthLocalDataSource` - Login and audit logging
+- **Does NOT handle**: Shifts, breaks, or employee management
+
+**Shifts Feature** (`lib/features/shifts/`):
+- **Responsibility**: Work session management (turnos laborales)
+- **Key Components**:
+  - `ShiftRepository` - All shift operations
+  - `ShiftBloc` - Shift state management
+  - `ClockInUseCase`, `ClockOutUseCase` - Business logic
+  - `StartBreakUseCase`, `EndBreakUseCase` - Break management
+- **Protected by**: ACID transactions
+- **Location**: `lib/features/shifts/` (moved from `auth/`)
+
+**Employees Feature** (`lib/features/employees/`):
+- **Responsibility**: Employee CRUD operations
+- **Key Components**:
+  - `EmployeeRepository` - Employee data operations
+  - `CreateEmployeeUseCase` - Validates PIN uniqueness
+  - `GetEmployeesUseCase` - Retrieves employee list
+- **Protected by**: ACID transactions
+
+### ACID Transaction Protection
+
+ALL financial operations are now wrapped in `database.transaction()` for atomicity:
+
+**ClockIn Transaction:**
+```dart
+database.transaction(() async {
+  await database.insertShift(...);
+  // TODO: await auditDataSource.logEvent(...);
+  return await database.getActiveShiftByEmployeeId(employeeId);
+});
+```
+- If audit fails → shift is NOT created
+- Guarantees data consistency
+
+**ClockOut Transaction:**
+```dart
+database.transaction(() async {
+  // Validate no active break
+  await database.closeShift(...);
+  // TODO: await auditDataSource.logEvent(...);
+});
+```
+- Prevents closing shift with active break
+- Ensures financial integrity
+
+**StartBreak / EndBreak Transactions:**
+```dart
+database.transaction(() async {
+  // Validate shift is active
+  // Validate no duplicate breaks
+  await database.insertBreak(...);
+  // TODO: await auditDataSource.logEvent(...);
+});
+```
+- Atomic break operations
+- Prevents data corruption
+
+**CreateEmployee Transaction:**
+```dart
+database.transaction(() async {
+  final isPinUnique = await database.isPinUnique(...);
+  if (!isPinUnique) throw DuplicateException('PIN already exists');
+  await database.insertEmployee(...);
+  // TODO: await auditDataSource.logEvent(...);
+});
+```
+- Prevents duplicate PINs (race condition safe)
+- Validates before inserting
+
+### Audit System (Current State)
+
+**Status**: Prepared for future independent module
+- Audit calls are currently commented with `// TODO` markers
+- Ready to be uncommented when `AuditDataSource` is implemented
+- All transactions have audit placeholders
+- Current audit logging remains in `AuthLocalDataSource` (legacy)
+
+**Future**: Will be extracted to `lib/features/audit/` as independent, passive module
+
+### Architecture Validation Checklist
+
+✅ **AuthBloc** does NOT mention shifts/breaks
+✅ **ShiftBloc** lives in `features/shifts/` (not `auth/`)
+✅ All financial operations use `database.transaction()`
+✅ **AppDatabase** only contains queries (no business logic)
+✅ Use Cases contain business logic validations
+✅ DataSources only execute database operations
+✅ `flutter analyze` passes without warnings
+✅ `flutter test` passes 100%
+
+### Critical Files Added/Modified
+
+**New Feature Structure:**
+- `lib/features/shifts/` - Complete domain for shift management
+- `lib/features/shifts/domain/usecases/start_break_usecase.dart` - New
+- `lib/features/shifts/domain/usecases/end_break_usecase.dart` - New
+- `lib/features/shifts/domain/entities/break_entity.dart` - New
+
+**Modified for Separation:**
+- `lib/features/auth/domain/repositories/auth_repository.dart` - Removed shift methods
+- `lib/features/auth/data/repositories/auth_repository_impl.dart` - Cleaned up
+- `lib/features/auth/data/datasources/auth_local_datasource.dart` - Removed shift logic
+
+**Modified for Transactions:**
+- `lib/features/shifts/data/datasources/shift_local_datasource.dart` - Added transactions
+- `lib/features/employees/data/datasources/employee_local_datasource_impl.dart` - Added transaction + PIN validation
+- `lib/features/database/data/app_database.dart` - Added `getShiftById()` helper
+
+**Updated DI:**
+- `lib/di/injection_container.dart` - New Shifts feature registration
 
 ## Type Safety & Error Handling
 

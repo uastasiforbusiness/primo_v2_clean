@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/entities/employee_entity.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
-import '../bloc/shift/shift_bloc.dart';
-import '../bloc/shift/shift_event.dart';
+import '../../../shifts/presentation/bloc/shift_bloc.dart';
+import '../../../shifts/presentation/bloc/shift_event.dart';
 
 class ClockInPage extends StatefulWidget {
   final EmployeeEntity employee;

@@ -24,6 +24,19 @@ class CreateEmployeeRequested extends EmployeeEvent {
   List<Object?> get props => [employee, pin];
 }
 
+class UpdateEmployeeRequested extends EmployeeEvent {
+  final EmployeeEntity employee;
+  final String? newPin;
+
+  const UpdateEmployeeRequested({
+    required this.employee,
+    this.newPin,
+  });
+
+  @override
+  List<Object?> get props => [employee, newPin];
+}
+
 class DeleteEmployeeRequested extends EmployeeEvent {
   final String id;
   const DeleteEmployeeRequested(this.id);

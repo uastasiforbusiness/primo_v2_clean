@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../../../domain/entities/shift_entity.dart';
+import '../../domain/entities/shift_entity.dart';
 
 abstract class ShiftState extends Equatable {
   const ShiftState();

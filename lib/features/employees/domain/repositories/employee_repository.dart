@@ -5,4 +5,6 @@ import '../../../auth/domain/entities/employee_entity.dart';
 abstract class EmployeeRepository {
   Future<Either<Failure, List<EmployeeEntity>>> getEmployees();
   Future<Either<Failure, void>> createEmployee(EmployeeEntity employee, String pin);
+  Future<Either<Failure, void>> updateEmployee(EmployeeEntity employee, {String? newPin});
+  Future<Either<Failure, void>> deleteEmployee(String employeeId);
 }

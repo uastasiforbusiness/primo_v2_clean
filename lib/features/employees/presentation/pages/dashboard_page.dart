@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../auth/domain/entities/employee_entity.dart';
-import '../../../auth/domain/entities/shift_entity.dart';
+import '../../../shifts/domain/entities/shift_entity.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
-import '../../../auth/presentation/bloc/shift/shift_bloc.dart';
-import '../../../auth/presentation/bloc/shift/shift_event.dart';
-import '../../../auth/presentation/bloc/shift/shift_state.dart';
+import '../../../shifts/presentation/bloc/shift_bloc.dart';
+import '../../../shifts/presentation/bloc/shift_event.dart';
+import '../../../shifts/presentation/bloc/shift_state.dart';
 import '../../../auth/presentation/pages/clock_in_page.dart';
 import '../../../auth/presentation/pages/login_page.dart';
 

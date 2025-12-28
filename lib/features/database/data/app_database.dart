@@ -165,8 +165,13 @@ class AppDatabase extends _$AppDatabase {
   Future<int> insertEmployee(EmployeesCompanion employee) =>
       into(employees).insert(employee);
 
-  Future<bool> updateEmployee(EmployeesCompanion employee) =>
-      update(employees).replace(employee);
+  Future<bool> updateEmployee(EmployeesCompanion employee) async {
+    if (!employee.id.present) {
+      throw ArgumentError('Employee ID is required for update');
+    }
+    return await (update(employees)..where((e) => e.id.equals(employee.id.value)))
+        .write(employee) > 0;
+  }
 
   Future<int> softDeleteEmployee(String id) =>
       (update(employees)..where((e) => e.id.equals(id)))
@@ -179,6 +184,9 @@ class AppDatabase extends _$AppDatabase {
             ..where((s) => s.employeeId.equals(employeeId))
             ..where((s) => s.endedAt.isNull()))
           .getSingleOrNull();
+
+  Future<Shift?> getShiftById(String shiftId) =>
+      (select(shifts)..where((s) => s.id.equals(shiftId))).getSingleOrNull();
 
   Future<int> insertShift(ShiftsCompanion shift) => into(shifts).insert(shift);
 

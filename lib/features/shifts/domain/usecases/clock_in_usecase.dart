@@ -2,10 +2,10 @@ import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/shared_kernel/money.dart';
 import '../entities/shift_entity.dart';
-import '../repositories/auth_repository.dart';
+import '../repositories/shift_repository.dart';
 
 class ClockInUseCase {
-  final AuthRepository repository;
+  final ShiftRepository repository;
 
   ClockInUseCase(this.repository);
 
@@ -22,7 +22,7 @@ class ClockInUseCase {
 
     // Check if employee already has an active shift
     final activeShiftResult = await repository.getActiveShift(employeeId);
-    
+
     return activeShiftResult.fold(
       Left.new,
       (activeShift) {
