@@ -31,6 +31,7 @@ dependencies:
   crypto: ^3.0.3
 
   # Utilities
+  logger: ^2.0.2+1
   uuid: ^4.2.2
 
   # UI

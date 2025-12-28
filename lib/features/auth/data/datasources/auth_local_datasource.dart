@@ -1,4 +1,5 @@
 import 'package:drift/drift.dart';
+import 'package:logger/logger.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/shared_kernel/pin.dart';
 import '../../../database/data/app_database.dart';
@@ -28,6 +29,7 @@ abstract class AuthLocalDataSource {
 class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   final AppDatabase database;
   final Uuid uuid;
+  final Logger logger = Logger();
 
   AuthLocalDataSourceImpl({
     required this.database,
@@ -198,7 +200,7 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
       );
     } catch (e) {
       // Don't throw on audit failures to avoid breaking main operations
-      print('Audit event failed: ${e.toString()}');
+      logger.e('Audit event failed: ${e.toString()}');
     }
   }
 }
