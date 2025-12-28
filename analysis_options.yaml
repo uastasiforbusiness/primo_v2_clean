@@ -2,9 +2,24 @@ include: package:flutter_lints/flutter.yaml
 
 linter:
   rules:
-    - prefer_const_constructors
-    - prefer_const_literals_to_create_immutables
-    - avoid_print
-    - prefer_single_quotes
-    - always_declare_return_types
-    - avoid_dynamic_calls
+    # === Code Safety ===
+    avoid_print: true
+    avoid_dynamic_calls: true
+    always_declare_return_types: true
+    avoid_catching_errors: true
+
+    # === Architecture & Design ===
+    prefer_final_fields: true
+    prefer_final_locals: true
+    avoid_setters_without_getters: true
+
+    # === Readability & Consistency ===
+    prefer_single_quotes: true
+    prefer_const_constructors: true
+    prefer_const_literals_to_create_immutables: true
+    unnecessary_lambdas: true
+    unnecessary_this: true
+
+    # === Business Logic Protection ===
+    avoid_bool_literals_in_conditional_expressions: true
+    avoid_redundant_argument_values: true

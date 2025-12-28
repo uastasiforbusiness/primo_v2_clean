@@ -104,7 +104,8 @@ class AppDatabase extends _$AppDatabase {
       ),
     );
 
-    // Default admin user (PIN: 1234, hashed)
+    // Default admin user (PIN: 1234)
+    // Hash SHA-256 de "1234": 03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4
     await into(employees).insert(
       EmployeesCompanion.insert(
         id: 'admin-001',
@@ -112,7 +113,7 @@ class AppDatabase extends _$AppDatabase {
         lastName: 'Sistema',
         emergencyPhone: '000000000',
         role: 'ADMIN',
-        pinHash: 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3', // SHA-256 of "123"
+        pinHash: '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4', 
         email: const Value('admin@primo.com'),
       ),
     );

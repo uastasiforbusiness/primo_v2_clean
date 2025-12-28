@@ -1,0 +1,34 @@
+{
+  "projectName": "PRIMO_V2",
+  "projectType": "Flutter POS System",
+  "version": "1.0",
+  "initializationProfile": "flutter-pos",
+  "trust": {
+    "filePermissions": {
+      "read": [
+        "lib/**",
+        "test/**",
+        "pubspec.yaml",
+        "CLAUDE.md",
+        ".claude/**"
+      ],
+      "write": [
+        "lib/**",
+        "test/**",
+        ".claude/**"
+      ]
+    }
+  },
+  "initialization": {
+    "contextFiles": [
+      "CLAUDE.md",
+      ".claude/context-index.md"
+    ],
+    "maxInitialTokens": 8000
+  },
+  "performance": {
+    "enableAutoAccept": false,
+    "defaultPermissionMode": "plan",
+    "autoCompactAt": 0.75
+  }
+}

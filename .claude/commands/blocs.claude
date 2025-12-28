@@ -1,0 +1,8 @@
+# BLoC Commands
+
+/bloc-event
+"Genera Event class completo con Equatable, props, constructor, documentación. Convención: past tense."
+
+/bloc-handler
+"Implementa event handler: emit(Loading) → operation → emit(Success/Error). Con Either para error handling."
+

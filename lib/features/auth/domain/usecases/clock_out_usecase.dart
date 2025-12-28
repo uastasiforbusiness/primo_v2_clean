@@ -23,7 +23,7 @@ class ClockOutUseCase {
     final hasActiveBreakResult = await repository.hasActiveBreak(shiftId);
     
     return hasActiveBreakResult.fold(
-      (failure) => Left(failure),
+      Left.new,
       (hasBreak) {
         if (hasBreak) {
           return const Left(

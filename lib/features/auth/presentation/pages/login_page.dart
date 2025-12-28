@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../../di/injection_container.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
+import '../bloc/shift/shift_bloc.dart';
+import '../bloc/shift/shift_event.dart';
 import '../widgets/numpad_widget.dart';
-import 'clock_in_page.dart';
 import '../../../employees/presentation/pages/dashboard_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -75,25 +77,15 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
-          if (state is AuthLoginSuccess) {
-            if (state.activeShift == null) {
-              // No active shift - go to clock-in
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(
-                  builder: (_) => ClockInPage(employee: state.employee),
+          if (state is AuthAuthenticated) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (_) => BlocProvider(
+                  create: (context) => sl<ShiftBloc>()..add(LoadActiveShift(state.employee.id)),
+                  child: DashboardPage(employee: state.employee),
                 ),
-              );
-            } else {
-              // Has active shift - go to dashboard
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(
-                  builder: (_) => DashboardPage(
-                    employee: state.employee,
-                    shift: state.activeShift!,
-                  ),
-                ),
-              );
-            }
+              ),
+            );
           } else if (state is AuthError) {
             _handleLoginError();
             ScaffoldMessenger.of(context).showSnackBar(
@@ -111,15 +103,8 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Logo
-                  const Icon(
-                    Icons.point_of_sale_rounded,
-                    size: 80,
-                    color: Colors.deepPurple,
-                  ),
+                  const Icon(Icons.point_of_sale_rounded, size: 80, color: Colors.deepPurple),
                   const SizedBox(height: 16),
-                  
-                  // Title
                   Text(
                     'PRIMO V2',
                     style: Theme.of(context).textTheme.headlineLarge?.copyWith(
@@ -136,15 +121,10 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 48),
                   
-                  // PIN Display
                   if (_isLocked)
                     Column(
                       children: [
-                        const Icon(
-                          Icons.lock_outline,
-                          size: 48,
-                          color: Colors.red,
-                        ),
+                        const Icon(Icons.lock_outline, size: 48, color: Colors.red),
                         const SizedBox(height: 16),
                         Text(
                           'Bloqueado temporalmente',
@@ -152,14 +132,6 @@ class _LoginPageState extends State<LoginPage> {
                             color: Colors.red[700],
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Intenta nuevamente en 30 segundos',
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 14,
                           ),
                         ),
                       ],
@@ -172,8 +144,6 @@ class _LoginPageState extends State<LoginPage> {
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                         const SizedBox(height: 24),
-                        
-                        // PIN dots
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: List.generate(
@@ -192,26 +162,12 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                         const SizedBox(height: 32),
-                        
-                        // Numpad
                         NumpadWidget(
                           onNumberPressed: _onNumberPressed,
                           onBackspacePressed: _onBackspacePressed,
                           onClearPressed: _onClearPressed,
                         ),
                       ],
-                    ),
-                  
-                  if (_failedAttempts > 0 && !_isLocked)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 16),
-                      child: Text(
-                        'Intentos fallidos: $_failedAttempts/3',
-                        style: TextStyle(
-                          color: Colors.orange[700],
-                          fontSize: 14,
-                        ),
-                      ),
                     ),
                 ],
               ),

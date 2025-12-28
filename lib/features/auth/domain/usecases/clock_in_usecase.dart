@@ -24,7 +24,7 @@ class ClockInUseCase {
     final activeShiftResult = await repository.getActiveShift(employeeId);
     
     return activeShiftResult.fold(
-      (failure) => Left(failure),
+      Left.new,
       (activeShift) {
         if (activeShift != null) {
           return const Left(
