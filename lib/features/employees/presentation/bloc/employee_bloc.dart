@@ -4,7 +4,7 @@ import '../../domain/usecases/delete_employee_usecase.dart';
 import '../../domain/usecases/get_employees_usecase.dart';
 import '../../domain/usecases/update_employee_usecase.dart';
 import 'employee_event.dart' as employee_event;
-import 'employee_state.dart'; // ✅ IMPORTANTE: Usamos el archivo externo, no redefinimos aquí.
+import 'employee_state.dart'; // Importa los estados del archivo externo
 
 class EmployeeBloc extends Bloc<employee_event.EmployeeEvent, EmployeeState> {
   final GetEmployeesUseCase getEmployeesUseCase;

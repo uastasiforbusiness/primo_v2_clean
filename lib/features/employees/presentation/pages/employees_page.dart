@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../di/injection_container.dart';
 import '../../../auth/domain/entities/employee_entity.dart';
 import '../bloc/employee_bloc.dart';
-import '../bloc/employee_state.dart'; // 👈 ¡ESTE ERA EL IMPORT QUE FALTABA!
+import '../bloc/employee_state.dart';
 import '../bloc/employee_event.dart' as employee_event;
 import '../widgets/employee_form_dialog.dart';
 
@@ -32,8 +32,11 @@ class _EmployeesView extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            // SOLUCIÓN: Navegación determinista.
-            context.goNamed('dashboard');
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/dashboard');
+            }
           },
         ),
       ),
@@ -74,54 +77,31 @@ class _EmployeesView extends StatelessWidget {
         },
         builder: (context, state) {
           if (state is EmployeeLoading) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Cargando empleados...'),
-                ],
-              ),
-            );
-          } else if (state is EmployeeLoaded) {
+            return const Center(child: CircularProgressIndicator());
+          } 
+          
+          if (state is EmployeeLoaded) {
             if (state.employees.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.people_outline, size: 64, color: Colors.grey[400]),
-                    const SizedBox(height: 16),
-                    Text(
-                      'No hay empleados registrados',
-                      style: TextStyle(color: Colors.grey[600]),
-                    ),
-                  ],
-                ),
-              );
+              return const Center(child: Text('No hay empleados registrados'));
             }
-
             return ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: state.employees.length,
               itemBuilder: (context, index) {
-                final employee = state.employees[index];
-                return _EmployeeCard(employee: employee);
+                return _EmployeeCard(employee: state.employees[index]);
               },
             );
-          } else if (state is EmployeeError || state is EmployeeOperationSuccess) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          } else if (state is EmployeeInitial) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+          } 
+          
+          // Si es éxito o error, seguimos mostrando la lista si la tenemos, 
+          // o un loading si no (aquí simplificado).
+          if (state is EmployeeOperationSuccess || state is EmployeeError) {
+             // Idealmente aquí mantendríamos la lista anterior, 
+             // pero por simplicidad mostramos un loader que se recargará rápido.
+             return const Center(child: CircularProgressIndicator());
           }
 
-          return const Center(
-            child: Text('Estado desconocido. Por favor, recarga la página.'),
-          );
+          return const Center(child: CircularProgressIndicator()); // Default para Initial
         },
       ),
     );
@@ -160,133 +140,25 @@ class _EmployeeCard extends StatelessWidget {
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: CircleAvatar(
-          backgroundColor: _getRoleColor(employee.role.toValue()),
+          backgroundColor: Colors.blue,
           child: Text(
-            employee.name[0].toUpperCase(),
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            employee.name.isNotEmpty ? employee.name[0].toUpperCase() : '?',
+            style: const TextStyle(color: Colors.white),
           ),
         ),
-        title: Text(
-          employee.fullName,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                Icon(Icons.badge, size: 16, color: Colors.grey[600]),
-                const SizedBox(width: 4),
-                Text(employee.role.toValue()),
-              ],
-            ),
-            if (employee.email != null) ...[
-              const SizedBox(height: 2),
-              Row(
-                children: [
-                  Icon(Icons.email, size: 16, color: Colors.grey[600]),
-                  const SizedBox(width: 4),
-                  Text(employee.email!),
-                ],
-              ),
-            ],
-            if (employee.phone != null) ...[
-              const SizedBox(height: 2),
-              Row(
-                children: [
-                  Icon(Icons.phone, size: 16, color: Colors.grey[600]),
-                  const SizedBox(width: 4),
-                  Text(employee.phone!),
-                ],
-              ),
-            ],
-          ],
-        ),
+        title: Text(employee.fullName),
+        subtitle: Text(employee.role.toValue()),
         trailing: isAdmin
-            ? Chip(
-                label: const Text('ADMIN', style: TextStyle(fontSize: 10)),
-                backgroundColor: Colors.purple[100],
-              )
-            : Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.edit, color: Colors.blue),
-                    onPressed: () => _showEditDialog(context, employee),
-                    tooltip: 'Editar',
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () => _confirmDelete(context, employee),
-                    tooltip: 'Eliminar',
-                  ),
-                ],
+            ? const Chip(label: Text('ADMIN'))
+            : IconButton(
+                icon: const Icon(Icons.delete, color: Colors.red),
+                onPressed: () {
+                   context.read<EmployeeBloc>().add(
+                      employee_event.DeleteEmployeeRequested(employee.id),
+                   );
+                },
               ),
       ),
-    );
-  }
-
-  Color _getRoleColor(String role) {
-    switch (role) {
-      case 'ADMIN':
-        return Colors.purple;
-      case 'SUPERVISOR':
-        return Colors.orange;
-      case 'KITCHEN':
-        return Colors.green;
-      default:
-        return Colors.blue;
-    }
-  }
-
-  void _showEditDialog(BuildContext context, EmployeeEntity employee) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return EmployeeFormDialog(
-          employee: employee,
-          onSave: (updatedEmployee, newPin) {
-            context.read<EmployeeBloc>().add(
-              employee_event.UpdateEmployeeRequested(
-                employee: updatedEmployee,
-                newPin: newPin,
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  void _confirmDelete(BuildContext context, EmployeeEntity employee) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Confirmar Eliminación'),
-          content: Text(
-            '¿Está seguro que desea eliminar a ${employee.fullName}?\n\n'
-            'Esta acción marcará al empleado como inactivo pero mantendrá sus registros históricos.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Cancelar'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                context.read<EmployeeBloc>().add(
-                  employee_event.DeleteEmployeeRequested(employee.id),
-                );
-                Navigator.pop(dialogContext);
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text('Eliminar'),
-            ),
-          ],
-        );
-      },
     );
   }
 }
