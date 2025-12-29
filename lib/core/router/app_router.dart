@@ -15,6 +15,7 @@ import 'package:primo_v2/features/employees/presentation/pages/employees_page.da
 import 'package:primo_v2/features/auth/presentation/pages/clock_in_page.dart';
 import 'package:primo_v2/features/shifts/presentation/pages/active_shift_page.dart';
 import 'package:primo_v2/features/shifts/presentation/pages/break_page.dart';
+// Nuevos imports para las páginas de error
 import 'package:primo_v2/features/error/presentation/pages/error_page.dart';
 import 'package:primo_v2/features/error/presentation/pages/forbidden_page.dart';
 
@@ -22,7 +23,7 @@ import 'package:primo_v2/features/error/presentation/pages/forbidden_page.dart';
 class AppRouter {
   static final AppRouter _instance = AppRouter._internal();
   static AppRouter get instance => _instance;
-
+  
   AppRouter._internal();
 
   static GoRouter get router => _instance._router;
@@ -31,12 +32,9 @@ class AppRouter {
     initialLocation: '/',
     debugLogDiagnostics: true,
     
-    // Escucha cambios tanto en Auth como en Shifts para reaccionar a cambios de estado
-    refreshListenable: MultiSourceRefreshListenable([
-      sl<AuthBloc>().stream,
-      sl<ShiftBloc>().stream,
-    ]),
-
+    // Escucha activa del AuthBloc
+    refreshListenable: GoRouterRefreshStream(sl<AuthBloc>().stream),
+    
     routes: [
       /// Public routes
       GoRoute(
@@ -52,7 +50,11 @@ class AppRouter {
       GoRoute(
         path: '/error',
         name: 'error',
-        builder: (context, state) => const ErrorPage(),
+        builder: (context, state) {
+          // CORRECCIÓN: Extraer el mensaje si existe, o usar uno por defecto
+          final message = state.extra as String? ?? 'Ocurrió un error inesperado';
+          return ErrorPage(message: message);
+        },
       ),
       GoRoute(
         path: '/forbidden',
@@ -60,100 +62,99 @@ class AppRouter {
         builder: (context, state) => const ForbiddenPage(),
       ),
 
-      /// Protected routes (Dashboard Area)
+      /// Protected routes
       GoRoute(
         path: '/dashboard',
         name: 'dashboard',
         builder: (context, state) {
           final authState = context.read<AuthBloc>().state;
           if (authState is AuthAuthenticated) {
-            return DashboardPage(employee: authState.employee);
+             return DashboardPage(employee: authState.employee);
           }
           return const LoginPage();
         },
-        routes: [
-          GoRoute(
-            path: 'clock-in',
-            name: 'clock-in',
-            builder: (context, state) {
-              final authState = context.read<AuthBloc>().state;
-              if (authState is AuthAuthenticated) {
-                return ClockInPage(employee: authState.employee);
-              }
-              return const LoginPage();
-            },
-          ),
-          GoRoute(
-            path: 'active-shift',
-            name: 'active-shift',
-            builder: (context, state) => const ActiveShiftPage(),
-          ),
-          GoRoute(
-            path: 'break',
-            name: 'break',
-            builder: (context, state) => const BreakPage(),
-          ),
-          GoRoute(
-            path: 'employees',
-            name: 'employees',
-            builder: (context, state) => const EmployeesPage(),
-          ),
-          GoRoute(
-            path: 'settings',
-            name: 'settings',
-            builder: (context, state) => const Scaffold(
-              body: Center(child: Text('Settings Page - TODO')),
-            ),
-          ),
-        ],
+      ),
+      GoRoute(
+        path: '/dashboard/clock-in',
+        name: 'clock-in',
+        builder: (context, state) {
+           final authState = context.read<AuthBloc>().state;
+           if (authState is AuthAuthenticated) return ClockInPage(employee: authState.employee);
+           return const LoginPage();
+        },
+      ),
+      GoRoute(
+        path: '/dashboard/active-shift',
+        name: 'active-shift',
+        builder: (context, state) => const ActiveShiftPage(),
+      ),
+      GoRoute(
+        path: '/dashboard/break',
+        name: 'break',
+        builder: (context, state) => const BreakPage(),
+      ),
+
+      /// Admin routes
+      GoRoute(
+        path: '/dashboard/employees',
+        name: 'employees',
+        builder: (context, state) => const EmployeesPage(),
+      ),
+      GoRoute(
+        path: '/dashboard/settings',
+        name: 'settings',
+        builder: (context, state) => const Scaffold(
+          body: Center(child: Text('Settings Page - TODO')),
+        ),
       ),
     ],
 
     /// Redirect logic
     redirect: (context, state) {
-      final authState = context.read<AuthBloc>().state;
-      final shiftState = context.read<ShiftBloc>().state;
+      final authBloc = context.read<AuthBloc>();
+      final shiftBloc = context.read<ShiftBloc>();
+      
+      final authState = authBloc.state;
+      final shiftState = shiftBloc.state;
 
-      final bool loggingIn = state.matchedLocation == '/login';
-      final bool inSplash = state.matchedLocation == '/';
+      // 1. Guard de Autenticación
+      final isAuthenticated = authState is AuthAuthenticated;
+      final isGoingToLogin = state.matchedLocation == '/login';
 
-      // 1. Manejo de Autenticación
-      if (authState is! AuthAuthenticated) {
-        if (loggingIn || inSplash) return null;
+      if (!isAuthenticated) {
+        if (state.matchedLocation == '/' ||
+            state.matchedLocation == '/error' ||
+            state.matchedLocation == '/forbidden') {
+          return null;
+        }
         return '/login';
       }
 
-      // 2. Si está autenticado y en login/splash, ir al dashboard
-      if (loggingIn || inSplash) {
+      // 2. Si está autenticado y va al login -> Dashboard
+      if (isAuthenticated && isGoingToLogin) {
         return '/dashboard';
       }
 
-      // 3. Lógica de Turnos (Solo si está en el área de dashboard)
-      if (state.matchedLocation.startsWith('/dashboard')) {
-        // Si el turno está inactivo, forzar clock-in (a menos que ya esté ahí)
-        if (shiftState is ShiftInactive && state.matchedLocation != '/dashboard/clock-in') {
-          return '/dashboard/clock-in';
-        }
-
-        // Si el turno está activo y está en clock-in, mandar al dashboard principal
-        if (shiftState is ShiftActive && state.matchedLocation == '/dashboard/clock-in') {
-          return '/dashboard';
-        }
-
-        // Si está en break, forzar break page
-        if (shiftState is ShiftOnBreak && state.matchedLocation != '/dashboard/break') {
-          return '/dashboard/break';
-        }
-        
-        // Si NO está en break pero intenta entrar a la página de break, volver al dashboard
-        if (shiftState is! ShiftOnBreak && state.matchedLocation == '/dashboard/break') {
-          return '/dashboard';
-        }
+      // 3. Lógica de Turnos (SHIFTS)
+      if (shiftState is ShiftInactive &&
+          !state.matchedLocation.contains('/dashboard/clock-in')) {
+        return '/dashboard/clock-in';
       }
 
-      // 4. Protección de Rutas Admin
-      if (state.matchedLocation.contains('/employees') || state.matchedLocation.contains('/settings')) {
-        if (authState.employee.role != Role.admin) {
+      if (shiftState is ShiftActive &&
+          state.matchedLocation.contains('/clock-in')) {
+        return '/dashboard/active-shift';
+      }
+
+      if (shiftState is ShiftOnBreak &&
+          state.matchedLocation != '/dashboard/break') {
+        return '/dashboard/break';
+      }
+
+      // 4. Roles (Solo Admin)
+      if (state.matchedLocation.contains('/employees') ||
+          state.matchedLocation.contains('/settings')) {
+        if (authState is AuthAuthenticated && authState.employee.role != Role.admin) {
           return '/forbidden';
         }
       }
@@ -167,23 +168,20 @@ class AppRouter {
   );
 }
 
-/// Utility class to bridge multiple Streams -> Listenable for GoRouter
-class MultiSourceRefreshListenable extends ChangeNotifier {
-  MultiSourceRefreshListenable(List<Stream<dynamic>> streams) {
-    for (final stream in streams) {
-      _subscriptions.add(
-        stream.asBroadcastStream().listen((_) => notifyListeners()),
-      );
-    }
+/// Utility class to bridge Stream -> Listenable for GoRouter
+class GoRouterRefreshStream extends ChangeNotifier {
+  GoRouterRefreshStream(Stream<dynamic> stream) {
+    notifyListeners();
+    _subscription = stream.asBroadcastStream().listen(
+      (dynamic _) => notifyListeners(),
+    );
   }
 
-  final List<StreamSubscription<dynamic>> _subscriptions = [];
+  late final StreamSubscription<dynamic> _subscription;
 
   @override
   void dispose() {
-    for (final sub in _subscriptions) {
-      sub.cancel();
-    }
+    _subscription.cancel();
     super.dispose();
   }
 }
