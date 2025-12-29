@@ -1,0 +1,9 @@
+{
+  "elements": {},
+  "imports": [
+    "package:flutter_bloc/flutter_bloc.dart",
+    "package:primo_v2/features/auth/domain/usecases/login_with_pin_usecase.dart",
+    "package:primo_v2/features/auth/presentation/bloc/auth_event.dart",
+    "package:primo_v2/features/auth/presentation/bloc/auth_state.dart"
+  ]
+}

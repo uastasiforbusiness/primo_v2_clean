@@ -1,0 +1,1 @@
+{"valid_import":true,"imports":[{"uri":"package:primo_v2/core/shared_kernel/role.dart","transitive":false},{"uri":"package:primo_v2/features/database/data/app_database.dart","transitive":false},{"uri":"package:primo_v2/features/auth/domain/entities/employee_entity.dart","transitive":false}],"elements":[]}

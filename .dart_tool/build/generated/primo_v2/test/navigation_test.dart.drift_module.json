@@ -1,0 +1,9 @@
+{
+  "elements": {},
+  "imports": [
+    "package:flutter_test/flutter_test.dart",
+    "package:go_router/go_router.dart",
+    "package:mocktail/mocktail.dart",
+    "package:flutter/material.dart"
+  ]
+}

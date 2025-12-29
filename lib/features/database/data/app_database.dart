@@ -206,6 +206,24 @@ class AppDatabase extends _$AppDatabase {
         ..orderBy([(e) => OrderingTerm.desc(e.createdAt)])
         ..limit(limit))
       .get();
+
+  // Asegura que el usuario administrador por defecto siempre exista
+  Future<void> ensureAdminUser() async {
+    final admin = await getEmployeeById('admin-001');
+    if (admin == null) {
+      await into(employees).insert(
+        EmployeesCompanion.insert(
+          id: 'admin-001',
+          name: 'Administrador',
+          lastName: 'Sistema',
+          emergencyPhone: '000000000',
+          role: 'ADMIN',
+          pinHash: '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4',
+          email: const Value('admin@primo.com'),
+        ),
+      );
+    }
+  }
 }
 
 LazyDatabase _openConnection() {

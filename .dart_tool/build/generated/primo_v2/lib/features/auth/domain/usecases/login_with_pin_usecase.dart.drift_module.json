@@ -1,0 +1,9 @@
+{
+  "elements": {},
+  "imports": [
+    "package:dartz/dartz.dart",
+    "package:primo_v2/core/error/failures.dart",
+    "package:primo_v2/features/auth/domain/entities/employee_entity.dart",
+    "package:primo_v2/features/auth/domain/repositories/auth_repository.dart"
+  ]
+}

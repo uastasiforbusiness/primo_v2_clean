@@ -1,0 +1,13 @@
+{
+  "elements": {},
+  "imports": [
+    "package:flutter_bloc/flutter_bloc.dart",
+    "package:primo_v2/features/shifts/domain/usecases/clock_in_usecase.dart",
+    "package:primo_v2/features/shifts/domain/usecases/clock_out_usecase.dart",
+    "package:primo_v2/features/shifts/domain/usecases/start_break_usecase.dart",
+    "package:primo_v2/features/shifts/domain/usecases/end_break_usecase.dart",
+    "package:primo_v2/features/shifts/domain/repositories/shift_repository.dart",
+    "package:primo_v2/features/shifts/presentation/bloc/shift_event.dart",
+    "package:primo_v2/features/shifts/presentation/bloc/shift_state.dart"
+  ]
+}

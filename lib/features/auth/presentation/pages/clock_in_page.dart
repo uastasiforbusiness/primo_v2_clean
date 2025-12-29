@@ -127,9 +127,8 @@ class _ClockInPageState extends State<ClockInPage> {
                     TextButton(
                       onPressed: () {
                         context.read<AuthBloc>().add(const LogoutRequested());
-                        Navigator.of(context).pop();
                       },
-                      child: const Text('Cancelar'),
+                      child: const Text('Cancelar / Salir'),
                     ),
                   ],
                 ),

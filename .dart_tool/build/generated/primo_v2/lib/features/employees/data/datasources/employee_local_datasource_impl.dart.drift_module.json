@@ -1,0 +1,10 @@
+{
+  "elements": {},
+  "imports": [
+    "package:drift/drift.dart",
+    "package:uuid/uuid.dart",
+    "package:primo_v2/core/error/exceptions.dart",
+    "package:primo_v2/features/database/data/app_database.dart",
+    "package:primo_v2/features/employees/data/datasources/employee_local_datasource.dart"
+  ]
+}

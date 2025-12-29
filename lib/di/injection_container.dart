@@ -37,8 +37,8 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => const Uuid());
 
   //! Features - Auth
-  // BLoCs deben usar registerFactory según CLAUDE.md
-  sl.registerFactory(
+  // Cambiado a registerLazySingleton para que el router y la UI compartan la misma instancia
+  sl.registerLazySingleton<AuthBloc>(
     () => AuthBloc(
       loginWithPinUseCase: sl(),
     ),
@@ -76,8 +76,8 @@ Future<void> initDependencies() async {
   );
 
   //! Features - Shifts
-  // BLoCs deben usar registerFactory según CLAUDE.md
-  sl.registerFactory(
+  // Cambiado a registerLazySingleton para que el router y la UI compartan la misma instancia
+  sl.registerLazySingleton<ShiftBloc>(
     () => ShiftBloc(
       clockInUseCase: sl(),
       clockOutUseCase: sl(),
@@ -102,4 +102,7 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton<ShiftLocalDataSource>(
     () => ShiftLocalDataSourceImpl(database: sl(), uuid: sl()),
   );
+
+  // Asegurar integridad de datos iniciales (Admin user)
+  await sl<AppDatabase>().ensureAdminUser();
 }

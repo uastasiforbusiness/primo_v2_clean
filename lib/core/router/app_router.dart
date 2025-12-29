@@ -37,6 +37,7 @@ class AppRouter {
     // ShiftBloc se manejará de forma reactiva en la lógica de redirección
     refreshListenable: GoRouterRefreshStream([
       sl<AuthBloc>().stream,
+      sl<ShiftBloc>().stream,
     ]),
 
     routes: [
@@ -72,10 +73,8 @@ class AppRouter {
         name: 'dashboard',
         builder: (context, state) {
           final authState = context.read<AuthBloc>().state;
-          if (authState is AuthAuthenticated) {
-            return DashboardPage(employee: authState.employee);
-          }
-          return const LoginPage();
+          // El redirect ya asegura que authState es AuthAuthenticated
+          return DashboardPage(employee: (authState as AuthAuthenticated).employee);
         },
       ),
       GoRoute(
@@ -115,17 +114,15 @@ class AppRouter {
 
     /// Redirect logic
     redirect: (context, state) {
-      final authBloc = context.read<AuthBloc>();
-      final shiftBloc = context.read<ShiftBloc>();
+      final authState = context.read<AuthBloc>().state;
+      final shiftState = context.read<ShiftBloc>().state;
 
-      final authState = authBloc.state;
-      final shiftState = shiftBloc.state;
-
-      // 1. Guard de Autenticación
       final isAuthenticated = authState is AuthAuthenticated;
       final isGoingToLogin = state.matchedLocation == '/login';
 
+      // 1. Guardia de Autenticación
       if (!isAuthenticated) {
+        // Permitir solo Splash, Login y errores si no está autenticado
         if (state.matchedLocation == '/' ||
             state.matchedLocation == '/error' ||
             state.matchedLocation == '/forbidden') {
@@ -134,36 +131,37 @@ class AppRouter {
         return '/login';
       }
 
-      // 2. Si está autenticado y va al login -> Dashboard
-      if (isAuthenticated && isGoingToLogin) {
-        // Esperar a que ShiftBloc termine de cargar antes de redirigir
-        if (shiftState is ShiftInitial || shiftState is ShiftLoading) {
-          // Permitir que la navegación continúe a /dashboard
-          // La lógica de turnos se manejará después de que ShiftBloc se cargue
-          return null;
-        }
+      // 2. Si está autenticado y está en Login o Splash -> Al Dashboard
+      if (isAuthenticated && (isGoingToLogin || state.matchedLocation == '/')) {
         return '/dashboard';
       }
 
-      // 3. Lógica de Turnos (SHIFTS) - Solo aplicar si ya estamos en dashboard
-      if (isAuthenticated && shiftState is! ShiftInitial && shiftState is! ShiftLoading) {
-        if (shiftState is ShiftInactive && !state.matchedLocation.contains('/dashboard/clock-in')) {
+      // 3. Lógica de Negocio (Turnos)
+      // Solo aplicamos estas reglas si no estamos "cargando" el turno
+      if (shiftState is! ShiftInitial && shiftState is! ShiftLoading) {
+        // Si no ha iniciado turno, forzar Clock-In (a menos que ya esté allí)
+        if (shiftState is ShiftInactive && !state.matchedLocation.contains('/clock-in')) {
           return '/dashboard/clock-in';
         }
 
+        // Si ya inició turno y está en Clock-In, mandarlo al menú
         if (shiftState is ShiftActive && state.matchedLocation.contains('/clock-in')) {
-          return '/dashboard/active-shift';
+          return '/dashboard';
         }
 
-        if (shiftState is ShiftOnBreak && state.matchedLocation != '/dashboard/break') {
+        // Si está en pausa, no dejarle navegar por el dashboard (solo ver pantalla de descanso)
+        if (shiftState is ShiftOnBreak &&
+            state.matchedLocation.startsWith('/dashboard') &&
+            state.matchedLocation != '/dashboard/break') {
           return '/dashboard/break';
         }
       }
 
-      // 4. Roles (Solo Admin)
+      // 4. Guardia de Roles (Admin)
       if (state.matchedLocation.contains('/employees') ||
           state.matchedLocation.contains('/settings')) {
-        if (authState.employee.role != Role.admin) {
+        // isAuthenticated ya asegura que es AuthAuthenticated por el flujo previo
+        if ((authState).employee.role != Role.admin) {
           return '/forbidden';
         }
       }

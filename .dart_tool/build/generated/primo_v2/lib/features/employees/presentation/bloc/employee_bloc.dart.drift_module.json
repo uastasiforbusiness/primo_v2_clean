@@ -1,0 +1,13 @@
+{
+  "elements": {},
+  "imports": [
+    "package:flutter_bloc/flutter_bloc.dart",
+    "package:equatable/equatable.dart",
+    "package:primo_v2/features/auth/domain/entities/employee_entity.dart",
+    "package:primo_v2/features/employees/domain/usecases/get_employees_usecase.dart",
+    "package:primo_v2/features/employees/domain/usecases/create_employee_usecase.dart",
+    "package:primo_v2/features/employees/domain/usecases/update_employee_usecase.dart",
+    "package:primo_v2/features/employees/domain/usecases/delete_employee_usecase.dart",
+    "package:primo_v2/features/employees/presentation/bloc/employee_event.dart"
+  ]
+}

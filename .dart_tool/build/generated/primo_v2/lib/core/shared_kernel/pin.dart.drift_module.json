@@ -1,0 +1,7 @@
+{
+  "elements": {},
+  "imports": [
+    "package:crypto/crypto.dart",
+    "package:equatable/equatable.dart"
+  ]
+}

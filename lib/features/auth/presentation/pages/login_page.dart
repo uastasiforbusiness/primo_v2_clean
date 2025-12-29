@@ -78,11 +78,9 @@ class _LoginPageState extends State<LoginPage> {
         listener: (context, state) {
           if (state is AuthAuthenticated) {
             // CRÍTICO: Cargar el turno activo del empleado después del login
-            // Usamos un pequeño delay para permitir que el router procese
-            // el estado AuthAuthenticated antes de cargar el turno
-            Future.microtask(() {
+            if (mounted) {
               context.read<ShiftBloc>().add(LoadActiveShift(state.employee.id));
-            });
+            }
           } else if (state is AuthError) {
             _handleLoginError();
             ScaffoldMessenger.of(context).showSnackBar(
@@ -93,88 +91,113 @@ class _LoginPageState extends State<LoginPage> {
             );
           }
         },
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(
-                    Icons.point_of_sale_rounded,
-                    size: 80,
-                    color: Colors.deepPurple,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'PRIMO V2',
-                    style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.deepPurple,
-                        ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Sistema POS',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Colors.grey[600],
-                        ),
-                  ),
-                  const SizedBox(height: 48),
-                  if (_isLocked)
-                    Column(
-                      children: [
-                        const Icon(
-                          Icons.lock_outline,
-                          size: 48,
-                          color: Colors.red,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Bloqueado temporalmente',
-                          style: TextStyle(
-                            color: Colors.red[700],
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+        child: BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, state) {
+            final isLoading = state is AuthLoading;
+
+            return Stack(
+              children: [
+                SafeArea(
+                  child: Center(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.point_of_sale_rounded,
+                            size: 80,
+                            color: Colors.deepPurple,
                           ),
-                        ),
-                      ],
-                    )
-                  else
-                    Column(
-                      children: [
-                        Text(
-                          'Ingresa tu PIN',
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                        const SizedBox(height: 24),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: List.generate(
-                            4,
-                            (index) => Container(
-                              margin: const EdgeInsets.symmetric(horizontal: 8),
-                              width: 20,
-                              height: 20,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: index < _pin.length ? Colors.deepPurple : Colors.grey[300],
-                              ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'PRIMO V2',
+                            style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.deepPurple,
+                                ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Sistema POS',
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  color: Colors.grey[600],
+                                ),
+                          ),
+                          const SizedBox(height: 48),
+                          if (_isLocked)
+                            Column(
+                              children: [
+                                const Icon(
+                                  Icons.lock_outline,
+                                  size: 48,
+                                  color: Colors.red,
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Bloqueado temporalmente',
+                                  style: TextStyle(
+                                    color: Colors.red[700],
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            )
+                          else
+                            Column(
+                              children: [
+                                Text(
+                                  'Ingresa tu PIN',
+                                  style: Theme.of(context).textTheme.titleLarge,
+                                ),
+                                const SizedBox(height: 24),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: List.generate(
+                                    4,
+                                    (index) => Container(
+                                      margin: const EdgeInsets.symmetric(horizontal: 8),
+                                      width: 20,
+                                      height: 20,
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: index < _pin.length
+                                            ? Colors.deepPurple
+                                            : Colors.grey[300],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 32),
+                                IgnorePointer(
+                                  ignoring: isLoading,
+                                  child: Opacity(
+                                    opacity: isLoading ? 0.5 : 1.0,
+                                    child: NumpadWidget(
+                                      onNumberPressed: _onNumberPressed,
+                                      onBackspacePressed: _onBackspacePressed,
+                                      onClearPressed: _onClearPressed,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                        ),
-                        const SizedBox(height: 32),
-                        NumpadWidget(
-                          onNumberPressed: _onNumberPressed,
-                          onBackspacePressed: _onBackspacePressed,
-                          onClearPressed: _onClearPressed,
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                ],
-              ),
-            ),
-          ),
+                  ),
+                ),
+                if (isLoading)
+                  Container(
+                    color: Colors.black.withOpacity(0.3),
+                    child: const Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  ),
+              ],
+            );
+          },
         ),
       ),
     );

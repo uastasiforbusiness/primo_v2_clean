@@ -16,11 +16,16 @@ void main() {
   late AuthBloc authBloc;
   late MockLoginWithPinUseCase mockLoginWithPinUseCase;
 
-  const testEmployee = EmployeeEntity(
+  final testDate = DateTime(2023, 1, 1);
+  final testEmployee = EmployeeEntity(
     id: 'test-employee-id',
-    name: 'Test Employee',
-    role: Role.cashier,
+    name: 'Test',
+    lastName: 'Employee',
+    emergencyPhone: '123456789',
+    role: Role.staff,
     isActive: true,
+    createdAt: testDate,
+    updatedAt: testDate,
   );
 
   setUp(() {
@@ -37,23 +42,23 @@ void main() {
       expect(authBloc.state, const AuthInitial());
     });
 
-    blocTest<AuthBloc, AuthEvent, AuthState>(
+    blocTest<AuthBloc, AuthState>(
       'emits [AuthLoading, AuthAuthenticated] when login is successful',
       build: () {
-        when(mockLoginWithPinUseCase('1234')).thenAnswer((_) async => const Right(testEmployee));
+        when(mockLoginWithPinUseCase('1234')).thenAnswer((_) async => Right(testEmployee));
         return authBloc;
       },
       act: (bloc) => bloc.add(const LoginWithPinRequested('1234')),
       expect: () => [
         const AuthLoading(),
-        const AuthAuthenticated(employee: testEmployee),
+        AuthAuthenticated(employee: testEmployee),
       ],
       verify: (_) {
         verify(mockLoginWithPinUseCase('1234')).called(1);
       },
     );
 
-    blocTest<AuthBloc, AuthEvent, AuthState>(
+    blocTest<AuthBloc, AuthState>(
       'emits [AuthLoading, AuthError] when login fails',
       build: () {
         when(mockLoginWithPinUseCase('wrong'))
@@ -70,11 +75,12 @@ void main() {
       },
     );
 
-    blocTest<AuthBloc, AuthEvent, AuthState>(
+    blocTest<AuthBloc, AuthState>(
       'emits [AuthLoading, AuthError] when PIN format is invalid',
       build: () {
         when(mockLoginWithPinUseCase('123')).thenAnswer(
-            (_) async => const Left(ValidationFailure(message: 'PIN must be 4 digits')));
+          (_) async => const Left(ValidationFailure(message: 'PIN must be 4 digits')),
+        );
         return authBloc;
       },
       act: (bloc) => bloc.add(const LoginWithPinRequested('123')),
@@ -84,14 +90,14 @@ void main() {
       ],
     );
 
-    blocTest<AuthBloc, AuthEvent, AuthState>(
+    blocTest<AuthBloc, AuthState>(
       'emits [AuthUnauthenticated] when logout is requested',
       build: () => authBloc,
       act: (bloc) => bloc.add(const LogoutRequested()),
       expect: () => [const AuthUnauthenticated()],
     );
 
-    blocTest<AuthBloc, AuthEvent, AuthState>(
+    blocTest<AuthBloc, AuthState>(
       'emits [AuthUnauthenticated] when checking auth status',
       build: () => authBloc,
       act: (bloc) => bloc.add(const CheckAuthStatus()),

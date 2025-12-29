@@ -1,0 +1,20 @@
+{
+  "elements": {},
+  "imports": [
+    "package:flutter/material.dart",
+    "package:go_router/go_router.dart",
+    "package:flutter_bloc/flutter_bloc.dart",
+    "package:primo_v2/features/auth/presentation/bloc/auth_bloc.dart",
+    "package:primo_v2/features/auth/presentation/pages/login_page.dart",
+    "package:primo_v2/features/auth/presentation/pages/clock_in_page.dart",
+    "package:primo_v2/features/employees/presentation/pages/dashboard_page.dart",
+    "package:primo_v2/features/employees/presentation/pages/employees_page.dart",
+    "package:primo_v2/features/shifts/presentation/pages/active_shift_page.dart",
+    "package:primo_v2/features/shifts/presentation/pages/break_page.dart",
+    "package:primo_v2/features/settings/presentation/pages/settings_page.dart",
+    "package:primo_v2/features/error/presentation/pages/error_page.dart",
+    "package:primo_v2/features/error/presentation/pages/forbidden_page.dart",
+    "package:primo_v2/features/splash/presentation/pages/splash_page.dart",
+    "package:primo_v2/di/injection_container.dart"
+  ]
+}
