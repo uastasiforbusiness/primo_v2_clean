@@ -36,10 +36,10 @@
       "args": [
         "-y",
         "@modelcontextprotocol/server-filesystem",
-        "C:\\Users\\gabriele\\Documents\\primo_v2_clean"
+        "/path/to/your/primo_v2_clean"
       ],
       "env": {},
-      "description": "Local filesystem access",
+      "description": "Local filesystem access - REPLACE WITH YOUR PROJECT PATH",
       "enabled": true
     }
   }
