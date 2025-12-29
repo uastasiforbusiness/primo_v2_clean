@@ -15,9 +15,10 @@ import 'package:primo_v2/features/employees/presentation/pages/employees_page.da
 import 'package:primo_v2/features/auth/presentation/pages/clock_in_page.dart';
 import 'package:primo_v2/features/shifts/presentation/pages/active_shift_page.dart';
 import 'package:primo_v2/features/shifts/presentation/pages/break_page.dart';
+import 'package:primo_v2/features/error/presentation/pages/error_page.dart';
+import 'package:primo_v2/features/error/presentation/pages/forbidden_page.dart';
 
 /// AppRouter - Centralized navigation for PRIMO V2
-/// Corrección aplicada: Implementación de refreshListenable para reacción en tiempo real
 class AppRouter {
   static final AppRouter _instance = AppRouter._internal();
   static AppRouter get instance => _instance;
@@ -29,9 +30,12 @@ class AppRouter {
   late final GoRouter _router = GoRouter(
     initialLocation: '/',
     debugLogDiagnostics: true,
-
-    // 🔥 CLAVE: Escucha activa del AuthBloc para redirección instantánea
-    refreshListenable: GoRouterRefreshStream(sl<AuthBloc>().stream),
+    
+    // Escucha cambios tanto en Auth como en Shifts para reaccionar a cambios de estado
+    refreshListenable: MultiSourceRefreshListenable([
+      sl<AuthBloc>().stream,
+      sl<ShiftBloc>().stream,
+    ]),
 
     routes: [
       /// Public routes
@@ -48,19 +52,15 @@ class AppRouter {
       GoRoute(
         path: '/error',
         name: 'error',
-        builder: (context, state) => const Scaffold(
-          body: Center(child: Text('Error Page - TODO')),
-        ),
+        builder: (context, state) => const ErrorPage(),
       ),
       GoRoute(
         path: '/forbidden',
         name: 'forbidden',
-        builder: (context, state) => const Scaffold(
-          body: Center(child: Text('Acceso Denegado')),
-        ),
+        builder: (context, state) => const ForbiddenPage(),
       ),
 
-      /// Protected routes
+      /// Protected routes (Dashboard Area)
       GoRoute(
         path: '/dashboard',
         name: 'dashboard',
@@ -71,107 +71,88 @@ class AppRouter {
           }
           return const LoginPage();
         },
-      ),
-      GoRoute(
-        path: '/dashboard/clock-in',
-        name: 'clock-in',
-        builder: (context, state) {
-          final authState = context.read<AuthBloc>().state;
-          if (authState is AuthAuthenticated)
-            return ClockInPage(employee: authState.employee);
-          return const LoginPage();
-        },
-      ),
-      GoRoute(
-        path: '/dashboard/active-shift',
-        name: 'active-shift',
-        builder: (context, state) => const ActiveShiftPage(),
-      ),
-      GoRoute(
-        path: '/dashboard/break',
-        name: 'break',
-        builder: (context, state) => const BreakPage(),
-      ),
-
-      /// Admin routes
-      GoRoute(
-        path: '/dashboard/employees',
-        name: 'employees',
-        builder: (context, state) => const EmployeesPage(),
-      ),
-      GoRoute(
-        path: '/dashboard/settings',
-        name: 'settings',
-        builder: (context, state) => const Scaffold(
-          body: Center(child: Text('Settings Page - TODO')),
-        ),
-      ),
-
-      /// Future routes
-      GoRoute(
-        path: '/dashboard/audit',
-        name: 'audit',
-        builder: (context, state) => const Scaffold(
-          body: Center(child: Text('Audit Page - TODO')),
-        ),
-      ),
-      GoRoute(
-        path: '/dashboard/sales',
-        name: 'sales',
-        builder: (context, state) => const Scaffold(
-          body: Center(child: Text('Sales Page - TODO')),
-        ),
+        routes: [
+          GoRoute(
+            path: 'clock-in',
+            name: 'clock-in',
+            builder: (context, state) {
+              final authState = context.read<AuthBloc>().state;
+              if (authState is AuthAuthenticated) {
+                return ClockInPage(employee: authState.employee);
+              }
+              return const LoginPage();
+            },
+          ),
+          GoRoute(
+            path: 'active-shift',
+            name: 'active-shift',
+            builder: (context, state) => const ActiveShiftPage(),
+          ),
+          GoRoute(
+            path: 'break',
+            name: 'break',
+            builder: (context, state) => const BreakPage(),
+          ),
+          GoRoute(
+            path: 'employees',
+            name: 'employees',
+            builder: (context, state) => const EmployeesPage(),
+          ),
+          GoRoute(
+            path: 'settings',
+            name: 'settings',
+            builder: (context, state) => const Scaffold(
+              body: Center(child: Text('Settings Page - TODO')),
+            ),
+          ),
+        ],
       ),
     ],
 
     /// Redirect logic
     redirect: (context, state) {
-      final authBloc = context.read<AuthBloc>();
-      final shiftBloc = context.read<ShiftBloc>();
+      final authState = context.read<AuthBloc>().state;
+      final shiftState = context.read<ShiftBloc>().state;
 
-      final authState = authBloc.state;
-      final shiftState = shiftBloc.state;
+      final bool loggingIn = state.matchedLocation == '/login';
+      final bool inSplash = state.matchedLocation == '/';
 
-      // 1. Guard de Autenticación
-      final isAuthenticated = authState is AuthAuthenticated;
-      final isGoingToLogin = state.matchedLocation == '/login';
-
-      if (!isAuthenticated) {
-        if (state.matchedLocation == '/' ||
-            state.matchedLocation == '/error' ||
-            state.matchedLocation == '/forbidden') {
-          return null;
-        }
+      // 1. Manejo de Autenticación
+      if (authState is! AuthAuthenticated) {
+        if (loggingIn || inSplash) return null;
         return '/login';
       }
 
-      // 2. Si está autenticado y va al login -> Dashboard
-      if (isAuthenticated && isGoingToLogin) {
+      // 2. Si está autenticado y en login/splash, ir al dashboard
+      if (loggingIn || inSplash) {
         return '/dashboard';
       }
 
-      // 3. Lógica de Turnos (SHIFTS)
-      // Si el turno está inactivo y no va a clock-in, forzar clock-in
-      if (shiftState is ShiftInactive &&
-          !state.matchedLocation.contains('/dashboard/clock-in')) {
-        return '/dashboard/clock-in';
+      // 3. Lógica de Turnos (Solo si está en el área de dashboard)
+      if (state.matchedLocation.startsWith('/dashboard')) {
+        // Si el turno está inactivo, forzar clock-in (a menos que ya esté ahí)
+        if (shiftState is ShiftInactive && state.matchedLocation != '/dashboard/clock-in') {
+          return '/dashboard/clock-in';
+        }
+
+        // Si el turno está activo y está en clock-in, mandar al dashboard principal
+        if (shiftState is ShiftActive && state.matchedLocation == '/dashboard/clock-in') {
+          return '/dashboard';
+        }
+
+        // Si está en break, forzar break page
+        if (shiftState is ShiftOnBreak && state.matchedLocation != '/dashboard/break') {
+          return '/dashboard/break';
+        }
+        
+        // Si NO está en break pero intenta entrar a la página de break, volver al dashboard
+        if (shiftState is! ShiftOnBreak && state.matchedLocation == '/dashboard/break') {
+          return '/dashboard';
+        }
       }
 
-      // Si el turno está activo y va a clock-in, mandar a active-shift
-      if (shiftState is ShiftActive &&
-          state.matchedLocation.contains('/clock-in')) {
-        return '/dashboard/active-shift';
-      }
-
-      // Si está en break, mandar a break page
-      if (shiftState is ShiftOnBreak &&
-          state.matchedLocation != '/dashboard/break') {
-        return '/dashboard/break';
-      }
-
-      // 4. Roles (Solo Admin)
-      if (state.matchedLocation.contains('/employees') ||
-          state.matchedLocation.contains('/settings')) {
+      // 4. Protección de Rutas Admin
+      if (state.matchedLocation.contains('/employees') || state.matchedLocation.contains('/settings')) {
         if (authState.employee.role != Role.admin) {
           return '/forbidden';
         }
@@ -180,29 +161,29 @@ class AppRouter {
       return null;
     },
 
-    errorBuilder: (context, state) => Scaffold(
-      body: Center(
-        child:
-            Text('Error: ${state.error?.toString() ?? 'Error de navegación'}'),
-      ),
+    errorBuilder: (context, state) => ErrorPage(
+      message: state.error?.toString() ?? 'Error de navegación',
     ),
   );
 }
 
-/// Utility class to bridge Stream -> Listenable for GoRouter
-class GoRouterRefreshStream extends ChangeNotifier {
-  GoRouterRefreshStream(Stream<dynamic> stream) {
-    notifyListeners();
-    _subscription = stream.asBroadcastStream().listen(
-          (dynamic _) => notifyListeners(),
-        );
+/// Utility class to bridge multiple Streams -> Listenable for GoRouter
+class MultiSourceRefreshListenable extends ChangeNotifier {
+  MultiSourceRefreshListenable(List<Stream<dynamic>> streams) {
+    for (final stream in streams) {
+      _subscriptions.add(
+        stream.asBroadcastStream().listen((_) => notifyListeners()),
+      );
+    }
   }
 
-  late final StreamSubscription<dynamic> _subscription;
+  final List<StreamSubscription<dynamic>> _subscriptions = [];
 
   @override
   void dispose() {
-    _subscription.cancel();
+    for (final sub in _subscriptions) {
+      sub.cancel();
+    }
     super.dispose();
   }
 }

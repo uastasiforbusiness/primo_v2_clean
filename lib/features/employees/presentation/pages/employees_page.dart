@@ -35,7 +35,7 @@ class _EmployeesView extends StatelessWidget {
             if (context.canPop()) {
               context.pop();
             } else {
-              context.go('/dashboard');
+              context.goNamed('dashboard');
             }
           },
         ),
@@ -93,15 +93,11 @@ class _EmployeesView extends StatelessWidget {
             );
           } 
           
-          // Si es éxito o error, seguimos mostrando la lista si la tenemos, 
-          // o un loading si no (aquí simplificado).
           if (state is EmployeeOperationSuccess || state is EmployeeError) {
-             // Idealmente aquí mantendríamos la lista anterior, 
-             // pero por simplicidad mostramos un loader que se recargará rápido.
              return const Center(child: CircularProgressIndicator());
           }
 
-          return const Center(child: CircularProgressIndicator()); // Default para Initial
+          return const Center(child: CircularProgressIndicator());
         },
       ),
     );

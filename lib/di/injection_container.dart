@@ -46,7 +46,8 @@ Future<void> initDependencies() async {
   );
   sl.registerLazySingleton(() => LoginWithPinUseCase(sl()));
 
-  sl.registerFactory(() => AuthBloc(loginWithPinUseCase: sl()));
+  // Cambiado a LazySingleton para que el Router y la UI compartan la misma instancia
+  sl.registerLazySingleton(() => AuthBloc(loginWithPinUseCase: sl()));
 
   // ==================== SHIFTS FEATURE ====================
   sl.registerLazySingleton<ShiftLocalDataSource>(
@@ -60,7 +61,8 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => StartBreakUseCase(sl()));
   sl.registerLazySingleton(() => EndBreakUseCase(sl()));
 
-  sl.registerFactory(
+  // Cambiado a LazySingleton para que el Router y la UI compartan la misma instancia
+  sl.registerLazySingleton(
     () => ShiftBloc(
       clockInUseCase: sl(),
       clockOutUseCase: sl(),

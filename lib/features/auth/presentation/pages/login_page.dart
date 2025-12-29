@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../di/injection_container.dart';
-import '../../../employees/presentation/pages/dashboard_page.dart';
-import '../../../shifts/presentation/bloc/shift_bloc.dart';
-import '../../../shifts/presentation/bloc/shift_event.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -78,17 +74,10 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
-          if (state is AuthAuthenticated) {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder: (_) => BlocProvider(
-                  create: (context) =>
-                      sl<ShiftBloc>()..add(LoadActiveShift(state.employee.id)),
-                  child: DashboardPage(employee: state.employee),
-                ),
-              ),
-            );
-          } else if (state is AuthError) {
+          // Ya no necesitamos Navigator.push aquí. 
+          // GoRouterRefreshStream en AppRouter detectará el cambio de estado
+          // y redirigirá automáticamente al Dashboard.
+          if (state is AuthError) {
             _handleLoginError();
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(

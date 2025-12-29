@@ -5,9 +5,6 @@ import 'package:go_router/go_router.dart';
 import '../../../auth/domain/entities/employee_entity.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
-import '../../../auth/presentation/bloc/auth_state.dart';
-import '../../../auth/presentation/pages/clock_in_page.dart';
-import '../../../auth/presentation/pages/login_page.dart';
 import '../../../shifts/domain/entities/shift_entity.dart';
 import '../../../shifts/presentation/bloc/shift_bloc.dart';
 import '../../../shifts/presentation/bloc/shift_event.dart';
@@ -23,73 +20,63 @@ class DashboardPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AuthBloc, AuthState>(
+    return BlocConsumer<ShiftBloc, ShiftState>(
       listener: (context, state) {
-        if (state is AuthUnauthenticated) {
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const LoginPage()),
-            (route) => false,
+        if (state is ShiftError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.message), backgroundColor: Colors.red),
           );
         }
       },
-      child: BlocConsumer<ShiftBloc, ShiftState>(
-        listener: (context, state) {
-          if (state is ShiftError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                  content: Text(state.message), backgroundColor: Colors.red),
-            );
-          }
-        },
-        builder: (context, state) {
-          if (state is ShiftLoading) {
-            return const Scaffold(
-                body: Center(child: CircularProgressIndicator()));
-          }
+      builder: (context, state) {
+        if (state is ShiftLoading) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
 
-          if (state is ShiftInactive) {
-            return ClockInPage(employee: employee);
-          }
+        // El redirect de GoRouter se encarga de mandarnos a ClockInPage o BreakPage
+        // si el estado no es ShiftActive. Aquí solo manejamos la vista del Dashboard.
+        if (state is ShiftActive || state is ShiftOnBreak) {
+          final shift = (state is ShiftActive)
+              ? state.shift
+              : (state as ShiftOnBreak).shift;
+          final isBreak = state is ShiftOnBreak;
 
-          if (state is ShiftActive || state is ShiftOnBreak) {
-            final shift = (state is ShiftActive)
-                ? state.shift
-                : (state as ShiftOnBreak).shift;
-            final isBreak = state is ShiftOnBreak;
-
-            return Scaffold(
-              appBar: AppBar(
-                title: const Text('PRIMO V2 - Dashboard'),
-                actions: [
-                  IconButton(
-                    icon: const Icon(Icons.lock_outline),
-                    onPressed: () {
-                      context.read<AuthBloc>().add(const LogoutRequested());
-                    },
-                    tooltip: 'Bloquear Pantalla',
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('PRIMO V2 - Dashboard'),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.lock_outline),
+                  onPressed: () {
+                    context.read<AuthBloc>().add(const LogoutRequested());
+                  },
+                  tooltip: 'Bloquear Pantalla',
+                ),
+              ],
+            ),
+            body: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildUserCard(context, shift, isBreak),
+                  const SizedBox(height: 24),
+                  Expanded(
+                    child: _buildActionGrid(context, shift, isBreak),
                   ),
                 ],
               ),
-              body: Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildUserCard(context, shift, isBreak),
-                    const SizedBox(height: 24),
-                    Expanded(
-                      child: _buildActionGrid(context, shift, isBreak),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
+            ),
+          );
+        }
 
-          return const Scaffold(
-              body: Center(child: Text('Estado desconocido')));
-        },
-      ),
+        // Fallback por si el redirect tarda un frame
+        return const Scaffold(
+          body: Center(child: CircularProgressIndicator()),
+        );
+      },
     );
   }
 
@@ -169,9 +156,7 @@ class DashboardPage extends StatelessWidget {
             icon: Icons.shopping_cart,
             title: 'Ventas',
             color: Colors.green,
-            onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Módulo de Ventas próximamente')),
-            ),
+            onTap: () => context.pushNamed('active-shift'),
           ),
         ] else
           _buildActionCard(
@@ -188,7 +173,7 @@ class DashboardPage extends StatelessWidget {
             icon: Icons.people,
             title: 'Empleados',
             color: Colors.blue,
-            onTap: () => context.go('/dashboard/employees'),
+            onTap: () => context.pushNamed('employees'),
           ),
         if (!isBreak)
           _buildActionCard(
