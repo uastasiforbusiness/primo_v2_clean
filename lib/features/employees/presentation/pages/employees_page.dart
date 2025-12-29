@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../di/injection_container.dart';
 import '../../../auth/domain/entities/employee_entity.dart';
 import '../bloc/employee_bloc.dart';
@@ -27,6 +28,10 @@ class _EmployeesView extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Gestión de Empleados'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.pop(),
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showEmployeeDialog(context),
@@ -100,8 +105,22 @@ class _EmployeesView extends StatelessWidget {
                 return _EmployeeCard(employee: employee);
               },
             );
+          } else if (state is EmployeeError || state is EmployeeOperationSuccess) {
+            // Mantener pantalla de carga mientras se recarga la lista después de operaciones
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          } else if (state is EmployeeInitial) {
+            // Estado inicial - trigger automático de carga
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
           }
-          return const Center(child: Text('Algo salió mal'));
+
+          // Fallback para estados desconocidos (no debería ocurrir)
+          return const Center(
+            child: Text('Estado desconocido. Por favor, recarga la página.'),
+          );
         },
       ),
     );

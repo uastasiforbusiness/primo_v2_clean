@@ -178,8 +178,10 @@ class AppRouter {
       }
 
       /// Guard 4: Role-based access control
-      if (state.uri.path.startsWith('/dashboard/employees') ||
-          state.uri.path.startsWith('/dashboard/settings')) {
+      /// Only apply role checks when navigating TO protected routes, not when navigating away
+      /// This prevents black screen issues when going back from admin routes
+      if (state.uri.path == '/dashboard/employees' ||
+          state.uri.path == '/dashboard/settings') {
         // At this point, authState is guaranteed to be AuthAuthenticated (Guard 1)
         final employee = authState.employee;
         if (employee.role != Role.admin) {
