@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../di/injection_container.dart';
 import '../../../auth/domain/entities/employee_entity.dart';
 import '../bloc/employee_bloc.dart';
+import '../bloc/employee_state.dart'; // 👈 ¡ESTE ERA EL IMPORT QUE FALTABA!
 import '../bloc/employee_event.dart' as employee_event;
 import '../widgets/employee_form_dialog.dart';
 
@@ -32,8 +33,6 @@ class _EmployeesView extends StatelessWidget {
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
             // SOLUCIÓN: Navegación determinista.
-            // En lugar de intentar adivinar el historial con pop(),
-            // forzamos explícitamente la ida al Dashboard.
             context.goNamed('dashboard');
           },
         ),
