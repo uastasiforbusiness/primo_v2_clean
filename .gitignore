@@ -43,3 +43,19 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Repomix outputs
+repomix-output.*
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Personal tool configurations
+.vibe/
+.claude/settings.local.json
+.claude/.mcpServers.json
+
+# Test scripts in root
+test_*.dart
