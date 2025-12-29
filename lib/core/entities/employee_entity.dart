@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../../../../core/shared_kernel/role.dart';
+import '../shared_kernel/role.dart';
 
 class EmployeeEntity extends Equatable {
   final String id;

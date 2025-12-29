@@ -2,7 +2,7 @@ import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/shared_kernel/pin.dart';
 import '../../../auth/data/models/employee_model.dart';
-import '../../../auth/domain/entities/employee_entity.dart';
+import 'package:primo_v2/core/entities/employee_entity.dart';
 import '../../../database/data/app_database.dart';
 import '../../domain/repositories/employee_repository.dart';
 import '../datasources/employee_local_datasource.dart';

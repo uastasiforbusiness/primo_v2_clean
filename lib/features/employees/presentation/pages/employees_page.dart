@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../di/injection_container.dart';
-import '../../../auth/domain/entities/employee_entity.dart';
+import 'package:primo_v2/core/entities/employee_entity.dart';
 import '../bloc/employee_bloc.dart';
 import '../bloc/employee_event.dart' as employee_event;
 import '../bloc/employee_state.dart';

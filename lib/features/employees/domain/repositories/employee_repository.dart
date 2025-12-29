@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
-import '../../../auth/domain/entities/employee_entity.dart';
+import 'package:primo_v2/core/entities/employee_entity.dart';
 
 abstract class EmployeeRepository {
   Future<Either<Failure, List<EmployeeEntity>>> getEmployees();

@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import '../../domain/entities/employee_entity.dart';
+import 'package:primo_v2/core/entities/employee_entity.dart';
 
 abstract class AuthState extends Equatable {
   const AuthState();

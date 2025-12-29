@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:primo_v2/core/error/failures.dart';
 import 'package:primo_v2/core/shared_kernel/role.dart';
-import 'package:primo_v2/features/auth/domain/entities/employee_entity.dart';
+import 'package:primo_v2/core/entities/employee_entity.dart';
 import 'package:primo_v2/features/auth/domain/usecases/login_with_pin_usecase.dart';
 import 'package:primo_v2/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:primo_v2/features/auth/presentation/bloc/auth_event.dart';
