@@ -2,23 +2,34 @@ include: package:flutter_lints/flutter.yaml
 
 linter:
   rules:
-    # === Code Safety ===
-    avoid_print: true
-    avoid_dynamic_calls: true
-    always_declare_return_types: true
-    avoid_catching_errors: true
+    # === Code Safety (Seguridad y Tipado) ===
+    avoid_print: true # No uses print() en prod, usa loggers
+    avoid_dynamic_calls: true # Prohibido dynamic, todo debe tener tipo
+    always_declare_return_types: true # Obligatorio decir qué devuelve una función
+    avoid_catching_errors: true # No captures errores genéricos sin manejarlos
 
-    # === Architecture & Design ===
-    prefer_final_fields: true
-    prefer_final_locals: true
-    avoid_setters_without_getters: true
+    # === Async & Futures (CRÍTICO para POS/Base de Datos) ===
+    # Estas reglas evitan que guardes datos y "olvides" esperar la confirmación
+    unawaited_futures: true # Te avisa si lanzas un Future sin 'await'
+    discarded_futures: true # Te obliga a usar el resultado de un Future
+    avoid_void_async: true # Funciones async deben ser Future<void>, no void
 
-    # === Readability & Consistency ===
+    # === Architecture & Design (Inmutabilidad) ===
+    prefer_final_fields: true # Si no cambia, es final
+    prefer_final_locals: true # Variables locales inmutables por defecto
+    avoid_setters_without_getters: true # Encapsulamiento correcto
+    use_if_null_to_convert_nulls_to_bools: true # Evita crashes por nulls en ifs
+
+    # === Readability & Consistency (Limpieza) ===
     prefer_single_quotes: true
-    prefer_const_constructors: true
+    prefer_const_constructors: true # Mejora rendimiento de Flutter
     prefer_const_literals_to_create_immutables: true
     unnecessary_lambdas: true
     unnecessary_this: true
+    directives_ordering: true # Ordena imports: Dart -> Paquetes -> Tu código
+
+    # === Formatting ===
+    require_trailing_commas: true # Mantiene el árbol de Widgets legible
 
     # === Business Logic Protection ===
     avoid_bool_literals_in_conditional_expressions: true
