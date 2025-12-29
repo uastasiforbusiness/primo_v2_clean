@@ -1,9 +1,10 @@
 import 'dart:io';
+
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:logger/logger.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 part 'app_database.g.dart';
 
@@ -18,12 +19,9 @@ class Employees extends Table {
   TextColumn get emergencyPhone => text().named('emergency_phone')();
   TextColumn get role => text()();
   TextColumn get pinHash => text().named('pin_hash')();
-  BoolColumn get isActive =>
-      boolean().named('is_active').withDefault(const Constant(true))();
-  DateTimeColumn get createdAt =>
-      dateTime().named('created_at').withDefault(currentDateAndTime)();
-  DateTimeColumn get updatedAt =>
-      dateTime().named('updated_at').withDefault(currentDateAndTime)();
+  BoolColumn get isActive => boolean().named('is_active').withDefault(const Constant(true))();
+  DateTimeColumn get createdAt => dateTime().named('created_at').withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().named('updated_at').withDefault(currentDateAndTime)();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -32,10 +30,8 @@ class Employees extends Table {
 class CashRegisters extends Table {
   TextColumn get id => text()();
   TextColumn get name => text()();
-  BoolColumn get isActive =>
-      boolean().named('is_active').withDefault(const Constant(true))();
-  DateTimeColumn get createdAt =>
-      dateTime().named('created_at').withDefault(currentDateAndTime)();
+  BoolColumn get isActive => boolean().named('is_active').withDefault(const Constant(true))();
+  DateTimeColumn get createdAt => dateTime().named('created_at').withDefault(currentDateAndTime)();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -43,14 +39,12 @@ class CashRegisters extends Table {
 
 class Shifts extends Table {
   TextColumn get id => text()();
-  TextColumn get employeeId =>
-      text().named('employee_id').references(Employees, #id)();
+  TextColumn get employeeId => text().named('employee_id').references(Employees, #id)();
   TextColumn get cashRegisterId =>
       text().named('cash_register_id').references(CashRegisters, #id)();
   RealColumn get initialCash => real().named('initial_cash')();
   RealColumn get finalCash => real().named('final_cash').nullable()();
-  DateTimeColumn get startedAt =>
-      dateTime().named('started_at').withDefault(currentDateAndTime)();
+  DateTimeColumn get startedAt => dateTime().named('started_at').withDefault(currentDateAndTime)();
   DateTimeColumn get endedAt => dateTime().named('ended_at').nullable()();
 
   @override
@@ -60,8 +54,7 @@ class Shifts extends Table {
 class Breaks extends Table {
   TextColumn get id => text()();
   TextColumn get shiftId => text().named('shift_id').references(Shifts, #id)();
-  DateTimeColumn get startedAt =>
-      dateTime().named('started_at').withDefault(currentDateAndTime)();
+  DateTimeColumn get startedAt => dateTime().named('started_at').withDefault(currentDateAndTime)();
   DateTimeColumn get endedAt => dateTime().named('ended_at').nullable()();
 
   @override
@@ -71,11 +64,9 @@ class Breaks extends Table {
 class AuditEvents extends Table {
   TextColumn get id => text()();
   TextColumn get eventType => text().named('event_type')();
-  TextColumn get employeeId =>
-      text().named('employee_id').nullable().references(Employees, #id)();
+  TextColumn get employeeId => text().named('employee_id').nullable().references(Employees, #id)();
   TextColumn get metadata => text().nullable()(); // JSON string
-  DateTimeColumn get createdAt =>
-      dateTime().named('created_at').withDefault(currentDateAndTime)();
+  DateTimeColumn get createdAt => dateTime().named('created_at').withDefault(currentDateAndTime)();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -131,8 +122,7 @@ class AppDatabase extends _$AppDatabase {
         lastName: 'Sistema',
         emergencyPhone: '000000000',
         role: 'ADMIN',
-        pinHash:
-            '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4',
+        pinHash: '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4',
         email: const Value('admin@primo.com'),
       ),
     );
@@ -150,8 +140,7 @@ class AppDatabase extends _$AppDatabase {
       (select(employees)..where((e) => e.id.equals(id))).getSingleOrNull();
 
   Future<Employee?> getEmployeeByPinHash(String pinHash) =>
-      (select(employees)..where((e) => e.pinHash.equals(pinHash)))
-          .getSingleOrNull();
+      (select(employees)..where((e) => e.pinHash.equals(pinHash))).getSingleOrNull();
 
   Future<bool> isPinUnique(String pinHash, {String? excludeEmployeeId}) async {
     final query = select(employees)..where((e) => e.pinHash.equals(pinHash));
@@ -164,30 +153,25 @@ class AppDatabase extends _$AppDatabase {
     return result == null;
   }
 
-  Future<int> insertEmployee(EmployeesCompanion employee) =>
-      into(employees).insert(employee);
+  Future<int> insertEmployee(EmployeesCompanion employee) => into(employees).insert(employee);
 
   Future<bool> updateEmployee(EmployeesCompanion employee) async {
     if (!employee.id.present) {
       throw ArgumentError('Employee ID is required for update');
     }
-    return await (update(employees)
-              ..where((e) => e.id.equals(employee.id.value)))
-            .write(employee) >
+    return await (update(employees)..where((e) => e.id.equals(employee.id.value))).write(employee) >
         0;
   }
 
-  Future<int> softDeleteEmployee(String id) =>
-      (update(employees)..where((e) => e.id.equals(id)))
-          .write(const EmployeesCompanion(isActive: Value(false)));
+  Future<int> softDeleteEmployee(String id) => (update(employees)..where((e) => e.id.equals(id)))
+      .write(const EmployeesCompanion(isActive: Value(false)));
 
   // ==================== SHIFT QUERIES ====================
 
-  Future<Shift?> getActiveShiftByEmployeeId(String employeeId) =>
-      (select(shifts)
-            ..where((s) => s.employeeId.equals(employeeId))
-            ..where((s) => s.endedAt.isNull()))
-          .getSingleOrNull();
+  Future<Shift?> getActiveShiftByEmployeeId(String employeeId) => (select(shifts)
+        ..where((s) => s.employeeId.equals(employeeId))
+        ..where((s) => s.endedAt.isNull()))
+      .getSingleOrNull();
 
   Future<Shift?> getShiftById(String shiftId) =>
       (select(shifts)..where((s) => s.id.equals(shiftId))).getSingleOrNull();
@@ -209,23 +193,19 @@ class AppDatabase extends _$AppDatabase {
         ..where((b) => b.endedAt.isNull()))
       .getSingleOrNull();
 
-  Future<int> insertBreak(BreaksCompanion breakEntry) =>
-      into(breaks).insert(breakEntry);
+  Future<int> insertBreak(BreaksCompanion breakEntry) => into(breaks).insert(breakEntry);
 
-  Future<int> endBreak(String breakId) =>
-      (update(breaks)..where((b) => b.id.equals(breakId)))
-          .write(BreaksCompanion(endedAt: Value(DateTime.now())));
+  Future<int> endBreak(String breakId) => (update(breaks)..where((b) => b.id.equals(breakId)))
+      .write(BreaksCompanion(endedAt: Value(DateTime.now())));
 
   // ==================== AUDIT QUERIES ====================
 
-  Future<int> insertAuditEvent(AuditEventsCompanion event) =>
-      into(auditEvents).insert(event);
+  Future<int> insertAuditEvent(AuditEventsCompanion event) => into(auditEvents).insert(event);
 
-  Future<List<AuditEvent>> getAuditEvents({int limit = 100}) =>
-      (select(auditEvents)
-            ..orderBy([(e) => OrderingTerm.desc(e.createdAt)])
-            ..limit(limit))
-          .get();
+  Future<List<AuditEvent>> getAuditEvents({int limit = 100}) => (select(auditEvents)
+        ..orderBy([(e) => OrderingTerm.desc(e.createdAt)])
+        ..limit(limit))
+      .get();
 }
 
 LazyDatabase _openConnection() {

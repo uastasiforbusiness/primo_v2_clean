@@ -25,7 +25,9 @@ class EmployeeBloc extends Bloc<employee_event.EmployeeEvent, EmployeeState> {
   }
 
   Future<void> _onLoadEmployees(
-      employee_event.LoadEmployees event, Emitter<EmployeeState> emit) async {
+    employee_event.LoadEmployees event,
+    Emitter<EmployeeState> emit,
+  ) async {
     emit(EmployeeLoading());
     final result = await getEmployeesUseCase();
     result.fold(
@@ -34,8 +36,10 @@ class EmployeeBloc extends Bloc<employee_event.EmployeeEvent, EmployeeState> {
     );
   }
 
-  Future<void> _onCreateEmployee(employee_event.CreateEmployeeRequested event,
-      Emitter<EmployeeState> emit) async {
+  Future<void> _onCreateEmployee(
+    employee_event.CreateEmployeeRequested event,
+    Emitter<EmployeeState> emit,
+  ) async {
     emit(EmployeeLoading());
     final result = await createEmployeeUseCase(event.employee, event.pin);
 
@@ -48,11 +52,12 @@ class EmployeeBloc extends Bloc<employee_event.EmployeeEvent, EmployeeState> {
     );
   }
 
-  Future<void> _onUpdateEmployee(employee_event.UpdateEmployeeRequested event,
-      Emitter<EmployeeState> emit) async {
+  Future<void> _onUpdateEmployee(
+    employee_event.UpdateEmployeeRequested event,
+    Emitter<EmployeeState> emit,
+  ) async {
     emit(EmployeeLoading());
-    final result =
-        await updateEmployeeUseCase(event.employee, newPin: event.newPin);
+    final result = await updateEmployeeUseCase(event.employee, newPin: event.newPin);
 
     await result.fold(
       (failure) async => emit(EmployeeError(failure.message)),
@@ -63,8 +68,10 @@ class EmployeeBloc extends Bloc<employee_event.EmployeeEvent, EmployeeState> {
     );
   }
 
-  Future<void> _onDeleteEmployee(employee_event.DeleteEmployeeRequested event,
-      Emitter<EmployeeState> emit) async {
+  Future<void> _onDeleteEmployee(
+    employee_event.DeleteEmployeeRequested event,
+    Emitter<EmployeeState> emit,
+  ) async {
     emit(EmployeeLoading());
     final result = await deleteEmployeeUseCase(event.id);
 

@@ -55,13 +55,22 @@ class ActiveShiftPage extends StatelessWidget {
               child: Column(
                 children: [
                   _buildInfoRow(
-                      context, 'Iniciado', _formatTime(shift.startedAt)),
-                  const Divider(),
-                  _buildInfoRow(context, 'Fondo Inicial',
-                      shift.initialCash.toFormattedString()),
+                    context,
+                    'Iniciado',
+                    _formatTime(shift.startedAt),
+                  ),
                   const Divider(),
                   _buildInfoRow(
-                      context, 'Duración', _formatDuration(shift.startedAt)),
+                    context,
+                    'Fondo Inicial',
+                    shift.initialCash.toFormattedString(),
+                  ),
+                  const Divider(),
+                  _buildInfoRow(
+                    context,
+                    'Duración',
+                    _formatDuration(shift.startedAt),
+                  ),
                 ],
               ),
             ),

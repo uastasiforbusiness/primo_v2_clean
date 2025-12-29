@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../shifts/presentation/bloc/shift_bloc.dart';
+import '../../../shifts/presentation/bloc/shift_event.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
@@ -74,10 +76,14 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
-          // Ya no necesitamos Navigator.push aquí. 
-          // GoRouterRefreshStream en AppRouter detectará el cambio de estado
-          // y redirigirá automáticamente al Dashboard.
-          if (state is AuthError) {
+          if (state is AuthAuthenticated) {
+            // CRÍTICO: Cargar el turno activo del empleado después del login
+            // Usamos un pequeño delay para permitir que el router procese
+            // el estado AuthAuthenticated antes de cargar el turno
+            Future.microtask(() {
+              context.read<ShiftBloc>().add(LoadActiveShift(state.employee.id));
+            });
+          } else if (state is AuthError) {
             _handleLoginError();
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -94,8 +100,11 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.point_of_sale_rounded,
-                      size: 80, color: Colors.deepPurple),
+                  const Icon(
+                    Icons.point_of_sale_rounded,
+                    size: 80,
+                    color: Colors.deepPurple,
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     'PRIMO V2',
@@ -115,8 +124,11 @@ class _LoginPageState extends State<LoginPage> {
                   if (_isLocked)
                     Column(
                       children: [
-                        const Icon(Icons.lock_outline,
-                            size: 48, color: Colors.red),
+                        const Icon(
+                          Icons.lock_outline,
+                          size: 48,
+                          color: Colors.red,
+                        ),
                         const SizedBox(height: 16),
                         Text(
                           'Bloqueado temporalmente',
@@ -146,9 +158,7 @@ class _LoginPageState extends State<LoginPage> {
                               height: 20,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: index < _pin.length
-                                    ? Colors.deepPurple
-                                    : Colors.grey[300],
+                                color: index < _pin.length ? Colors.deepPurple : Colors.grey[300],
                               ),
                             ),
                           ),

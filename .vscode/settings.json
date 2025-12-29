@@ -1,53 +1,10 @@
 {
-    "dart.lineLength": 80, // Mantiene la consistencia del formato de código.
-    // Formatear automáticamente al guardar. Esencial para mantener el estilo.
-    "editor.formatOnSave": true,
-    // Asegura que el formateador de Dart/Flutter sea el predeterminado.
-    "[dart]": {
-        "editor.defaultFormatter": "Dart-Code.dart-code"
-    },
-    //----------------------------------------------------------------
-    //--- Análisis de Código y Reglas (Basado en tu analysis_options.yaml)
-    //----------------------------------------------------------------
-    "dart.analysis.analysisOptionsFile": "analysis_options.yaml",
-    "dart.analysis.showTodos": true, // Muestra TODOs, FIXMEs en la lista de problemas.
-    // Muestra los errores y advertencias del linter directamente en el editor.
-    "problems.showCurrentInStatus": true,
-    //----------------------------------------------------------------
-    //--- Integración con Claude y Asistentes de IA
-    //----------------------------------------------------------------
-    // Habilita CodeLens para ver referencias, implementaciones, etc.
-    // Esencial para que la IA y tú naveguen el código rápidamente.
-    "dart.codeLens": true,
-    // Configuración para la extensión de Claude (si la usas).
-    // Esto le indica a Claude que use todo el workspace como contexto.
-    "anthropic.claude.codebase.enabled": true,
-    //----------------------------------------------------------------
-    //--- Facilidad de Uso y Calidad de Vida en VSCode
-    //----------------------------------------------------------------
-    // Excluye archivos y carpetas generados de la búsqueda para resultados más limpios.
-    "search.exclude": {
-        "**/.fvm": true,
-        "**/.dart_tool/": true,
-        "**/*.g.dart": true,
-        "**/*.freezed.dart": true,
-        "pubspec.lock": true,
-        "build/": true
-    },
-    "files.exclude": {
-        "**/.dart_tool": true,
-        "**/.fvm": true,
-        "**/*.g.dart": true,
-        "build": true,
-        "**/.metadata": true,
-        ".packages": true,
-        "pubspec.lock": true
-    },
-    // Mejora la legibilidad de la estructura de archivos anidados.
-    "explorer.compactFolders": false,
-    //----------------------------------------------------------------
-    //--- Recomendaciones de Extensiones (en .vscode/extensions.json)
-    //----------------------------------------------------------------
-    // Este archivo sugiere extensiones clave al abrir el proyecto.
-    // (Ver explicación abajo)
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit"
+  },
+  "dart.lineLength": 100,
+  "dart.previewFlutterUiGuides": true,
+  "dart.showTodos": true,
+  "files.trimTrailingWhitespace": true
 }

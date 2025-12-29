@@ -1,92 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:logger/logger.dart';
-
-import 'core/router/app_router.dart';
-import 'di/injection_container.dart';
-import 'features/auth/presentation/bloc/auth_bloc.dart';
-import 'features/database/data/app_database.dart';
-import 'features/shifts/presentation/bloc/shift_bloc.dart';
+import 'package:primo_v2/config/theme/app_theme.dart'; // Ajusta si tu ruta de tema es diferente
+import 'package:primo_v2/core/router/app_router.dart';
+import 'package:primo_v2/di/injection_container.dart';
+import 'package:primo_v2/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:primo_v2/features/auth/presentation/bloc/auth_event.dart'; // Importante para CheckAuthStatus
+import 'package:primo_v2/features/shifts/presentation/bloc/shift_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize dependencies
+  // Inicializar dependencias
   await initDependencies();
 
-  // Validate database integrity (read-only check)
-  await _validateDatabaseIntegrity();
+  // Validar integridad (Opcional, si tienes esa función, déjala aquí)
+  // await _validateDatabaseIntegrity();
 
-  runApp(const PrimoApp());
+  runApp(const MyApp());
 }
 
-/// Bootstrap validation - READ ONLY
-/// Validates database integrity without mutations.
-/// If admin user is corrupted, delete the database file and restart.
-Future<void> _validateDatabaseIntegrity() async {
-  final logger = Logger();
-  final db = sl<AppDatabase>();
-
-  // Expected admin PIN hash (SHA-256 of "1234")
-  const expectedPinHash =
-      '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4';
-
-  final existingAdmin = await db.getEmployeeById('admin-001');
-
-  if (existingAdmin == null) {
-    logger.e('❌ CRITICAL: Admin user not found in database');
-    logger.e('   This should only happen on first run');
-    logger.e('   If this persists, delete the database file and restart');
-    throw StateError('Admin user not found - database integrity compromised');
-  }
-
-  if (existingAdmin.pinHash != expectedPinHash) {
-    logger.e('❌ CRITICAL: Admin user has corrupted PIN hash');
-    logger.e('   Expected: $expectedPinHash');
-    logger.e('   Found:    ${existingAdmin.pinHash}');
-    logger.e('   → Delete database file and restart application');
-    throw StateError(
-        'Admin PIN hash corrupted - database integrity compromised');
-  }
-
-  logger.i('✅ Database integrity validated - Admin user OK');
-}
-
-class PrimoApp extends StatelessWidget {
-  const PrimoApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<AuthBloc>(create: (_) => sl<AuthBloc>()),
-        BlocProvider<ShiftBloc>(create: (_) => sl<ShiftBloc>()),
+        BlocProvider(
+          create: (_) => sl<AuthBloc>()..add(const CheckAuthStatus()),
+        ),
+        BlocProvider(
+          create: (_) => sl<ShiftBloc>(),
+        ),
       ],
       child: MaterialApp.router(
-        title: 'PRIMO V2',
+        title: 'PRIMO V2 POS',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.deepPurple,
-          ),
-          useMaterial3: true,
-          cardTheme: const CardThemeData(
-            elevation: 2,
-            color: Colors.white,
-          ),
-          elevatedButtonTheme: ElevatedButtonThemeData(
-            style: ElevatedButton.styleFrom(
-              elevation: 2,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 12,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-          ),
-        ),
+        theme: AppTheme.lightTheme, // Asegúrate de tener tu tema definido
         routerConfig: AppRouter.router,
       ),
     );

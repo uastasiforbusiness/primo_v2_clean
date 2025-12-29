@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../../di/injection_container.dart';
 import '../../../auth/domain/entities/employee_entity.dart';
 import '../bloc/employee_bloc.dart';
-import '../bloc/employee_state.dart';
 import '../bloc/employee_event.dart' as employee_event;
+import '../bloc/employee_state.dart';
 import '../widgets/employee_form_dialog.dart';
 
 class EmployeesPage extends StatelessWidget {
@@ -78,8 +79,8 @@ class _EmployeesView extends StatelessWidget {
         builder: (context, state) {
           if (state is EmployeeLoading) {
             return const Center(child: CircularProgressIndicator());
-          } 
-          
+          }
+
           if (state is EmployeeLoaded) {
             if (state.employees.isEmpty) {
               return const Center(child: Text('No hay empleados registrados'));
@@ -91,10 +92,10 @@ class _EmployeesView extends StatelessWidget {
                 return _EmployeeCard(employee: state.employees[index]);
               },
             );
-          } 
-          
+          }
+
           if (state is EmployeeOperationSuccess || state is EmployeeError) {
-             return const Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }
 
           return const Center(child: CircularProgressIndicator());
@@ -110,11 +111,11 @@ class _EmployeesView extends StatelessWidget {
         return EmployeeFormDialog(
           onSave: (employee, pin) {
             parentContext.read<EmployeeBloc>().add(
-              employee_event.CreateEmployeeRequested(
-                employee: employee,
-                pin: pin!,
-              ),
-            );
+                  employee_event.CreateEmployeeRequested(
+                    employee: employee,
+                    pin: pin!,
+                  ),
+                );
           },
         );
       },
@@ -149,9 +150,9 @@ class _EmployeeCard extends StatelessWidget {
             : IconButton(
                 icon: const Icon(Icons.delete, color: Colors.red),
                 onPressed: () {
-                   context.read<EmployeeBloc>().add(
-                      employee_event.DeleteEmployeeRequested(employee.id),
-                   );
+                  context.read<EmployeeBloc>().add(
+                        employee_event.DeleteEmployeeRequested(employee.id),
+                      );
                 },
               ),
       ),

@@ -1,9 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../domain/repositories/shift_repository.dart';
 import '../../domain/usecases/clock_in_usecase.dart';
 import '../../domain/usecases/clock_out_usecase.dart';
-import '../../domain/usecases/start_break_usecase.dart';
 import '../../domain/usecases/end_break_usecase.dart';
-import '../../domain/repositories/shift_repository.dart';
+import '../../domain/usecases/start_break_usecase.dart';
 import 'shift_event.dart';
 import 'shift_state.dart';
 
@@ -29,7 +30,9 @@ class ShiftBloc extends Bloc<ShiftEvent, ShiftState> {
   }
 
   Future<void> _onLoadActiveShift(
-      LoadActiveShift event, Emitter<ShiftState> emit) async {
+    LoadActiveShift event,
+    Emitter<ShiftState> emit,
+  ) async {
     emit(ShiftLoading());
     final result = await shiftRepository.getActiveShift(event.employeeId);
 
@@ -40,9 +43,7 @@ class ShiftBloc extends Bloc<ShiftEvent, ShiftState> {
           final hasBreak = await shiftRepository.hasActiveBreak(shift.id);
           hasBreak.fold(
             (l) => emit(ShiftActive(shift)),
-            (isOnBreak) => isOnBreak
-                ? emit(ShiftOnBreak(shift))
-                : emit(ShiftActive(shift)),
+            (isOnBreak) => isOnBreak ? emit(ShiftOnBreak(shift)) : emit(ShiftActive(shift)),
           );
         } else {
           emit(ShiftInactive());
@@ -52,7 +53,9 @@ class ShiftBloc extends Bloc<ShiftEvent, ShiftState> {
   }
 
   Future<void> _onClockInRequested(
-      ClockInRequested event, Emitter<ShiftState> emit) async {
+    ClockInRequested event,
+    Emitter<ShiftState> emit,
+  ) async {
     emit(ShiftLoading());
     final result = await clockInUseCase(
       employeeId: event.employeeId,
@@ -65,7 +68,9 @@ class ShiftBloc extends Bloc<ShiftEvent, ShiftState> {
   }
 
   Future<void> _onClockOutRequested(
-      ClockOutRequested event, Emitter<ShiftState> emit) async {
+    ClockOutRequested event,
+    Emitter<ShiftState> emit,
+  ) async {
     emit(ShiftLoading());
     final result = await clockOutUseCase(
       shiftId: event.shiftId,
@@ -78,7 +83,9 @@ class ShiftBloc extends Bloc<ShiftEvent, ShiftState> {
   }
 
   Future<void> _onStartBreakRequested(
-      StartBreakRequested event, Emitter<ShiftState> emit) async {
+    StartBreakRequested event,
+    Emitter<ShiftState> emit,
+  ) async {
     if (state is! ShiftActive) return;
     final currentShift = (state as ShiftActive).shift;
 
@@ -90,7 +97,9 @@ class ShiftBloc extends Bloc<ShiftEvent, ShiftState> {
   }
 
   Future<void> _onEndBreakRequested(
-      EndBreakRequested event, Emitter<ShiftState> emit) async {
+    EndBreakRequested event,
+    Emitter<ShiftState> emit,
+  ) async {
     if (state is! ShiftOnBreak) return;
     final currentShift = (state as ShiftOnBreak).shift;
 
