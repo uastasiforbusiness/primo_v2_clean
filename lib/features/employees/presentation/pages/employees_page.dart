@@ -31,10 +31,20 @@ class _EmployeesView extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            if (Navigator.of(context).canPop()) {
-              context.pop();
-            } else {
+            // Solución robusta para navegación con GoRouter
+            try {
+              // Intentar volver atrás si hay páginas en la pila
+              if (GoRouter.of(context).canPop()) {
+                context.pop();
+                return;
+              }
+              // Si no hay páginas para volver, ir al dashboard
               context.go('/dashboard');
+            } catch (e) {
+              // Manejar cualquier error de navegación
+              debugPrint('Error de navegación: $e');
+              // Intentar navegación alternativa si falla
+              Navigator.of(context).pushReplacementNamed('dashboard');
             }
           },
         ),
