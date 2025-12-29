@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../auth/domain/entities/employee_entity.dart';
-import '../../../shifts/domain/entities/shift_entity.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
+import '../../../auth/presentation/pages/clock_in_page.dart';
+import '../../../auth/presentation/pages/login_page.dart';
+import '../../../shifts/domain/entities/shift_entity.dart';
 import '../../../shifts/presentation/bloc/shift_bloc.dart';
 import '../../../shifts/presentation/bloc/shift_event.dart';
 import '../../../shifts/presentation/bloc/shift_state.dart';
-import '../../../auth/presentation/pages/clock_in_page.dart';
-import '../../../auth/presentation/pages/login_page.dart';
 
 class DashboardPage extends StatelessWidget {
   final EmployeeEntity employee;
@@ -35,13 +36,15 @@ class DashboardPage extends StatelessWidget {
         listener: (context, state) {
           if (state is ShiftError) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message), backgroundColor: Colors.red),
+              SnackBar(
+                  content: Text(state.message), backgroundColor: Colors.red),
             );
           }
         },
         builder: (context, state) {
           if (state is ShiftLoading) {
-            return const Scaffold(body: Center(child: CircularProgressIndicator()));
+            return const Scaffold(
+                body: Center(child: CircularProgressIndicator()));
           }
 
           if (state is ShiftInactive) {
@@ -49,8 +52,8 @@ class DashboardPage extends StatelessWidget {
           }
 
           if (state is ShiftActive || state is ShiftOnBreak) {
-            final shift = (state is ShiftActive) 
-                ? state.shift 
+            final shift = (state is ShiftActive)
+                ? state.shift
                 : (state as ShiftOnBreak).shift;
             final isBreak = state is ShiftOnBreak;
 
@@ -83,7 +86,8 @@ class DashboardPage extends StatelessWidget {
             );
           }
 
-          return const Scaffold(body: Center(child: Text('Estado desconocido')));
+          return const Scaffold(
+              body: Center(child: Text('Estado desconocido')));
         },
       ),
     );
@@ -103,7 +107,8 @@ class DashboardPage extends StatelessWidget {
                 CircleAvatar(
                   radius: 30,
                   backgroundColor: isBreak ? Colors.orange : Colors.deepPurple,
-                  child: Icon(isBreak ? Icons.coffee : Icons.person, size: 30, color: Colors.white),
+                  child: Icon(isBreak ? Icons.coffee : Icons.person,
+                      size: 30, color: Colors.white),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -120,7 +125,9 @@ class DashboardPage extends StatelessWidget {
                       Text(
                         isBreak ? 'EN PAUSA' : employee.role.toValue(),
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: isBreak ? Colors.orange[800] : Colors.deepPurple,
+                              color: isBreak
+                                  ? Colors.orange[800]
+                                  : Colors.deepPurple,
                               fontWeight: FontWeight.bold,
                             ),
                       ),
@@ -130,16 +137,19 @@ class DashboardPage extends StatelessWidget {
               ],
             ),
             const Divider(height: 24),
-            _buildInfoRow(context, 'Turno Iniciado', _formatDateTime(shift.startedAt)),
+            _buildInfoRow(
+                context, 'Turno Iniciado', _formatDateTime(shift.startedAt)),
             const SizedBox(height: 8),
-            _buildInfoRow(context, 'Fondo Inicial', shift.initialCash.toFormattedString()),
+            _buildInfoRow(context, 'Fondo Inicial',
+                shift.initialCash.toFormattedString()),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildActionGrid(BuildContext context, ShiftEntity shift, bool isBreak) {
+  Widget _buildActionGrid(
+      BuildContext context, ShiftEntity shift, bool isBreak) {
     return GridView.count(
       crossAxisCount: 2,
       crossAxisSpacing: 16,
@@ -151,7 +161,8 @@ class DashboardPage extends StatelessWidget {
             icon: Icons.coffee,
             title: 'Iniciar Pausa',
             color: Colors.orange,
-            onTap: () => context.read<ShiftBloc>().add(StartBreakRequested(shift.id)),
+            onTap: () =>
+                context.read<ShiftBloc>().add(StartBreakRequested(shift.id)),
           ),
           _buildActionCard(
             context,
@@ -168,9 +179,9 @@ class DashboardPage extends StatelessWidget {
             icon: Icons.play_arrow,
             title: 'Terminar Pausa',
             color: Colors.green,
-            onTap: () => context.read<ShiftBloc>().add(EndBreakRequested(shift.id)),
+            onTap: () =>
+                context.read<ShiftBloc>().add(EndBreakRequested(shift.id)),
           ),
-          
         if (employee.role.canManageEmployees && !isBreak)
           _buildActionCard(
             context,
@@ -179,7 +190,6 @@ class DashboardPage extends StatelessWidget {
             color: Colors.blue,
             onTap: () => context.go('/dashboard/employees'),
           ),
-          
         if (!isBreak)
           _buildActionCard(
             context,
@@ -196,13 +206,22 @@ class DashboardPage extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey[600])),
-        Text(value, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold)),
+        Text(label,
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(color: Colors.grey[600])),
+        Text(value,
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(fontWeight: FontWeight.bold)),
       ],
     );
   }
 
-  Widget _buildActionCard(BuildContext context, {
+  Widget _buildActionCard(
+    BuildContext context, {
     required IconData icon,
     required String title,
     required Color color,
@@ -218,7 +237,12 @@ class DashboardPage extends StatelessWidget {
           children: [
             Icon(icon, size: 48, color: color),
             const SizedBox(height: 12),
-            Text(title, textAlign: TextAlign.center, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+            Text(title,
+                textAlign: TextAlign.center,
+                style: Theme.of(context)
+                    .textTheme
+                    .titleMedium
+                    ?.copyWith(fontWeight: FontWeight.bold)),
           ],
         ),
       ),
@@ -238,18 +262,25 @@ class DashboardPage extends StatelessWidget {
             const SizedBox(height: 16),
             TextField(
               controller: controller,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(labelText: 'Monto Final', prefixText: '\$ ', border: OutlineInputBorder()),
+              keyboardType:
+                  const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(
+                  labelText: 'Monto Final',
+                  prefixText: '\$ ',
+                  border: OutlineInputBorder()),
             ),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(), child: const Text('Cancelar')),
+          TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Cancelar')),
           ElevatedButton(
             onPressed: () {
               final finalCash = double.tryParse(controller.text) ?? 0.0;
               Navigator.of(dialogContext).pop();
-              context.read<ShiftBloc>().add(ClockOutRequested(shiftId: shiftId, finalCash: finalCash));
+              context.read<ShiftBloc>().add(
+                  ClockOutRequested(shiftId: shiftId, finalCash: finalCash));
             },
             child: const Text('Cerrar Turno'),
           ),

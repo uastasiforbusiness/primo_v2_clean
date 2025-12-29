@@ -1,15 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:primo_v2/core/router/app_router.dart';
-import 'package:primo_v2/features/auth/presentation/bloc/auth_state.dart';
-import 'package:primo_v2/features/shifts/presentation/bloc/shift_state.dart';
-import 'package:primo_v2/features/auth/domain/entities/employee_entity.dart';
-import 'package:primo_v2/features/shifts/domain/entities/shift_entity.dart';
-import 'package:primo_v2/core/shared_kernel/role.dart';
 import 'package:primo_v2/core/shared_kernel/money.dart';
+import 'package:primo_v2/core/shared_kernel/role.dart';
+import 'package:primo_v2/features/auth/domain/entities/employee_entity.dart';
+import 'package:primo_v2/features/auth/presentation/bloc/auth_state.dart';
+import 'package:primo_v2/features/shifts/domain/entities/shift_entity.dart';
+import 'package:primo_v2/features/shifts/presentation/bloc/shift_state.dart';
 
 void main() {
-
   group('Router Configuration Tests', () {
     test('AppRouter is properly configured', () {
       // Verify that AppRouter.router exists and is a GoRouter

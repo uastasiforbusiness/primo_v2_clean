@@ -53,16 +53,18 @@ class NumpadWidget extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: numbers
-          .map((number) => _buildButton(
-                child: Text(
-                  number,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
+          .map(
+            (number) => _buildButton(
+              child: Text(
+                number,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
                 ),
-                onPressed: () => onNumberPressed(number),
-              ))
+              ),
+              onPressed: () => onNumberPressed(number),
+            ),
+          )
           .toList(),
     );
   }

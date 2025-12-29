@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:primo_v2/features/shifts/domain/entities/shift_entity.dart';
 import 'package:primo_v2/features/shifts/presentation/bloc/shift_bloc.dart';
 import 'package:primo_v2/features/shifts/presentation/bloc/shift_state.dart';
-import 'package:primo_v2/features/shifts/domain/entities/shift_entity.dart';
 
 /// ActiveShiftPage - Main operations screen during active shift
 class ActiveShiftPage extends StatelessWidget {
@@ -54,11 +54,14 @@ class ActiveShiftPage extends StatelessWidget {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 children: [
-                  _buildInfoRow(context, 'Iniciado', _formatTime(shift.startedAt)),
+                  _buildInfoRow(
+                      context, 'Iniciado', _formatTime(shift.startedAt)),
                   const Divider(),
-                  _buildInfoRow(context, 'Fondo Inicial', shift.initialCash.toFormattedString()),
+                  _buildInfoRow(context, 'Fondo Inicial',
+                      shift.initialCash.toFormattedString()),
                   const Divider(),
-                  _buildInfoRow(context, 'Duración', _formatDuration(shift.startedAt)),
+                  _buildInfoRow(
+                      context, 'Duración', _formatDuration(shift.startedAt)),
                 ],
               ),
             ),
@@ -137,7 +140,8 @@ class ActiveShiftPage extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButton(BuildContext context, {
+  Widget _buildActionButton(
+    BuildContext context, {
     required IconData icon,
     required String label,
     required Color color,

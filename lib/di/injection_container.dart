@@ -60,13 +60,15 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => StartBreakUseCase(sl()));
   sl.registerLazySingleton(() => EndBreakUseCase(sl()));
 
-  sl.registerFactory(() => ShiftBloc(
-    clockInUseCase: sl(),
-    clockOutUseCase: sl(),
-    startBreakUseCase: sl(),
-    endBreakUseCase: sl(),
-    shiftRepository: sl(),
-  ));
+  sl.registerFactory(
+    () => ShiftBloc(
+      clockInUseCase: sl(),
+      clockOutUseCase: sl(),
+      startBreakUseCase: sl(),
+      endBreakUseCase: sl(),
+      shiftRepository: sl(),
+    ),
+  );
 
   // ==================== EMPLOYEE FEATURE ====================
   sl.registerLazySingleton<EmployeeLocalDataSource>(
@@ -80,10 +82,12 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => UpdateEmployeeUseCase(sl()));
   sl.registerLazySingleton(() => DeleteEmployeeUseCase(sl()));
 
-  sl.registerFactory(() => EmployeeBloc(
-    getEmployeesUseCase: sl(),
-    createEmployeeUseCase: sl(),
-    updateEmployeeUseCase: sl(),
-    deleteEmployeeUseCase: sl(),
-  ));
+  sl.registerFactory(
+    () => EmployeeBloc(
+      getEmployeesUseCase: sl(),
+      createEmployeeUseCase: sl(),
+      updateEmployeeUseCase: sl(),
+      deleteEmployeeUseCase: sl(),
+    ),
+  );
 }

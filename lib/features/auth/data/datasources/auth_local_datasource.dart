@@ -1,9 +1,10 @@
 import 'package:drift/drift.dart';
 import 'package:logger/logger.dart';
+import 'package:uuid/uuid.dart';
+
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/shared_kernel/pin.dart';
 import '../../../database/data/app_database.dart';
-import 'package:uuid/uuid.dart';
 
 abstract class AuthLocalDataSource {
   Future<Employee> loginWithPin(String pin);

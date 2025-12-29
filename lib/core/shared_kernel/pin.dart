@@ -1,5 +1,6 @@
-import 'package:crypto/crypto.dart';
 import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 import 'package:equatable/equatable.dart';
 
 class Pin extends Equatable {
@@ -11,11 +12,11 @@ class Pin extends Equatable {
     if (plainText.length != 4) {
       throw ArgumentError('PIN must be exactly 4 digits');
     }
-    
+
     if (!RegExp(r'^\d{4}$').hasMatch(plainText)) {
       throw ArgumentError('PIN must contain only digits');
     }
-    
+
     return Pin._(plainText);
   }
 

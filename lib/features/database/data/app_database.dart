@@ -83,13 +83,15 @@ class AuditEvents extends Table {
 
 // ==================== DATABASE ====================
 
-@DriftDatabase(tables: [
-  Employees,
-  CashRegisters,
-  Shifts,
-  Breaks,
-  AuditEvents,
-])
+@DriftDatabase(
+  tables: [
+    Employees,
+    CashRegisters,
+    Shifts,
+    Breaks,
+    AuditEvents,
+  ],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
@@ -169,8 +171,10 @@ class AppDatabase extends _$AppDatabase {
     if (!employee.id.present) {
       throw ArgumentError('Employee ID is required for update');
     }
-    return await (update(employees)..where((e) => e.id.equals(employee.id.value)))
-        .write(employee) > 0;
+    return await (update(employees)
+              ..where((e) => e.id.equals(employee.id.value)))
+            .write(employee) >
+        0;
   }
 
   Future<int> softDeleteEmployee(String id) =>

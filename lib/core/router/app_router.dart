@@ -21,7 +21,7 @@ import 'package:primo_v2/features/shifts/presentation/pages/break_page.dart';
 class AppRouter {
   static final AppRouter _instance = AppRouter._internal();
   static AppRouter get instance => _instance;
-  
+
   AppRouter._internal();
 
   static GoRouter get router => _instance._router;
@@ -29,10 +29,10 @@ class AppRouter {
   late final GoRouter _router = GoRouter(
     initialLocation: '/',
     debugLogDiagnostics: true,
-    
+
     // 🔥 CLAVE: Escucha activa del AuthBloc para redirección instantánea
     refreshListenable: GoRouterRefreshStream(sl<AuthBloc>().stream),
-    
+
     routes: [
       /// Public routes
       GoRoute(
@@ -67,7 +67,7 @@ class AppRouter {
         builder: (context, state) {
           final authState = context.read<AuthBloc>().state;
           if (authState is AuthAuthenticated) {
-             return DashboardPage(employee: authState.employee);
+            return DashboardPage(employee: authState.employee);
           }
           return const LoginPage();
         },
@@ -76,9 +76,10 @@ class AppRouter {
         path: '/dashboard/clock-in',
         name: 'clock-in',
         builder: (context, state) {
-           final authState = context.read<AuthBloc>().state;
-           if (authState is AuthAuthenticated) return ClockInPage(employee: authState.employee);
-           return const LoginPage();
+          final authState = context.read<AuthBloc>().state;
+          if (authState is AuthAuthenticated)
+            return ClockInPage(employee: authState.employee);
+          return const LoginPage();
         },
       ),
       GoRoute(
@@ -127,7 +128,7 @@ class AppRouter {
     redirect: (context, state) {
       final authBloc = context.read<AuthBloc>();
       final shiftBloc = context.read<ShiftBloc>();
-      
+
       final authState = authBloc.state;
       final shiftState = shiftBloc.state;
 
@@ -171,7 +172,7 @@ class AppRouter {
       // 4. Roles (Solo Admin)
       if (state.matchedLocation.contains('/employees') ||
           state.matchedLocation.contains('/settings')) {
-        if (authState is AuthAuthenticated && authState.employee.role != Role.admin) {
+        if (authState.employee.role != Role.admin) {
           return '/forbidden';
         }
       }
@@ -181,7 +182,8 @@ class AppRouter {
 
     errorBuilder: (context, state) => Scaffold(
       body: Center(
-        child: Text('Error: ${state.error?.toString() ?? 'Error de navegación'}'),
+        child:
+            Text('Error: ${state.error?.toString() ?? 'Error de navegación'}'),
       ),
     ),
   );
@@ -192,8 +194,8 @@ class GoRouterRefreshStream extends ChangeNotifier {
   GoRouterRefreshStream(Stream<dynamic> stream) {
     notifyListeners();
     _subscription = stream.asBroadcastStream().listen(
-      (dynamic _) => notifyListeners(),
-    );
+          (dynamic _) => notifyListeners(),
+        );
   }
 
   late final StreamSubscription<dynamic> _subscription;

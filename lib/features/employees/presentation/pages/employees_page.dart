@@ -31,21 +31,10 @@ class _EmployeesView extends StatelessWidget {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            // Solución robusta para navegación con GoRouter
-            try {
-              // Intentar volver atrás si hay páginas en la pila
-              if (GoRouter.of(context).canPop()) {
-                context.pop();
-                return;
-              }
-              // Si no hay páginas para volver, ir al dashboard
-              context.go('/dashboard');
-            } catch (e) {
-              // Manejar cualquier error de navegación
-              debugPrint('Error de navegación: $e');
-              // Intentar navegación alternativa si falla
-              Navigator.of(context).pushReplacementNamed('dashboard');
-            }
+            // SOLUCIÓN: Navegación determinista.
+            // En lugar de intentar adivinar el historial con pop(),
+            // forzamos explícitamente la ida al Dashboard.
+            context.goNamed('dashboard');
           },
         ),
       ),
@@ -122,18 +111,15 @@ class _EmployeesView extends StatelessWidget {
               },
             );
           } else if (state is EmployeeError || state is EmployeeOperationSuccess) {
-            // Mantener pantalla de carga mientras se recarga la lista después de operaciones
             return const Center(
               child: CircularProgressIndicator(),
             );
           } else if (state is EmployeeInitial) {
-            // Estado inicial - trigger automático de carga
             return const Center(
               child: CircularProgressIndicator(),
             );
           }
 
-          // Fallback para estados desconocidos (no debería ocurrir)
           return const Center(
             child: Text('Estado desconocido. Por favor, recarga la página.'),
           );

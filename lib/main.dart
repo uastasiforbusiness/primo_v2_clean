@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logger/logger.dart';
+
 import 'core/router/app_router.dart';
 import 'di/injection_container.dart';
 import 'features/auth/presentation/bloc/auth_bloc.dart';
-import 'features/shifts/presentation/bloc/shift_bloc.dart';
 import 'features/database/data/app_database.dart';
+import 'features/shifts/presentation/bloc/shift_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,7 +45,8 @@ Future<void> _validateDatabaseIntegrity() async {
     logger.e('   Expected: $expectedPinHash');
     logger.e('   Found:    ${existingAdmin.pinHash}');
     logger.e('   → Delete database file and restart application');
-    throw StateError('Admin PIN hash corrupted - database integrity compromised');
+    throw StateError(
+        'Admin PIN hash corrupted - database integrity compromised');
   }
 
   logger.i('✅ Database integrity validated - Admin user OK');

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../shifts/presentation/bloc/shift_bloc.dart';
+import '../../../shifts/presentation/bloc/shift_event.dart';
 import '../../domain/entities/employee_entity.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
-import '../../../shifts/presentation/bloc/shift_bloc.dart';
-import '../../../shifts/presentation/bloc/shift_event.dart';
 
 class ClockInPage extends StatefulWidget {
   final EmployeeEntity employee;
@@ -60,14 +61,16 @@ class _ClockInPageState extends State<ClockInPage> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Icon(Icons.waving_hand, size: 64, color: Colors.deepPurple),
+                    const Icon(Icons.waving_hand,
+                        size: 64, color: Colors.deepPurple),
                     const SizedBox(height: 16),
                     Text(
                       '¡Bienvenido!',
                       textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                      style:
+                          Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -80,11 +83,12 @@ class _ClockInPageState extends State<ClockInPage> {
                     const SizedBox(height: 32),
                     TextFormField(
                       controller: _initialCashController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      keyboardType:
+                          const TextInputType.numberWithOptions(decimal: true),
                       decoration: const InputDecoration(
                         labelText: 'Fondo de Caja Inicial',
                         hintText: '0.00',
-                        prefixText: '\$ ', 
+                        prefixText: '\$ ',
                         border: OutlineInputBorder(),
                         helperText: 'Ingresa el dinero inicial en la caja',
                       ),
@@ -110,7 +114,9 @@ class _ClockInPageState extends State<ClockInPage> {
                         backgroundColor: Colors.deepPurple,
                         foregroundColor: Colors.white,
                       ),
-                      child: const Text('Iniciar Turno', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      child: const Text('Iniciar Turno',
+                          style: TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold)),
                     ),
                     const SizedBox(height: 16),
                     TextButton(

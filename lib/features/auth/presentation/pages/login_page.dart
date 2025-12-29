@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../../di/injection_container.dart';
+import '../../../employees/presentation/pages/dashboard_page.dart';
+import '../../../shifts/presentation/bloc/shift_bloc.dart';
+import '../../../shifts/presentation/bloc/shift_event.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
-import '../../../shifts/presentation/bloc/shift_bloc.dart';
-import '../../../shifts/presentation/bloc/shift_event.dart';
 import '../widgets/numpad_widget.dart';
-import '../../../employees/presentation/pages/dashboard_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -23,12 +24,12 @@ class _LoginPageState extends State<LoginPage> {
 
   void _onNumberPressed(String number) {
     if (_isLocked) return;
-    
+
     setState(() {
       if (_pin.length < 4) {
         _pin += number;
       }
-      
+
       if (_pin.length == 4) {
         context.read<AuthBloc>().add(LoginWithPinRequested(_pin));
       }
@@ -37,7 +38,7 @@ class _LoginPageState extends State<LoginPage> {
 
   void _onBackspacePressed() {
     if (_isLocked) return;
-    
+
     setState(() {
       if (_pin.isNotEmpty) {
         _pin = _pin.substring(0, _pin.length - 1);
@@ -47,7 +48,7 @@ class _LoginPageState extends State<LoginPage> {
 
   void _onClearPressed() {
     if (_isLocked) return;
-    
+
     setState(() {
       _pin = '';
     });
@@ -57,7 +58,7 @@ class _LoginPageState extends State<LoginPage> {
     setState(() {
       _failedAttempts++;
       _pin = '';
-      
+
       if (_failedAttempts >= 3) {
         _isLocked = true;
         Future.delayed(const Duration(seconds: 30), () {
@@ -81,7 +82,8 @@ class _LoginPageState extends State<LoginPage> {
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(
                 builder: (_) => BlocProvider(
-                  create: (context) => sl<ShiftBloc>()..add(LoadActiveShift(state.employee.id)),
+                  create: (context) =>
+                      sl<ShiftBloc>()..add(LoadActiveShift(state.employee.id)),
                   child: DashboardPage(employee: state.employee),
                 ),
               ),
@@ -103,7 +105,8 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.point_of_sale_rounded, size: 80, color: Colors.deepPurple),
+                  const Icon(Icons.point_of_sale_rounded,
+                      size: 80, color: Colors.deepPurple),
                   const SizedBox(height: 16),
                   Text(
                     'PRIMO V2',
@@ -120,11 +123,11 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                   ),
                   const SizedBox(height: 48),
-                  
                   if (_isLocked)
                     Column(
                       children: [
-                        const Icon(Icons.lock_outline, size: 48, color: Colors.red),
+                        const Icon(Icons.lock_outline,
+                            size: 48, color: Colors.red),
                         const SizedBox(height: 16),
                         Text(
                           'Bloqueado temporalmente',

@@ -1,7 +1,8 @@
 import 'package:logger/logger.dart';
+import 'package:uuid/uuid.dart';
+
 import '../../../../core/error/exceptions.dart';
 import '../../../database/data/app_database.dart';
-import 'package:uuid/uuid.dart';
 
 abstract class ShiftLocalDataSource {
   Future<Shift> clockIn({
