@@ -1,8 +1,0 @@
-# Architecture Commands
-
-/arch-flow
-"Traza flujo completo de datos: Widget → Event → BLoC → UseCase → Repository → DataSource → DB → State → Widget"
-
-/arch-violation
-"Detecta violaciones: ¿Domain importa infrastructure? ¿Business logic en widgets? ¿Dynamic types? Sugiere fix."
-

@@ -13,7 +13,7 @@ class SettingsPage extends StatelessWidget {
       body: ListView(
         children: [
           const SizedBox(height: 16),
-          
+
           // General Settings
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.0),
@@ -23,7 +23,7 @@ class SettingsPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          
+
           Card(
             child: Column(
               children: [
@@ -35,7 +35,7 @@ class SettingsPage extends StatelessWidget {
                     // TODO: Navigate to business info
                   },
                 ),
-                Divider(height: 0),
+                const Divider(height: 0),
                 ListTile(
                   leading: const Icon(Icons.receipt),
                   title: const Text('Configuración de Ticket'),
@@ -44,7 +44,7 @@ class SettingsPage extends StatelessWidget {
                     // TODO: Navigate to receipt settings
                   },
                 ),
-                Divider(height: 0),
+                const Divider(height: 0),
                 ListTile(
                   leading: const Icon(Icons.color_lens),
                   title: const Text('Tema de la Aplicación'),
@@ -56,9 +56,9 @@ class SettingsPage extends StatelessWidget {
               ],
             ),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Security Settings
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.0),
@@ -68,7 +68,7 @@ class SettingsPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          
+
           Card(
             child: Column(
               children: [
@@ -80,7 +80,7 @@ class SettingsPage extends StatelessWidget {
                     // TODO: Navigate to change PIN
                   },
                 ),
-                Divider(height: 0),
+                const Divider(height: 0),
                 ListTile(
                   leading: const Icon(Icons.security),
                   title: const Text('Configuración de Sesión'),
@@ -92,9 +92,9 @@ class SettingsPage extends StatelessWidget {
               ],
             ),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Advanced Settings
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.0),
@@ -104,7 +104,7 @@ class SettingsPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          
+
           Card(
             child: Column(
               children: [
@@ -116,7 +116,7 @@ class SettingsPage extends StatelessWidget {
                     // TODO: Navigate to database settings
                   },
                 ),
-                Divider(height: 0),
+                const Divider(height: 0),
                 ListTile(
                   leading: const Icon(Icons.bug_report),
                   title: const Text('Registros de Error'),
@@ -125,7 +125,7 @@ class SettingsPage extends StatelessWidget {
                     // TODO: Navigate to error logs
                   },
                 ),
-                Divider(height: 0),
+                const Divider(height: 0),
                 ListTile(
                   leading: const Icon(Icons.info_outline),
                   title: const Text('Acerca de'),
@@ -137,9 +137,9 @@ class SettingsPage extends StatelessWidget {
               ],
             ),
           ),
-          
+
           const SizedBox(height: 32),
-          
+
           // Version
           Center(
             child: Text(
