@@ -36,50 +36,36 @@ class _EmployeesViewState extends State<_EmployeesView> {
 
   @override
   Widget build(BuildContext context) {
+    // Usamos AppScaffold que ya trae el AppBackground (con el logo de fondo)
+    // Para evitar que haya "3 logos uno dentro de otro", eliminamos el Stack manual
+    // y el Image.asset que habíamos añadido, dejando que AppScaffold maneje el fondo.
     return AppScaffold(
-      body: Container(
-        // Fondo con más contraste (gris muy claro para resaltar las tarjetas blancas)
-        color: Colors.grey[100]?.withAlpha(200),
-        child: Stack(
-          children: [
-            // Logo de fondo centrado
-            Center(
-              child: Opacity(
-                opacity: 0.05,
-                child: Image.asset(
-                  'assets/images/background.png',
-                  width: MediaQuery.of(context).size.width * 0.4,
-                ),
-              ),
-            ),
-            Row(
+      backgroundColor: Colors.grey[100]?.withAlpha(200),
+      body: Row(
+        children: [
+          // Columna Central (Principal)
+          Expanded(
+            flex: 5,
+            child: Column(
               children: [
-                // Columna Central (Principal)
+                _buildTopBar(context),
+                _buildContextualActions(context),
                 Expanded(
-                  flex: 5, // Ajustado para dar más espacio al panel derecho
-                  child: Column(
-                    children: [
-                      _buildTopBar(context),
-                      _buildContextualActions(context),
-                      Expanded(
-                        child: _buildEmployeeGrid(context),
-                      ),
-                    ],
-                  ),
+                  child: _buildEmployeeGrid(context),
                 ),
-
-                // Columna Derecha (Deslizable)
-                if (_showDetails && _selectedEmployee != null) ...[
-                  const VerticalDivider(width: 1, thickness: 1),
-                  Expanded(
-                    flex: 2, // Aumentado de 1 a 2 para que sea un poco más ancho
-                    child: _buildEmployeeDetails(_selectedEmployee!),
-                  ),
-                ],
               ],
             ),
+          ),
+
+          // Columna Derecha (Deslizable)
+          if (_showDetails && _selectedEmployee != null) ...[
+            const VerticalDivider(width: 1, thickness: 1),
+            Expanded(
+              flex: 2,
+              child: _buildEmployeeDetails(_selectedEmployee!),
+            ),
           ],
-        ),
+        ],
       ),
     );
   }
