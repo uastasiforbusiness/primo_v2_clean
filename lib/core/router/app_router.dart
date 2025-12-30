@@ -19,6 +19,7 @@ import 'package:primo_v2/features/shifts/presentation/bloc/shift_state.dart';
 import 'package:primo_v2/features/shifts/presentation/pages/active_shift_page.dart';
 import 'package:primo_v2/features/shifts/presentation/pages/break_page.dart';
 import 'package:primo_v2/features/splash/presentation/pages/splash_page.dart';
+import 'package:primo_v2/core/presentation/widgets/main_layout.dart';
 
 /// AppRouter - Centralized navigation for PRIMO V2
 class AppRouter {
@@ -67,16 +68,60 @@ class AppRouter {
         builder: (context, state) => const ForbiddenPage(),
       ),
 
-      /// Protected routes
-      GoRoute(
-        path: '/dashboard',
-        name: 'dashboard',
-        builder: (context, state) {
-          final authState = context.read<AuthBloc>().state;
-          // El redirect ya asegura que authState es AuthAuthenticated
-          return DashboardPage(employee: (authState as AuthAuthenticated).employee);
+      /// Protected routes with Sidebar
+      ShellRoute(
+        builder: (context, state, child) {
+          return MainLayout(
+            currentRoute: state.matchedLocation,
+            child: child,
+          );
         },
+        routes: [
+          GoRoute(
+            path: '/dashboard',
+            name: 'dashboard',
+            builder: (context, state) {
+              final authState = context.read<AuthBloc>().state;
+              return DashboardPage(employee: (authState as AuthAuthenticated).employee);
+            },
+          ),
+          GoRoute(
+            path: '/dashboard/active-shift',
+            name: 'active-shift',
+            builder: (context, state) => const ActiveShiftPage(),
+          ),
+          GoRoute(
+            path: '/dashboard/employees',
+            name: 'employees',
+            builder: (context, state) => const EmployeesPage(),
+          ),
+          GoRoute(
+            path: '/dashboard/settings',
+            name: 'settings',
+            builder: (context, state) => const Scaffold(
+              body: Center(child: Text('Settings Page - TODO')),
+            ),
+          ),
+          // Rutas placeholder para la imagen
+          GoRoute(
+            path: '/dashboard/inventory',
+            name: 'inventory',
+            builder: (context, state) => const Center(child: Text('Inventario - TODO')),
+          ),
+          GoRoute(
+            path: '/dashboard/audit',
+            name: 'audit',
+            builder: (context, state) => const Center(child: Text('Auditoría - TODO')),
+          ),
+          GoRoute(
+            path: '/dashboard/reports',
+            name: 'reports',
+            builder: (context, state) => const Center(child: Text('Reportes - TODO')),
+          ),
+        ],
       ),
+
+      /// Special routes (without Sidebar)
       GoRoute(
         path: '/dashboard/clock-in',
         name: 'clock-in',
@@ -87,28 +132,9 @@ class AppRouter {
         },
       ),
       GoRoute(
-        path: '/dashboard/active-shift',
-        name: 'active-shift',
-        builder: (context, state) => const ActiveShiftPage(),
-      ),
-      GoRoute(
         path: '/dashboard/break',
         name: 'break',
         builder: (context, state) => const BreakPage(),
-      ),
-
-      /// Admin routes
-      GoRoute(
-        path: '/dashboard/employees',
-        name: 'employees',
-        builder: (context, state) => const EmployeesPage(),
-      ),
-      GoRoute(
-        path: '/dashboard/settings',
-        name: 'settings',
-        builder: (context, state) => const Scaffold(
-          body: Center(child: Text('Settings Page - TODO')),
-        ),
       ),
     ],
 

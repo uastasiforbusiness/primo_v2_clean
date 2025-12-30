@@ -31,50 +31,37 @@ class DashboardPage extends StatelessWidget {
       },
       builder: (context, state) {
         if (state is ShiftLoading) {
-          return const AppScaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
+          return const Center(child: CircularProgressIndicator());
         }
 
-        // El redirect de GoRouter se encarga de mandarnos a ClockInPage o BreakPage
-        // si el estado no es ShiftActive. Aquí solo manejamos la vista del Dashboard.
         if (state is ShiftActive || state is ShiftOnBreak) {
           final shift = (state is ShiftActive) ? state.shift : (state as ShiftOnBreak).shift;
           final isBreak = state is ShiftOnBreak;
 
-          return AppScaffold(
-            appBar: AppBar(
-              title: const Text('PRIMO V2 - Dashboard'),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.lock_outline),
-                  onPressed: () {
-                    context.read<AuthBloc>().add(const LogoutRequested());
-                  },
-                  tooltip: 'Bloquear Pantalla',
+          return Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Dashboard',
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                ),
+                const SizedBox(height: 24),
+                _buildUserCard(context, shift, isBreak),
+                const SizedBox(height: 24),
+                Expanded(
+                  child: _buildActionGrid(context, shift, isBreak),
                 ),
               ],
-            ),
-            body: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildUserCard(context, shift, isBreak),
-                  const SizedBox(height: 24),
-                  Expanded(
-                    child: _buildActionGrid(context, shift, isBreak),
-                  ),
-                ],
-              ),
             ),
           );
         }
 
-        // Fallback por si el redirect tarda un frame
-        return const AppScaffold(
-          body: Center(child: CircularProgressIndicator()),
-        );
+        return const Center(child: CircularProgressIndicator());
       },
     );
   }
