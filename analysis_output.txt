@@ -1,37 +1,42 @@
 Analyzing primo_v2_clean...                                     
 
 warning - 'dead_code' is not a recognized lint rule - analysis_options.yaml:36:5 - undefined_lint
-   info - 'Future'-returning calls in a non-'async' function - lib\core\router\app_router.dart:197:20 - discarded_futures
-   info - The imported package 'crypto' isn't a dependency of the importing package - lib\core\shared_kernel\pin.dart:3:8 - depend_on_referenced_packages
-   info - 'Future'-returning calls in a non-'async' function - lib\features\auth\presentation\pages\login_page.dart:83:13 - discarded_futures
-   info - Don't use 'BuildContext's across async gaps - lib\features\auth\presentation\pages\login_page.dart:84:15 - use_build_context_synchronously
-   info - 'Future'-returning calls in a non-'async' function - lib\features\employees\presentation\pages\dashboard_page.dart:242:5 - discarded_futures
-   info - 'Future'-returning calls in a non-'async' function - lib\features\employees\presentation\pages\employees_page.dart:108:5 - discarded_futures
+warning - The value of the field '_backgroundColor' isn't used - lib\config\theme\app_theme.dart:12:22 - unused_field
+   info - Sort directive sections alphabetically - lib\core\presentation\widgets\app_sidebar.dart:7:1 - directives_ordering
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\core\presentation\widgets\app_sidebar.dart:48:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\core\presentation\widgets\app_sidebar.dart:212:65 - deprecated_member_use
+   info - 'Future'-returning calls in a non-'async' function - lib\core\presentation\widgets\app_sidebar.dart:274:5 - discarded_futures
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\core\presentation\widgets\app_sidebar.dart:356:47 - deprecated_member_use
+   info - 'Future'-returning calls in a non-'async' function - lib\core\router\app_router.dart:221:20 - discarded_futures
+   info - Missing a required trailing comma - lib\features\auth\presentation\pages\login_page.dart:109:42 - require_trailing_commas
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\auth\presentation\pages\login_page.dart:176:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\auth\presentation\widgets\numpad_widget.dart:59:48 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\auth\presentation\widgets\numpad_widget.dart:60:29 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\auth\presentation\widgets\numpad_widget.dart:96:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\auth\presentation\widgets\numpad_widget.dart:102:39 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\employees\presentation\pages\dashboard_page.dart:61:46 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\employees\presentation\pages\dashboard_page.dart:67:72 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\employees\presentation\pages\employees_page.dart:55:31 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\employees\presentation\pages\employees_page.dart:84:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\employees\presentation\pages\employees_page.dart:191:35 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\employees\presentation\pages\employees_page.dart:202:30 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\employees\presentation\pages\employees_page.dart:235:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\employees\presentation\pages\employees_page.dart:307:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\employees\presentation\pages\employees_page.dart:347:55 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\employees\presentation\pages\employees_page.dart:569:28 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\employees\presentation\pages\employees_page.dart:627:36 - deprecated_member_use
+   info - 'Future'-returning calls in a non-'async' function - lib\features\employees\presentation\pages\employees_page.dart:702:5 - discarded_futures
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\shifts\presentation\pages\active_shift_page.dart:83:42 - deprecated_member_use
+   info - Missing a required trailing comma - lib\features\shifts\presentation\pages\active_shift_page.dart:140:95 - require_trailing_commas
+   info - Missing a required trailing comma - lib\features\shifts\presentation\pages\active_shift_page.dart:171:96 - require_trailing_commas
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\shifts\presentation\pages\active_shift_page.dart:239:35 - deprecated_member_use
+   info - Missing a required trailing comma - lib\features\shifts\presentation\pages\active_shift_page.dart:239:97 - require_trailing_commas
+   info - Missing a required trailing comma - lib\features\shifts\presentation\pages\active_shift_page.dart:240:9 - require_trailing_commas
+   info - The import of 'dart:ui' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/material.dart' - lib\features\shifts\presentation\pages\break_page.dart:1:8 - unnecessary_import
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\shifts\presentation\pages\break_page.dart:125:41 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\shifts\presentation\pages\break_page.dart:218:33 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\shifts\presentation\pages\break_page.dart:220:77 - deprecated_member_use
    info - 'Future'-returning calls in a non-'async' function - lib\features\splash\presentation\pages\splash_page.dart:23:5 - discarded_futures
-  error - The named parameter 'createdAt' is required, but there's no corresponding argument - test\features\auth\presentation\bloc\auth_bloc_test.dart:19:24 - missing_required_argument
-  error - The named parameter 'emergencyPhone' is required, but there's no corresponding argument - test\features\auth\presentation\bloc\auth_bloc_test.dart:19:24 - missing_required_argument
-  error - The named parameter 'lastName' is required, but there's no corresponding argument - test\features\auth\presentation\bloc\auth_bloc_test.dart:19:24 - missing_required_argument
-  error - The named parameter 'updatedAt' is required, but there's no corresponding argument - test\features\auth\presentation\bloc\auth_bloc_test.dart:19:24 - missing_required_argument
-  error - Invalid constant value - test\features\auth\presentation\bloc\auth_bloc_test.dart:22:11 - invalid_constant
-  error - The getter 'cashier' isn't defined for the type 'Role' - test\features\auth\presentation\bloc\auth_bloc_test.dart:22:16 - undefined_getter
-   info - 'Future'-returning calls in a non-'async' function - test\features\auth\presentation\bloc\auth_bloc_test.dart:32:14 - discarded_futures
-  error - The method 'void Function<B extends BlocBase<State>, State>(String, {dynamic Function(B)? act, required B Function() build, dynamic Function()? errors, dynamic Function()? expect, State Function()? seed, FutureOr<void> Function()? setUp, int skip, dynamic tags, FutureOr<void> Function()? tearDown, dynamic Function(B)? verify, Duration? wait})' is declared with 2 type parameters, but 3 type arguments are given - test\features\auth\presentation\bloc\auth_bloc_test.dart:40:13 - wrong_number_of_type_arguments_method
-  error - 'AuthBloc' doesn't conform to the bound 'BlocBase<AuthEvent>' of the type parameter 'B' - test\features\auth\presentation\bloc\auth_bloc_test.dart:40:14 - type_argument_not_matching_bounds
-   info - Method invocation or property access on a 'dynamic' target - test\features\auth\presentation\bloc\auth_bloc_test.dart:46:22 - avoid_dynamic_calls
-  error - The method 'void Function<B extends BlocBase<State>, State>(String, {dynamic Function(B)? act, required B Function() build, dynamic Function()? errors, dynamic Function()? expect, State Function()? seed, FutureOr<void> Function()? setUp, int skip, dynamic tags, FutureOr<void> Function()? tearDown, dynamic Function(B)? verify, Duration? wait})' is declared with 2 type parameters, but 3 type arguments are given - test\features\auth\presentation\bloc\auth_bloc_test.dart:56:13 - wrong_number_of_type_arguments_method
-  error - 'AuthBloc' doesn't conform to the bound 'BlocBase<AuthEvent>' of the type parameter 'B' - test\features\auth\presentation\bloc\auth_bloc_test.dart:56:14 - type_argument_not_matching_bounds
-   info - Method invocation or property access on a 'dynamic' target - test\features\auth\presentation\bloc\auth_bloc_test.dart:63:22 - avoid_dynamic_calls
-  error - The method 'void Function<B extends BlocBase<State>, State>(String, {dynamic Function(B)? act, required B Function() build, dynamic Function()? errors, dynamic Function()? expect, State Function()? seed, FutureOr<void> Function()? setUp, int skip, dynamic tags, FutureOr<void> Function()? tearDown, dynamic Function(B)? verify, Duration? wait})' is declared with 2 type parameters, but 3 type arguments are given - test\features\auth\presentation\bloc\auth_bloc_test.dart:73:13 - wrong_number_of_type_arguments_method
-  error - 'AuthBloc' doesn't conform to the bound 'BlocBase<AuthEvent>' of the type parameter 'B' - test\features\auth\presentation\bloc\auth_bloc_test.dart:73:14 - type_argument_not_matching_bounds
-   info - Missing a required trailing comma - test\features\auth\presentation\bloc\auth_bloc_test.dart:77:88 - require_trailing_commas
-   info - Method invocation or property access on a 'dynamic' target - test\features\auth\presentation\bloc\auth_bloc_test.dart:80:22 - avoid_dynamic_calls
-  error - The method 'void Function<B extends BlocBase<State>, State>(String, {dynamic Function(B)? act, required B Function() build, dynamic Function()? errors, dynamic Function()? expect, State Function()? seed, FutureOr<void> Function()? setUp, int skip, dynamic tags, FutureOr<void> Function()? tearDown, dynamic Function(B)? verify, Duration? wait})' is declared with 2 type parameters, but 3 type arguments are given - test\features\auth\presentation\bloc\auth_bloc_test.dart:87:13 - wrong_number_of_type_arguments_method
-  error - 'AuthBloc' doesn't conform to the bound 'BlocBase<AuthEvent>' of the type parameter 'B' - test\features\auth\presentation\bloc\auth_bloc_test.dart:87:14 - type_argument_not_matching_bounds
-   info - Method invocation or property access on a 'dynamic' target - test\features\auth\presentation\bloc\auth_bloc_test.dart:90:22 - avoid_dynamic_calls
-  error - The method 'void Function<B extends BlocBase<State>, State>(String, {dynamic Function(B)? act, required B Function() build, dynamic Function()? errors, dynamic Function()? expect, State Function()? seed, FutureOr<void> Function()? setUp, int skip, dynamic tags, FutureOr<void> Function()? tearDown, dynamic Function(B)? verify, Duration? wait})' is declared with 2 type parameters, but 3 type arguments are given - test\features\auth\presentation\bloc\auth_bloc_test.dart:94:13 - wrong_number_of_type_arguments_method
-  error - 'AuthBloc' doesn't conform to the bound 'BlocBase<AuthEvent>' of the type parameter 'B' - test\features\auth\presentation\bloc\auth_bloc_test.dart:94:14 - type_argument_not_matching_bounds
-   info - Method invocation or property access on a 'dynamic' target - test\features\auth\presentation\bloc\auth_bloc_test.dart:97:22 - avoid_dynamic_calls
+   info - 'Future'-returning calls in a non-'async' function - test\features\auth\presentation\bloc\auth_bloc_test.dart:37:14 - discarded_futures
    info - Don't invoke 'print' in production code - test\navigation_test.dart:25:7 - avoid_print
-   info - The imported package 'crypto' isn't a dependency of the importing package - test_pin_hash.dart:3:8 - depend_on_referenced_packages
 
-33 issues found. (ran in 11.0s)

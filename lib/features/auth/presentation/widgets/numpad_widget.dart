@@ -56,8 +56,8 @@ class NumpadWidget extends StatelessWidget {
       height: 80,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.black.withOpacity(0.1), width: 1),
-        color: Colors.white.withOpacity(0.8),
+        border: Border.all(color: Colors.black.withAlpha(25), width: 1),
+        color: Colors.white.withAlpha(204),
       ),
       child: InkWell(
         onTap: () => onNumberPressed(number),
@@ -93,13 +93,13 @@ class NumpadWidget extends StatelessWidget {
                   label,
                   style: TextStyle(
                     fontSize: 16,
-                    color: Colors.black.withOpacity(0.5),
+                    color: Colors.black.withAlpha(128),
                     fontWeight: FontWeight.w500,
                   ),
                 )
               : Icon(
                   icon,
-                  color: Colors.black.withOpacity(0.5),
+                  color: Colors.black.withAlpha(128),
                   size: 24,
                 ),
         ),

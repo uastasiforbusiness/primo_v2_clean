@@ -106,7 +106,8 @@ class _LoginPageState extends State<LoginPage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           const SizedBox(
-                              height: 100), // Espacio para que el logo de fondo se vea arriba
+                            height: 100,
+                          ), // Espacio para que el logo de fondo se vea arriba
                           const SizedBox(height: 48),
                           if (_isLocked)
                             Column(
@@ -173,7 +174,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 if (isLoading)
                   Container(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withAlpha(77), // ~0.3
                     child: const Center(
                       child: CircularProgressIndicator(),
                     ),

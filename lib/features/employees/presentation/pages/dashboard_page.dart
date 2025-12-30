@@ -58,13 +58,13 @@ class DashboardPage extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          color: Colors.blue.withOpacity(0.05),
+                          color: Colors.blue.withAlpha(13), // ~0.05
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
                           Icons.insights_rounded,
                           size: 80,
-                          color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+                          color: Theme.of(context).colorScheme.primary.withAlpha(128), // ~0.5
                         ),
                       ),
                       const SizedBox(height: 32),

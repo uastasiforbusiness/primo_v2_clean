@@ -45,7 +45,7 @@ class AppSidebar extends StatelessWidget {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withAlpha(10), // Aprox 0.04 opacity
             blurRadius: 20,
             offset: const Offset(4, 0),
           ),
@@ -91,7 +91,10 @@ class AppSidebar extends StatelessWidget {
               id = authState.employee.id.substring(0, 3).toUpperCase();
             }
 
-            final bool canShowShiftActions = shiftState is ShiftActive;
+            final bool isActive = shiftState is ShiftActive;
+            final bool isOnBreak = shiftState is ShiftOnBreak;
+            final bool hasShift = isActive || isOnBreak;
+            final shift = isActive ? shiftState.shift : (isOnBreak ? shiftState.shift : null);
 
             return Padding(
               padding: const EdgeInsets.fromLTRB(16, 40, 16, 24),
@@ -99,104 +102,105 @@ class AppSidebar extends StatelessWidget {
                 offset: const Offset(0, 60),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 position: PopupMenuPosition.under,
-                enabled: canShowShiftActions,
+                enabled: hasShift,
                 onSelected: (value) {
-                  if (value == 'pause') {
-                    final shiftId = (shiftState as ShiftActive).shift.id;
-                    context.read<ShiftBloc>().add(StartBreakRequested(shiftId));
-                  } else if (value == 'clock_out') {
-                    final shiftId = (shiftState as ShiftActive).shift.id;
-                    _showClockOutDialog(context, shiftId);
+                  if (value == 'pause' && isActive) {
+                    context.read<ShiftBloc>().add(StartBreakRequested(shift!.id));
+                  } else if (value == 'clock_out' && isActive) {
+                    _showClockOutDialog(context, shift!.id);
                   }
                 },
                 itemBuilder: (context) => [
-                  PopupMenuItem(
-                    enabled: false,
-                    child: Container(
-                      width: 200, // Forzar un ancho mínimo mayor
-                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Center(
-                            child: Text(
-                              'ESTADO DEL TURNO',
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                                letterSpacing: 1.2,
+                  if (shift != null)
+                    PopupMenuItem(
+                      enabled: false,
+                      child: Container(
+                        width: 200,
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Center(
+                              child: Text(
+                                isOnBreak ? 'TURNO EN PAUSA' : 'ESTADO DEL TURNO',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: isOnBreak ? Colors.orange[800] : Colors.black,
+                                  letterSpacing: 1.2,
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 20),
-                          _buildInfoRow(
-                            Icons.access_time_rounded,
-                            'Iniciado:',
-                            _formatDateTime((shiftState as ShiftActive).shift.startedAt),
-                            context,
-                          ),
-                          const SizedBox(height: 12),
-                          _buildInfoRow(
-                            Icons.payments_outlined,
-                            'Base:',
-                            (shiftState).shift.initialCash.toFormattedString(),
-                            context,
-                          ),
-                          const SizedBox(height: 8),
-                        ],
+                            const SizedBox(height: 20),
+                            _buildInfoRow(
+                              Icons.access_time_rounded,
+                              'Iniciado:',
+                              _formatDateTime(shift.startedAt),
+                              context,
+                            ),
+                            const SizedBox(height: 12),
+                            _buildInfoRow(
+                              Icons.payments_outlined,
+                              'Base:',
+                              shift.initialCash.toFormattedString(),
+                              context,
+                            ),
+                            const SizedBox(height: 8),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
                   const PopupMenuDivider(),
-                  PopupMenuItem(
-                    value: 'pause',
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.coffee_rounded,
-                            color: Theme.of(context).colorScheme.primary,
-                            size: 24,
-                          ),
-                          const SizedBox(width: 16),
-                          const Text(
-                            'Iniciar Pausa',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black87,
+                  if (isActive)
+                    PopupMenuItem(
+                      value: 'pause',
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.coffee_rounded,
+                              color: Theme.of(context).colorScheme.primary,
+                              size: 24,
                             ),
-                          ),
-                        ],
+                            const SizedBox(width: 16),
+                            const Text(
+                              'Iniciar Pausa',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  const PopupMenuItem(
-                    value: 'clock_out',
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 8),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.logout_rounded,
-                            color: Colors.red,
-                            size: 24,
-                          ),
-                          SizedBox(width: 16),
-                          Text(
-                            'Cerrar Turno',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
+                  if (isActive)
+                    const PopupMenuItem(
+                      value: 'clock_out',
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.logout_rounded,
                               color: Colors.red,
+                              size: 24,
                             ),
-                          ),
-                        ],
+                            SizedBox(width: 16),
+                            Text(
+                              'Cerrar Turno',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.red,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
                 ],
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
@@ -209,7 +213,7 @@ class AppSidebar extends StatelessWidget {
                       Container(
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.blue.withOpacity(0.2), width: 2),
+                          border: Border.all(color: Colors.blue.withAlpha(50), width: 2),
                         ),
                         child: CircleAvatar(
                           radius: 22,
@@ -239,7 +243,7 @@ class AppSidebar extends StatelessWidget {
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                                if (canShowShiftActions)
+                                if (hasShift)
                                   const Icon(
                                     Icons.keyboard_arrow_down,
                                     size: 18,
@@ -353,7 +357,7 @@ class AppSidebar extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-              color: isSelected ? Colors.blue.withOpacity(0.08) : Colors.transparent,
+              color: isSelected ? Colors.blue.withAlpha(20) : Colors.transparent,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(

@@ -122,7 +122,7 @@ class BreakPage extends StatelessWidget {
               backgroundColor: Colors.green[600],
               foregroundColor: Colors.white,
               elevation: 4,
-              shadowColor: Colors.green.withOpacity(0.4),
+              shadowColor: Colors.green.withAlpha(102), // ~0.4
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30),
               ),
@@ -215,9 +215,9 @@ class _BreakTimerState extends State<BreakTimer> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.5),
+            color: Colors.white.withAlpha(128), // ~0.5
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Theme.of(context).colorScheme.primary.withOpacity(0.2)),
+            border: Border.all(color: Theme.of(context).colorScheme.primary.withAlpha(51)), // ~0.2
           ),
           child: Text(
             _formattedTime,

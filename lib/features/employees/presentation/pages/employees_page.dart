@@ -52,16 +52,13 @@ class _EmployeesViewState extends State<_EmployeesView> {
 
   Widget _buildMainSection(BuildContext context) {
     return Container(
-      color: Colors.grey[50]?.withOpacity(0.5),
+      color: Colors.grey[50]?.withAlpha(128),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildTopBar(context),
-          _buildHeader(context),
-          _buildStatsCards(context),
-          const SizedBox(height: 24),
           Expanded(
-            child: _buildEmployeeTable(context),
+            child: _buildEmployeeGrid(context),
           ),
         ],
       ),
@@ -70,7 +67,7 @@ class _EmployeesViewState extends State<_EmployeesView> {
 
   Widget _buildTopBar(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+      padding: const EdgeInsets.all(24.0),
       child: Row(
         children: [
           Expanded(
@@ -81,7 +78,7 @@ class _EmployeesViewState extends State<_EmployeesView> {
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.02),
+                    color: Colors.black.withAlpha(5),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -101,15 +98,29 @@ class _EmployeesViewState extends State<_EmployeesView> {
           const SizedBox(width: 24),
           Row(
             children: [
-              Icon(Icons.access_time_rounded, size: 18, color: Colors.grey[600]),
-              const SizedBox(width: 8),
               Text(
                 DateFormat('MMM dd, yyyy • hh:mm a').format(DateTime.now()),
                 style: TextStyle(
                   color: Colors.grey[600],
-                  fontWeight: FontWeight.w500,
-                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
                 ),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withAlpha(5),
+                      blurRadius: 10,
+                    ),
+                  ],
+                ),
+                child:
+                    const Icon(Icons.notifications_none_rounded, size: 20, color: Colors.black87),
               ),
             ],
           ),
@@ -118,283 +129,229 @@ class _EmployeesViewState extends State<_EmployeesView> {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Employee Management',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Manage staff access, roles, and schedules.',
-                style: TextStyle(color: Colors.grey[600], fontSize: 14),
-              ),
-            ],
-          ),
-          ElevatedButton.icon(
-            onPressed: () => _showEmployeeDialog(context),
-            icon: const Icon(Icons.add, size: 20),
-            label: const Text(
-              'Add New Employee',
-              style: TextStyle(fontWeight: FontWeight.bold),
+  Widget _buildEmployeeGrid(BuildContext context) {
+    return BlocBuilder<EmployeeBloc, EmployeeState>(
+      builder: (context, state) {
+        if (state is EmployeeLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (state is EmployeeLoaded) {
+          final employees = state.employees;
+          return GridView.builder(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 320,
+              mainAxisExtent: 360,
+              crossAxisSpacing: 24,
+              mainAxisSpacing: 24,
             ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              elevation: 0,
-            ),
-          ),
-        ],
-      ),
+            itemCount: employees.length + 1,
+            itemBuilder: (context, index) {
+              if (index == employees.length) {
+                return _buildAddStaffCard(context);
+              }
+              return _buildEmployeeCard(context, employees[index]);
+            },
+          );
+        }
+
+        return const SizedBox();
+      },
     );
   }
 
-  Widget _buildStatsCards(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-      child: Row(
-        children: [
-          _buildStatCard('Total Staff', '24', Icons.people_outline, Colors.blue),
-          const SizedBox(width: 16),
-          _buildStatCard('Active Now', '8', Icons.check_circle_outline, Colors.green),
-          const SizedBox(width: 16),
-          _buildStatCard('Managers', '3', Icons.badge_outlined, Colors.purple),
-          const SizedBox(width: 16),
-          _buildStatCard('Pending Shifts', '12', Icons.access_time, Colors.orange),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatCard(String label, String value, IconData icon, Color color) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.02),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: color, size: 24),
-            ),
-            const SizedBox(width: 16),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  value,
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  label,
-                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmployeeTable(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Table Header
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                _buildTableHeader('EMPLOYEE', flex: 2),
-                _buildTableHeader('ROLE', flex: 1),
-                _buildTableHeader('STATUS', flex: 1),
-                _buildTableHeader('CONTACT', flex: 2),
-                _buildTableHeader('LAST ACTIVITY', flex: 1),
-              ],
-            ),
-          ),
-          const Divider(height: 1),
-          // Employee List
-          Expanded(
-            child: BlocBuilder<EmployeeBloc, EmployeeState>(
-              builder: (context, state) {
-                if (state is EmployeeLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (state is EmployeeLoaded) {
-                  return ListView.separated(
-                    itemCount: state.employees.length,
-                    separatorBuilder: (context, index) =>
-                        const Divider(height: 1, indent: 20, endIndent: 20),
-                    itemBuilder: (context, index) {
-                      final employee = state.employees[index];
-                      return _buildEmployeeRow(context, employee);
-                    },
-                  );
-                }
-                return const SizedBox();
-              },
-            ),
-          ),
-          // Pagination Placeholder
-          _buildPagination(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTableHeader(String label, {required int flex}) {
-    return Expanded(
-      flex: flex,
-      child: Text(
-        label,
-        style: TextStyle(
-          color: Colors.grey[500],
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmployeeRow(BuildContext context, EmployeeEntity employee) {
+  Widget _buildEmployeeCard(BuildContext context, EmployeeEntity employee) {
     final isSelected = _selectedEmployee?.id == employee.id;
+    final roleColor = _getRoleColor(employee.role);
 
     return InkWell(
       onTap: () => setState(() => _selectedEmployee = employee),
+      borderRadius: BorderRadius.circular(20),
       child: Container(
-        color: isSelected ? Colors.blue.withOpacity(0.05) : Colors.transparent,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        child: Row(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: isSelected ? Border.all(color: Colors.blue.withAlpha(100), width: 2) : null,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(isSelected ? 15 : 5),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
           children: [
-            // Employee Info
-            Expanded(
-              flex: 2,
+            // Card Header (Role Badge & Menu)
+            Padding(
+              padding: const EdgeInsets.all(16.0),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.grey[200],
-                    child: Text(
-                      employee.name[0].toUpperCase(),
-                      style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: roleColor.withAlpha(20),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 6,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: roleColor,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          employee.role.toValue().toUpperCase(),
+                          style: TextStyle(
+                            color: roleColor,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  const Icon(Icons.more_horiz, color: Colors.grey, size: 20),
+                ],
+              ),
+            ),
+            // Avatar & Name
+            const SizedBox(height: 8),
+            CircleAvatar(
+              radius: 42,
+              backgroundColor: Colors.grey[100],
+              child: Text(
+                employee.name[0],
+                style: const TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              employee.fullName,
+              style:
+                  const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+            ),
+            Text(
+              employee.role.toValue(),
+              style: TextStyle(fontSize: 14, color: Colors.grey[500], fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 24),
+            // Stats Section
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: _buildSmallStatColumn('Daily Goal', '\$1k'),
+                  ),
+                  Container(width: 1, height: 30, color: Colors.grey[100]),
+                  Expanded(
+                    child: _buildSmallStatColumn('Sales', '\$482.50'),
+                  ),
+                ],
+              ),
+            ),
+            const Spacer(),
+            // Bottom Bar
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                border: Border(top: BorderSide(color: Colors.grey[50]!)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
                     children: [
+                      const Icon(Icons.circle, color: Colors.green, size: 8),
+                      const SizedBox(width: 8),
                       Text(
-                        employee.fullName,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        'ID: #${employee.id.substring(0, 5)}',
-                        style: TextStyle(color: Colors.grey[500], fontSize: 11),
+                        'ONLINE',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey[600],
+                        ),
                       ),
                     ],
                   ),
-                ],
-              ),
-            ),
-            // Role
-            Expanded(
-              flex: 1,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: _getRoleColor(employee.role).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  employee.role.toValue(),
-                  style: TextStyle(
-                    color: _getRoleColor(employee.role),
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-            // Status
-            Expanded(
-              flex: 1,
-              child: Row(
-                children: [
-                  Container(
-                    width: 8,
-                    height: 8,
-                    decoration: const BoxDecoration(
-                      color: Colors.green,
-                      shape: BoxShape.circle,
+                  TextButton(
+                    onPressed: () {},
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: const Text(
+                      'EDIT',
+                      style:
+                          TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.blue),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  const Text('On Shift', style: TextStyle(fontSize: 13)),
                 ],
               ),
             ),
-            // Contact
-            Expanded(
-              flex: 2,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('sarah.w@cafe.com', style: TextStyle(fontSize: 13)),
-                  Text(
-                    '+1 (555) 123-4567',
-                    style: TextStyle(color: Colors.grey[500], fontSize: 11),
-                  ),
-                ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSmallStatColumn(String label, String value) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAddStaffCard(BuildContext context) {
+    return InkWell(
+      onTap: () => _showEmployeeDialog(context),
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.grey[300]!, width: 2, style: BorderStyle.solid),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.blue.withAlpha(10),
+                shape: BoxShape.circle,
               ),
+              child: const Icon(Icons.add, color: Colors.blue, size: 32),
             ),
-            // Last Activity
-            Expanded(
-              flex: 1,
-              child: Text(
-                'Now',
-                style: TextStyle(color: Colors.grey[600], fontSize: 13),
+            const SizedBox(height: 16),
+            const Text(
+              'ADD NEW STAFF',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue,
+                letterSpacing: 1,
               ),
             ),
           ],
@@ -411,78 +368,30 @@ class _EmployeesViewState extends State<_EmployeesView> {
     return Colors.grey;
   }
 
-  Widget _buildPagination() {
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            'Showing 1 to 4 of 24 entries',
-            style: TextStyle(color: Colors.grey[600], fontSize: 13),
-          ),
-          Row(
-            children: [
-              _buildPageButton('Previous', isEnabled: false),
-              _buildPageButton('1', isActive: true),
-              _buildPageButton('2'),
-              _buildPageButton('3'),
-              _buildPageButton('Next'),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPageButton(String label, {bool isActive = false, bool isEnabled = true}) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4),
-      child: TextButton(
-        onPressed: isEnabled ? () {} : null,
-        style: TextButton.styleFrom(
-          backgroundColor: isActive ? Colors.blue : Colors.transparent,
-          foregroundColor:
-              isActive ? Colors.white : (isEnabled ? Colors.grey[700] : Colors.grey[400]),
-          minimumSize: const Size(32, 32),
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-            side: isActive ? BorderSide.none : BorderSide(color: Colors.grey[300]!),
-          ),
-        ),
-        child: Text(label, style: const TextStyle(fontSize: 12)),
-      ),
-    );
-  }
-
-  Widget _buildQuickViewPanel(BuildContext context) {
-    return Container(
-      width: 350,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(left: BorderSide(color: Colors.grey[200]!)),
-      ),
-      child: _selectedEmployee == null
-          ? _buildEmptyQuickView()
-          : _buildEmployeeDetails(_selectedEmployee!),
-    );
-  }
-
   Widget _buildEmptyQuickView() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.person_search_outlined, size: 64, color: Colors.grey[300]),
-          const SizedBox(height: 16),
-          Text(
-            'Select an employee\nto see details',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey[500], fontSize: 16),
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.grey[100],
+            shape: BoxShape.circle,
           ),
-        ],
-      ),
+          child: Icon(Icons.person_search_outlined, size: 64, color: Colors.grey[300]),
+        ),
+        const SizedBox(height: 24),
+        const Text(
+          'Quick View',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Select an employee\nto see detailed information',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Colors.grey[500], fontSize: 14),
+        ),
+      ],
     );
   }
 
@@ -566,7 +475,7 @@ class _EmployeesViewState extends State<_EmployeesView> {
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: Colors.blue.withOpacity(0.05),
+        color: Colors.blue.withAlpha(13),
         shape: BoxShape.circle,
       ),
       child: Icon(icon, size: 20, color: Colors.blue),
@@ -612,6 +521,19 @@ class _EmployeesViewState extends State<_EmployeesView> {
     );
   }
 
+  Widget _buildQuickViewPanel(BuildContext context) {
+    return Container(
+      width: 380,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(left: BorderSide(color: Colors.grey[100]!)),
+      ),
+      child: _selectedEmployee == null
+          ? _buildEmptyQuickView()
+          : _buildEmployeeDetails(_selectedEmployee!),
+    );
+  }
+
   Widget _buildSalesCard(String title, String subtitle, String value) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -624,7 +546,7 @@ class _EmployeesViewState extends State<_EmployeesView> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.orange.withOpacity(0.1),
+              color: Colors.orange.withAlpha(25),
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Icon(Icons.shopping_bag_outlined, color: Colors.orange, size: 20),
@@ -698,8 +620,8 @@ class _EmployeesViewState extends State<_EmployeesView> {
     );
   }
 
-  void _showEmployeeDialog(BuildContext parentContext) {
-    showDialog(
+  Future<void> _showEmployeeDialog(BuildContext parentContext) async {
+    await showDialog(
       context: parentContext,
       builder: (context) {
         return EmployeeFormDialog(
