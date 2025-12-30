@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:primo_v2/core/entities/employee_entity.dart';
+import 'package:primo_v2/core/presentation/widgets/app_scaffold.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../shifts/domain/entities/shift_entity.dart';
@@ -30,7 +31,7 @@ class DashboardPage extends StatelessWidget {
       },
       builder: (context, state) {
         if (state is ShiftLoading) {
-          return const Scaffold(
+          return const AppScaffold(
             body: Center(child: CircularProgressIndicator()),
           );
         }
@@ -41,7 +42,7 @@ class DashboardPage extends StatelessWidget {
           final shift = (state is ShiftActive) ? state.shift : (state as ShiftOnBreak).shift;
           final isBreak = state is ShiftOnBreak;
 
-          return Scaffold(
+          return AppScaffold(
             appBar: AppBar(
               title: const Text('PRIMO V2 - Dashboard'),
               actions: [
@@ -71,7 +72,7 @@ class DashboardPage extends StatelessWidget {
         }
 
         // Fallback por si el redirect tarda un frame
-        return const Scaffold(
+        return const AppScaffold(
           body: Center(child: CircularProgressIndicator()),
         );
       },

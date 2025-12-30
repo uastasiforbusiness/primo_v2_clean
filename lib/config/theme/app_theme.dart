@@ -60,7 +60,7 @@ class AppTheme {
       ),
 
       // Scaffold background
-      scaffoldBackgroundColor: _backgroundColor,
+      scaffoldBackgroundColor: Colors.transparent,
     );
   }
 
