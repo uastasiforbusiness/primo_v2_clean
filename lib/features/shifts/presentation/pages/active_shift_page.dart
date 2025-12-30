@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:primo_v2/core/presentation/widgets/app_scaffold.dart';
-import 'package:primo_v2/features/shifts/presentation/bloc/shift_bloc.dart';
-import 'package:primo_v2/features/shifts/presentation/bloc/shift_state.dart';
 
 class ActiveShiftPage extends StatelessWidget {
   const ActiveShiftPage({super.key});
@@ -139,7 +136,8 @@ class ActiveShiftPage extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text('Cappuccino', style: TextStyle(fontWeight: FontWeight.bold)),
-                    Text('\$4.50', style: TextStyle(color: Colors.blue[700], fontWeight: FontWeight.bold)),
+                    Text('\$4.50',
+                        style: TextStyle(color: Colors.blue[700], fontWeight: FontWeight.bold)),
                   ],
                 ),
                 const SizedBox(height: 4),
@@ -169,7 +167,8 @@ class ActiveShiftPage extends StatelessWidget {
                     Text('Orden', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                   ],
                 ),
-                IconButton(icon: const Icon(Icons.delete_outline, color: Colors.red), onPressed: () {}),
+                IconButton(
+                    icon: const Icon(Icons.delete_outline, color: Colors.red), onPressed: () {}),
               ],
             ),
           ),
@@ -208,7 +207,8 @@ class ActiveShiftPage extends StatelessWidget {
               Container(
                 width: 50,
                 height: 50,
-                decoration: BoxDecoration(color: Colors.grey[200], borderRadius: BorderRadius.circular(8)),
+                decoration:
+                    BoxDecoration(color: Colors.grey[200], borderRadius: BorderRadius.circular(8)),
                 child: const Icon(Icons.coffee, size: 24),
               ),
               const SizedBox(width: 12),
@@ -234,7 +234,10 @@ class ActiveShiftPage extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))],
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))
+        ],
       ),
       child: Column(
         children: [
@@ -254,7 +257,8 @@ class ActiveShiftPage extends StatelessWidget {
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              child: const Text('PAGAR', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              child:
+                  const Text('PAGAR', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             ),
           ),
         ],

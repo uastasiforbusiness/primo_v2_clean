@@ -46,7 +46,7 @@ class NumpadWidget extends StatelessWidget {
   Widget _buildRow(List<String> numbers) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: numbers.map((number) => _buildNumberButton(number)).toList(),
+      children: numbers.map(_buildNumberButton).toList(),
     );
   }
 

@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
-import '../../../../core/error/failures.dart';
 import 'package:primo_v2/core/entities/employee_entity.dart';
+
+import '../../../../core/error/failures.dart';
 import '../repositories/employee_repository.dart';
 
 class GetEmployeesUseCase {

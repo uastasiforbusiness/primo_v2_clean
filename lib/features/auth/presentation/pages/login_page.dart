@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/presentation/widgets/app_scaffold.dart';
 import '../../../shifts/presentation/bloc/shift_bloc.dart';
 import '../../../shifts/presentation/bloc/shift_event.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
 import '../bloc/auth_state.dart';
 import '../widgets/numpad_widget.dart';
-import '../../../../core/presentation/widgets/app_scaffold.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -105,7 +105,8 @@ class _LoginPageState extends State<LoginPage> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const SizedBox(height: 100), // Espacio para que el logo de fondo se vea arriba
+                          const SizedBox(
+                              height: 100), // Espacio para que el logo de fondo se vea arriba
                           const SizedBox(height: 48),
                           if (_isLocked)
                             Column(

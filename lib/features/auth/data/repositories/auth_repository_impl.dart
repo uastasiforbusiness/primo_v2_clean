@@ -1,7 +1,8 @@
 import 'package:dartz/dartz.dart';
+import 'package:primo_v2/core/entities/employee_entity.dart';
+
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
-import 'package:primo_v2/core/entities/employee_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_local_datasource.dart';
 import '../models/employee_model.dart';

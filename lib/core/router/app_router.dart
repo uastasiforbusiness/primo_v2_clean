@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:primo_v2/core/presentation/widgets/main_layout.dart';
 import 'package:primo_v2/core/shared_kernel/role.dart';
 import 'package:primo_v2/di/injection_container.dart';
 import 'package:primo_v2/features/auth/presentation/bloc/auth_bloc.dart';
@@ -19,7 +20,6 @@ import 'package:primo_v2/features/shifts/presentation/bloc/shift_state.dart';
 import 'package:primo_v2/features/shifts/presentation/pages/active_shift_page.dart';
 import 'package:primo_v2/features/shifts/presentation/pages/break_page.dart';
 import 'package:primo_v2/features/splash/presentation/pages/splash_page.dart';
-import 'package:primo_v2/core/presentation/widgets/main_layout.dart';
 
 /// AppRouter - Centralized navigation for PRIMO V2
 class AppRouter {

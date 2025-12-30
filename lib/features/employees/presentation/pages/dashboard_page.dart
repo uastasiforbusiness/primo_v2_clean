@@ -3,9 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:primo_v2/core/entities/employee_entity.dart';
-import 'package:primo_v2/core/presentation/widgets/app_scaffold.dart';
-import '../../../auth/presentation/bloc/auth_bloc.dart';
-import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../shifts/domain/entities/shift_entity.dart';
 import '../../../shifts/presentation/bloc/shift_bloc.dart';
 import '../../../shifts/presentation/bloc/shift_event.dart';

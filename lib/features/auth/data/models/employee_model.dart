@@ -1,6 +1,7 @@
+import 'package:primo_v2/core/entities/employee_entity.dart';
+
 import '../../../../core/shared_kernel/role.dart';
 import '../../../database/data/app_database.dart';
-import 'package:primo_v2/core/entities/employee_entity.dart';
 
 class EmployeeModel extends EmployeeEntity {
   const EmployeeModel({

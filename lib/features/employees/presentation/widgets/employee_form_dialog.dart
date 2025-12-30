@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:uuid/uuid.dart';
-import '../../../../core/shared_kernel/role.dart';
 import 'package:primo_v2/core/entities/employee_entity.dart';
+import 'package:uuid/uuid.dart';
+
+import '../../../../core/shared_kernel/role.dart';
 
 class EmployeeFormDialog extends StatefulWidget {
   final EmployeeEntity? employee; // null = crear, not null = editar
