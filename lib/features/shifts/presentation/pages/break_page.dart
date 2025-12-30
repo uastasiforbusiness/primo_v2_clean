@@ -1,7 +1,11 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
-// TODO: Uncomment when implementing EndBreakRequested functionality
-// import 'package:flutter_bloc/flutter_bloc.dart';
-// import 'package:primo_v2/features/shifts/presentation/bloc/shift_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:primo_v2/core/presentation/widgets/app_scaffold.dart';
+import '../bloc/shift_bloc.dart';
+import '../bloc/shift_event.dart';
+import '../bloc/shift_state.dart';
 
 /// BreakPage - Screen shown during employee break
 class BreakPage extends StatelessWidget {
@@ -9,74 +13,117 @@ class BreakPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('En Pausa'),
-        automaticallyImplyLeading: false,
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Break icon
-              Icon(
-                Icons.coffee,
-                size: 100,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              const SizedBox(height: 32),
+    return BlocListener<ShiftBloc, ShiftState>(
+      listener: (context, state) {
+        if (state is ShiftActive) {
+          // Si el turno vuelve a estar activo, regresamos al dashboard
+          context.goNamed('dashboard');
+        } else if (state is ShiftError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      },
+      child: AppScaffold(
+        body: Center(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 80),
 
-              // Status
-              Text(
-                'PAUSA ACTIVA',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.orange[800],
-                    ),
-              ),
-              const SizedBox(height: 16),
-
-              // Message
-              Text(
-                'Tu turno está en pausa. Presiona el botón para reanudar.',
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Colors.grey[600],
-                    ),
-              ),
-              const SizedBox(height: 48),
-
-              // Resume button
-              ElevatedButton.icon(
-                onPressed: () {
-                  // TODO: Get current shift ID and end break
-                  // context.read<ShiftBloc>().add(EndBreakRequested(shiftId));
-                },
-                icon: const Icon(Icons.play_arrow, size: 24),
-                label: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  child: Text(
-                    'REAUDAR TURNO',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  // Status Text
+                  Text(
+                    'PAUSA ACTIVA',
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.primary,
+                          letterSpacing: 4,
+                        ),
                   ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
+                  const SizedBox(height: 16),
 
-              // Timer
-              const BreakTimer(),
-            ],
+                  // Message
+                  Text(
+                    'Tu turno se encuentra suspendido temporalmente.\nPresiona el botón para reanudar tus actividades.',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                          color: Colors.grey[700],
+                        ),
+                  ),
+                  const SizedBox(height: 48),
+
+                  // Timer
+                  const BreakTimer(),
+                  const SizedBox(height: 48),
+
+                  // Resume button
+                  _buildResumeButton(context),
+                ],
+              ),
+            ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildResumeButton(BuildContext context) {
+    return BlocBuilder<ShiftBloc, ShiftState>(
+      builder: (context, state) {
+        final isLoading = state is ShiftLoading;
+        final shiftId = state is ShiftOnBreak ? state.shift.id : '';
+
+        return SizedBox(
+          width: 280,
+          height: 60,
+          child: ElevatedButton(
+            onPressed: isLoading || shiftId.isEmpty
+                ? null
+                : () {
+                    context.read<ShiftBloc>().add(EndBreakRequested(shiftId));
+                  },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green[600],
+              foregroundColor: Colors.white,
+              elevation: 4,
+              shadowColor: Colors.green.withOpacity(0.4),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+            ),
+            child: isLoading
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 3,
+                    ),
+                  )
+                : const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.play_arrow_rounded, size: 28),
+                      SizedBox(width: 12),
+                      Text(
+                        'REANUDAR TURNO',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                    ],
+                  ),
+          ),
+        );
+      },
     );
   }
 }
@@ -90,23 +137,27 @@ class BreakTimer extends StatefulWidget {
 }
 
 class _BreakTimerState extends State<BreakTimer> {
-  DateTime _startTime = DateTime.now();
+  late DateTime _startTime;
   String _formattedTime = '00:00';
+  bool _isRunning = true;
 
   @override
   void initState() {
     super.initState();
+    _startTime = DateTime.now();
     _startTimer();
   }
 
   void _startTimer() {
-    _startTime = DateTime.now();
-    
+    if (!_isRunning) return;
+
     Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) {
+      if (mounted && _isRunning) {
         setState(() {
           final duration = DateTime.now().difference(_startTime);
-          _formattedTime = '${duration.inMinutes.toString().padLeft(2, '0')}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}';
+          final minutes = duration.inMinutes.toString().padLeft(2, '0');
+          final seconds = (duration.inSeconds % 60).toString().padLeft(2, '0');
+          _formattedTime = '$minutes:$seconds';
         });
         _startTimer();
       }
@@ -115,6 +166,7 @@ class _BreakTimerState extends State<BreakTimer> {
 
   @override
   void dispose() {
+    _isRunning = false;
     super.dispose();
   }
 
@@ -123,17 +175,28 @@ class _BreakTimerState extends State<BreakTimer> {
     return Column(
       children: [
         Text(
-          'Tiempo en pausa',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          'TIEMPO TRANSCURRIDO',
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
                 color: Colors.grey[600],
+                letterSpacing: 1.5,
               ),
         ),
-        const SizedBox(height: 4),
-        Text(
-          _formattedTime,
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.5),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Theme.of(context).colorScheme.primary.withOpacity(0.2)),
+          ),
+          child: Text(
+            _formattedTime,
+            style: Theme.of(context).textTheme.displaySmall?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
         ),
       ],
     );
