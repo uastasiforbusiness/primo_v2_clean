@@ -37,45 +37,49 @@ class _EmployeesViewState extends State<_EmployeesView> {
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
-      body: Stack(
-        children: [
-          // Logo de fondo centrado
-          Center(
-            child: Opacity(
-              opacity: 0.05,
-              child: Image.asset(
-                'assets/images/background.png',
-                width: MediaQuery.of(context).size.width * 0.4,
+      body: Container(
+        // Fondo con más contraste (gris muy claro para resaltar las tarjetas blancas)
+        color: Colors.grey[100]?.withAlpha(200),
+        child: Stack(
+          children: [
+            // Logo de fondo centrado
+            Center(
+              child: Opacity(
+                opacity: 0.05,
+                child: Image.asset(
+                  'assets/images/background.png',
+                  width: MediaQuery.of(context).size.width * 0.4,
+                ),
               ),
             ),
-          ),
-          Row(
-            children: [
-              // Columna Central (Principal)
-              Expanded(
-                flex: 3,
-                child: Column(
-                  children: [
-                    _buildTopBar(context),
-                    _buildContextualActions(context),
-                    Expanded(
-                      child: _buildEmployeeGrid(context),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Columna Derecha (Deslizable) - Usando flex 1 para consistencia con ActiveShiftPage
-              if (_showDetails && _selectedEmployee != null) ...[
-                const VerticalDivider(width: 1, thickness: 1),
+            Row(
+              children: [
+                // Columna Central (Principal)
                 Expanded(
-                  flex: 1,
-                  child: _buildEmployeeDetails(_selectedEmployee!),
+                  flex: 5, // Ajustado para dar más espacio al panel derecho
+                  child: Column(
+                    children: [
+                      _buildTopBar(context),
+                      _buildContextualActions(context),
+                      Expanded(
+                        child: _buildEmployeeGrid(context),
+                      ),
+                    ],
+                  ),
                 ),
+
+                // Columna Derecha (Deslizable)
+                if (_showDetails && _selectedEmployee != null) ...[
+                  const VerticalDivider(width: 1, thickness: 1),
+                  Expanded(
+                    flex: 2, // Aumentado de 1 a 2 para que sea un poco más ancho
+                    child: _buildEmployeeDetails(_selectedEmployee!),
+                  ),
+                ],
               ],
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
