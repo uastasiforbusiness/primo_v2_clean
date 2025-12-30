@@ -65,17 +65,14 @@ class _EmployeesViewState extends State<_EmployeesView> {
                 ),
               ),
 
-              // Columna Derecha (Deslizable)
-              if (_showDetails && _selectedEmployee != null)
+              // Columna Derecha (Deslizable) - Usando flex 1 para consistencia con ActiveShiftPage
+              if (_showDetails && _selectedEmployee != null) ...[
                 const VerticalDivider(width: 1, thickness: 1),
-              
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                width: (_showDetails && _selectedEmployee != null) ? 380 : 0,
-                child: _selectedEmployee != null 
-                    ? _buildEmployeeDetails(_selectedEmployee!)
-                    : const SizedBox.shrink(),
-              ),
+                Expanded(
+                  flex: 1,
+                  child: _buildEmployeeDetails(_selectedEmployee!),
+                ),
+              ],
             ],
           ),
         ],
@@ -138,23 +135,23 @@ class _EmployeesViewState extends State<_EmployeesView> {
       child: Row(
         children: [
           _buildContextualButton(
-            label: 'Nuevo Empleado',
+            label: 'Nuevo',
             icon: Icons.person_add_outlined,
             onTap: () => _showEmployeeDialog(context),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
           _buildContextualButton(
-            label: 'Exportar Lista',
+            label: 'Exportar',
             icon: Icons.file_download_outlined,
             onTap: () {},
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
           _buildContextualButton(
-            label: 'Roles y Permisos',
+            label: 'Roles',
             icon: Icons.admin_panel_settings_outlined,
             onTap: () {},
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
           _buildContextualButton(
             label: 'Asistencia',
             icon: Icons.calendar_today_outlined,
@@ -176,6 +173,7 @@ class _EmployeesViewState extends State<_EmployeesView> {
         borderRadius: BorderRadius.circular(24),
         child: Container(
           height: 48,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(24),
@@ -190,11 +188,18 @@ class _EmployeesViewState extends State<_EmployeesView> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 20, color: Colors.black87),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+              Icon(icon, size: 18, color: Colors.black87),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold, 
+                    color: Colors.black87,
+                    fontSize: 13,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),
@@ -318,7 +323,7 @@ class _EmployeesViewState extends State<_EmployeesView> {
   Widget _buildEmployeeDetails(EmployeeEntity employee) {
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.all(32),
+      padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -335,61 +340,64 @@ class _EmployeesViewState extends State<_EmployeesView> {
               ),
             ],
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 24),
           Center(
             child: CircleAvatar(
-              radius: 50,
+              radius: 40,
               backgroundColor: Colors.blue[50],
               child: Text(
                 employee.name[0],
-                style: const TextStyle(fontSize: 40, color: Colors.blue, fontWeight: FontWeight.bold),
+                style: const TextStyle(fontSize: 32, color: Colors.blue, fontWeight: FontWeight.bold),
               ),
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
           Center(
             child: Column(
               children: [
                 Text(
                   employee.fullName,
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  textAlign: TextAlign.center,
                 ),
                 Text(
                   employee.role.toValue().toUpperCase(),
-                  style: TextStyle(color: Colors.blue[700], fontWeight: FontWeight.bold, letterSpacing: 1.2),
+                  style: TextStyle(color: Colors.blue[700], fontWeight: FontWeight.bold, letterSpacing: 1.2, fontSize: 12),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 40),
-          _buildDetailItem(Icons.badge_outlined, 'ID de Empleado', employee.id),
-          _buildDetailItem(Icons.email_outlined, 'Correo Electrónico', 'No disponible'),
+          const SizedBox(height: 32),
+          _buildDetailItem(Icons.badge_outlined, 'ID', employee.id),
+          _buildDetailItem(Icons.email_outlined, 'Email', 'No disponible'),
           _buildDetailItem(Icons.phone_outlined, 'Teléfono', 'No disponible'),
           const Spacer(),
-          Row(
+          Column(
             children: [
-              Expanded(
+              SizedBox(
+                width: double.infinity,
                 child: OutlinedButton.icon(
                   onPressed: () {},
-                  icon: const Icon(Icons.edit_outlined),
+                  icon: const Icon(Icons.edit_outlined, size: 18),
                   label: const Text('Editar'),
                   style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
               ),
-              const SizedBox(width: 16),
-              Expanded(
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: () {},
-                  icon: const Icon(Icons.delete_outline),
+                  icon: const Icon(Icons.delete_outline, size: 18),
                   label: const Text('Eliminar'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red[50],
                     foregroundColor: Colors.red,
                     elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
@@ -403,21 +411,21 @@ class _EmployeesViewState extends State<_EmployeesView> {
 
   Widget _buildDetailItem(IconData icon, String label, String value) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.only(bottom: 16),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: Colors.grey[50], borderRadius: BorderRadius.circular(10)),
-            child: Icon(icon, size: 20, color: Colors.grey[600]),
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(color: Colors.grey[50], borderRadius: BorderRadius.circular(8)),
+            child: Icon(icon, size: 18, color: Colors.grey[600]),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: TextStyle(color: Colors.grey[500], fontSize: 12)),
-                Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14), overflow: TextOverflow.ellipsis),
+                Text(label, style: TextStyle(color: Colors.grey[500], fontSize: 11)),
+                Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13), overflow: TextOverflow.ellipsis),
               ],
             ),
           ),
@@ -427,7 +435,6 @@ class _EmployeesViewState extends State<_EmployeesView> {
   }
 
   Color _getRoleColor(Role role) {
-    // Usando Role.admin, Role.supervisor, Role.staff según la definición real
     if (role == Role.admin) return Colors.purple;
     if (role == Role.supervisor) return Colors.blue;
     if (role == Role.staff) return Colors.green;
