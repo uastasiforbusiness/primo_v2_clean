@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:primo_v2/features/shifts/presentation/bloc/shift_bloc.dart';
+import 'package:primo_v2/features/shifts/presentation/bloc/shift_event.dart';
+import 'package:primo_v2/features/shifts/presentation/bloc/shift_state.dart';
+import 'package:primo_v2/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:primo_v2/features/auth/presentation/bloc/auth_event.dart';
+import 'package:primo_v2/features/auth/presentation/bloc/auth_state.dart';
 
 class SidebarItem {
   final IconData icon;
@@ -33,19 +40,35 @@ class AppSidebar extends StatelessWidget {
     ];
 
     return Container(
-      width: 250,
-      color: Colors.white,
+      width: 260,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 20,
+            offset: const Offset(4, 0),
+          ),
+        ],
+      ),
       child: Column(
         children: [
           _buildHeader(context),
-          const SizedBox(height: 20),
+          const SizedBox(height: 8),
+          const Divider(height: 1, indent: 24, endIndent: 24),
+          const SizedBox(height: 16),
           Expanded(
             child: ListView.builder(
+              padding: EdgeInsets.zero,
               itemCount: items.length,
               itemBuilder: (context, index) {
                 final item = items[index];
-                final isSelected = currentRoute.contains(item.routeName);
-                return _buildSidebarItem(context, item, isSelected);
+                // Caso especial para el dashboard base
+                final bool active = item.routeName == 'dashboard'
+                    ? (currentRoute == '/dashboard')
+                    : currentRoute.contains(item.routeName);
+
+                return _buildSidebarItem(context, item, active);
               },
             ),
           ),
@@ -56,30 +79,175 @@ class AppSidebar extends StatelessWidget {
   }
 
   Widget _buildHeader(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Row(
-        children: [
-          const CircleAvatar(
-            radius: 24,
-            backgroundColor: Colors.blueAccent,
-            child: Icon(Icons.person, color: Colors.white),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Usuario',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+    return BlocBuilder<AuthBloc, AuthState>(
+      builder: (context, authState) {
+        return BlocBuilder<ShiftBloc, ShiftState>(
+          builder: (context, shiftState) {
+            String name = 'Usuario';
+            String id = '001';
+
+            if (authState is AuthAuthenticated) {
+              name = authState.employee.fullName;
+              id = authState.employee.id.substring(0, 3).toUpperCase();
+            }
+
+            final bool canShowShiftActions = shiftState is ShiftActive;
+
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(16, 40, 16, 24),
+              child: PopupMenuButton<String>(
+                offset: const Offset(0, 60),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                position: PopupMenuPosition.under,
+                enabled: canShowShiftActions,
+                onSelected: (value) {
+                  if (value == 'pause') {
+                    final shiftId = (shiftState as ShiftActive).shift.id;
+                    context.read<ShiftBloc>().add(StartBreakRequested(shiftId));
+                  } else if (value == 'clock_out') {
+                    final shiftId = (shiftState as ShiftActive).shift.id;
+                    _showClockOutDialog(context, shiftId);
+                  }
+                },
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                    value: 'pause',
+                    child: Row(
+                      children: [
+                        Icon(Icons.coffee_rounded,
+                            color: Theme.of(context).colorScheme.primary, size: 20),
+                        const SizedBox(width: 12),
+                        const Text('Iniciar Pausa'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'clock_out',
+                    child: Row(
+                      children: [
+                        Icon(Icons.logout_rounded, color: Colors.red, size: 20),
+                        SizedBox(width: 12),
+                        Text('Cerrar Turno'),
+                      ],
+                    ),
+                  ),
+                ],
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    color: Colors.transparent,
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.blue.withOpacity(0.2), width: 2),
+                        ),
+                        child: CircleAvatar(
+                          radius: 22,
+                          backgroundColor: Colors.blue[50],
+                          child: Text(
+                            name[0],
+                            style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    name,
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                if (canShowShiftActions)
+                                  const Icon(
+                                    Icons.keyboard_arrow_down,
+                                    size: 18,
+                                    color: Colors.grey,
+                                  ),
+                              ],
+                            ),
+                            Text(
+                              'Cashier ID: #$id',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[500],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                Text(
-                  'Cajero ID: #001',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey),
-                ),
-              ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showClockOutDialog(BuildContext context, String shiftId) {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text('Cerrar Turno'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Ingresa el monto final en caja para finalizar:'),
+            const SizedBox(height: 24),
+            TextField(
+              controller: controller,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              autofocus: true,
+              decoration: InputDecoration(
+                labelText: 'Monto Final',
+                prefixText: '\$ ',
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                filled: true,
+                fillColor: Colors.grey[50],
+              ),
             ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text('CANCELAR', style: TextStyle(color: Colors.grey[600])),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final finalCash = double.tryParse(controller.text) ?? 0.0;
+              Navigator.of(dialogContext).pop();
+              context.read<ShiftBloc>().add(
+                    ClockOutRequested(shiftId: shiftId, finalCash: finalCash),
+                  );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('CERRAR TURNO'),
           ),
         ],
       ),
@@ -88,31 +256,36 @@ class AppSidebar extends StatelessWidget {
 
   Widget _buildSidebarItem(BuildContext context, SidebarItem item, bool isSelected) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-      child: InkWell(
-        onTap: () => context.goNamed(item.routeName),
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: isSelected ? Colors.blue.withOpacity(0.1) : Colors.transparent,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            children: [
-              Icon(
-                item.icon,
-                color: isSelected ? Colors.blue : Colors.grey[600],
-              ),
-              const SizedBox(width: 16),
-              Text(
-                item.label,
-                style: TextStyle(
-                  color: isSelected ? Colors.blue : Colors.grey[600],
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 2.0),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => context.goNamed(item.routeName),
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: isSelected ? Colors.blue.withOpacity(0.08) : Colors.transparent,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  item.icon,
+                  size: 22,
+                  color: isSelected ? Colors.blue[700] : Colors.grey[500],
                 ),
-              ),
-            ],
+                const SizedBox(width: 16),
+                Text(
+                  item.label,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: isSelected ? Colors.blue[700] : Colors.grey[600],
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -124,15 +297,42 @@ class AppSidebar extends StatelessWidget {
       padding: const EdgeInsets.all(16.0),
       child: Column(
         children: [
+          const Divider(height: 1, indent: 8, endIndent: 8),
+          const SizedBox(height: 8),
           _buildSidebarItem(
             context,
-            SidebarItem(icon: Icons.settings_outlined, label: 'Configuraciones', routeName: 'settings'),
+            SidebarItem(
+              icon: Icons.settings_outlined,
+              label: 'Configuraciones',
+              routeName: 'settings',
+            ),
             currentRoute.contains('settings'),
           ),
-          _buildSidebarItem(
-            context,
-            SidebarItem(icon: Icons.logout, label: 'Logout', routeName: 'login'),
-            false,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+            child: InkWell(
+              onTap: () {
+                context.read<AuthBloc>().add(const LogoutRequested());
+              },
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Row(
+                  children: [
+                    const Icon(Icons.logout, size: 22, color: Colors.redAccent),
+                    const SizedBox(width: 16),
+                    Text(
+                      'Logout',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.redAccent[700],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ],
       ),

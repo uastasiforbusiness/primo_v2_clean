@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:primo_v2/core/presentation/widgets/app_scaffold.dart';
+import 'package:primo_v2/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:primo_v2/features/auth/presentation/bloc/auth_event.dart';
 import '../bloc/shift_bloc.dart';
 import '../bloc/shift_event.dart';
 import '../bloc/shift_state.dart';
@@ -62,12 +64,40 @@ class BreakPage extends StatelessWidget {
                   const BreakTimer(),
                   const SizedBox(height: 48),
 
-                  // Resume button
-                  _buildResumeButton(context),
+                  // Action Buttons
+                  _buildActionButtons(context),
                 ],
               ),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButtons(BuildContext context) {
+    return Column(
+      children: [
+        _buildResumeButton(context),
+        const SizedBox(height: 16),
+        _buildLogoutButton(context),
+      ],
+    );
+  }
+
+  Widget _buildLogoutButton(BuildContext context) {
+    return TextButton.icon(
+      onPressed: () {
+        // Al cerrar sesión, el middleware de GoRouter nos llevará a /login
+        context.read<AuthBloc>().add(const LogoutRequested());
+      },
+      icon: const Icon(Icons.logout, color: Colors.grey),
+      label: Text(
+        'SALIR',
+        style: TextStyle(
+          color: Colors.grey[600],
+          fontWeight: FontWeight.bold,
+          letterSpacing: 1,
         ),
       ),
     );

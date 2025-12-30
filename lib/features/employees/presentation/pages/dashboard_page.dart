@@ -138,13 +138,6 @@ class DashboardPage extends StatelessWidget {
         if (!isBreak) ...[
           _buildActionCard(
             context,
-            icon: Icons.coffee,
-            title: 'Iniciar Pausa',
-            color: Colors.orange,
-            onTap: () => context.read<ShiftBloc>().add(StartBreakRequested(shift.id)),
-          ),
-          _buildActionCard(
-            context,
             icon: Icons.shopping_cart,
             title: 'Ventas',
             color: Colors.green,
@@ -165,14 +158,6 @@ class DashboardPage extends StatelessWidget {
             title: 'Empleados',
             color: Colors.blue,
             onTap: () => context.pushNamed('employees'),
-          ),
-        if (!isBreak)
-          _buildActionCard(
-            context,
-            icon: Icons.logout,
-            title: 'Cerrar Turno',
-            color: Colors.red,
-            onTap: () => _showClockOutDialog(context, shift.id),
           ),
       ],
     );
@@ -218,48 +203,6 @@ class DashboardPage extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  void _showClockOutDialog(BuildContext context, String shiftId) {
-    final controller = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Cerrar Turno'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Ingresa el monto final en caja:'),
-            const SizedBox(height: 16),
-            TextField(
-              controller: controller,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(
-                labelText: 'Monto Final',
-                prefixText: '\$ ',
-                border: OutlineInputBorder(),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final finalCash = double.tryParse(controller.text) ?? 0.0;
-              Navigator.of(dialogContext).pop();
-              context.read<ShiftBloc>().add(
-                    ClockOutRequested(shiftId: shiftId, finalCash: finalCash),
-                  );
-            },
-            child: const Text('Cerrar Turno'),
-          ),
-        ],
       ),
     );
   }
