@@ -57,10 +57,40 @@ class _EmployeesViewState extends State<_EmployeesView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildTopBar(context),
+          _buildEmptyCapsules(context),
+          const SizedBox(height: 16),
           Expanded(
             child: _buildEmployeeGrid(context),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyCapsules(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      child: Row(
+        children: List.generate(
+          4,
+          (index) => Expanded(
+            child: Container(
+              height: 48,
+              margin: EdgeInsets.only(right: index == 3 ? 0 : 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(5),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
