@@ -105,26 +105,7 @@ class _LoginPageState extends State<LoginPage> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(
-                            Icons.point_of_sale_rounded,
-                            size: 80,
-                            color: Colors.deepPurple,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'PRIMO V2',
-                            style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.deepPurple,
-                                ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Sistema POS',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  color: Colors.grey[600],
-                                ),
-                          ),
+                          const SizedBox(height: 100), // Espacio para que el logo de fondo se vea arriba
                           const SizedBox(height: 48),
                           if (_isLocked)
                             Column(

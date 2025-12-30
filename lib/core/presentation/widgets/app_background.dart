@@ -11,7 +11,7 @@ class AppBackground extends StatelessWidget {
     super.key,
     this.child,
     this.imagePath = 'assets/images/background.png',
-    this.opacity = 0.1, // Opacidad baja para que no distraiga del contenido
+    this.opacity = 0.3, // Aumentado para que sea más visible como pidió el usuario
   });
 
   @override
