@@ -136,8 +136,10 @@ class ActiveShiftPage extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text('Cappuccino', style: TextStyle(fontWeight: FontWeight.bold)),
-                    Text('\$4.50',
-                        style: TextStyle(color: Colors.blue[700], fontWeight: FontWeight.bold)),
+                    Text(
+                      '\$4.50',
+                      style: TextStyle(color: Colors.blue[700], fontWeight: FontWeight.bold),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 4),
@@ -168,7 +170,9 @@ class ActiveShiftPage extends StatelessWidget {
                   ],
                 ),
                 IconButton(
-                    icon: const Icon(Icons.delete_outline, color: Colors.red), onPressed: () {}),
+                  icon: const Icon(Icons.delete_outline, color: Colors.red),
+                  onPressed: () {},
+                ),
               ],
             ),
           ),
@@ -236,7 +240,10 @@ class ActiveShiftPage extends StatelessWidget {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
+          ),
         ],
       ),
       child: Column(

@@ -11,15 +11,15 @@ import '../features/audit/presentation/bloc/audit_bloc.dart';
 // ==================== AGREGAR ESTA SECCIÓN DENTRO DE initDependencies() ====================
 
   // ==================== AUDIT FEATURE ====================
-  sl.registerLazySingleton<AuditLocalDataSource>(
-    () => AuditLocalDataSourceImpl(database: sl(), uuid: sl()),
+  void sl.registerLazySingleton<AuditLocalDataSource>(
+    (), => ,AuditLocalDataSourceImpl(database = sl(), uuid = sl()),
   );
-  sl.registerLazySingleton<AuditRepository>(
-    () => AuditRepositoryImpl(localDataSource: sl()),
+  void sl.registerLazySingleton<AuditRepository>(
+    (), => ,AuditRepositoryImpl(localDataSource = sl()),
   );
-  sl.registerLazySingleton(() => LogAuditEventUseCase(sl()));
-  sl.registerLazySingleton(() => GetAuditEventsUseCase(sl()));
+  void sl.registerLazySingleton(() => LogAuditEventUseCase(sl()));
+  void sl.registerLazySingleton(() => GetAuditEventsUseCase(sl()));
 
-  sl.registerFactory(() => AuditBloc(
-    getAuditEventsUseCase: sl(),
-  ));
+  void sl.registerFactory((), => ,AuditBloc(
+    getAuditEventsUseCase = sl(),
+  ),);

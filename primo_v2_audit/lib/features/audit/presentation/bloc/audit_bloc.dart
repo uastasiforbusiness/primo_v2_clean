@@ -42,12 +42,14 @@ class AuditBloc extends Bloc<AuditEvent, AuditState> {
 
     result.fold(
       (failure) => emit(AuditError(failure.message)),
-      (events) => emit(AuditLoaded(
-        events: events,
-        currentFilter: _currentFilter,
-        currentSort: _currentSort,
-        totalCount: events.length,
-      )),
+      (events) => emit(
+        AuditLoaded(
+          events: events,
+          currentFilter: _currentFilter,
+          currentSort: _currentSort,
+          totalCount: events.length,
+        ),
+      ),
     );
   }
 
@@ -66,12 +68,14 @@ class AuditBloc extends Bloc<AuditEvent, AuditState> {
 
     result.fold(
       (failure) => emit(AuditError(failure.message)),
-      (events) => emit(AuditLoaded(
-        events: events,
-        currentFilter: _currentFilter,
-        currentSort: _currentSort,
-        totalCount: events.length,
-      )),
+      (events) => emit(
+        AuditLoaded(
+          events: events,
+          currentFilter: _currentFilter,
+          currentSort: _currentSort,
+          totalCount: events.length,
+        ),
+      ),
     );
   }
 
@@ -90,12 +94,14 @@ class AuditBloc extends Bloc<AuditEvent, AuditState> {
 
     result.fold(
       (failure) => emit(AuditError(failure.message)),
-      (events) => emit(AuditLoaded(
-        events: events,
-        currentFilter: _currentFilter,
-        currentSort: _currentSort,
-        totalCount: events.length,
-      )),
+      (events) => emit(
+        AuditLoaded(
+          events: events,
+          currentFilter: _currentFilter,
+          currentSort: _currentSort,
+          totalCount: events.length,
+        ),
+      ),
     );
   }
 
@@ -114,12 +120,14 @@ class AuditBloc extends Bloc<AuditEvent, AuditState> {
 
     result.fold(
       (failure) => emit(AuditError(failure.message)),
-      (events) => emit(AuditLoaded(
-        events: events,
-        currentFilter: null,
-        currentSort: _currentSort,
-        totalCount: events.length,
-      )),
+      (events) => emit(
+        AuditLoaded(
+          events: events,
+          currentFilter: null,
+          currentSort: _currentSort,
+          totalCount: events.length,
+        ),
+      ),
     );
   }
 
@@ -135,12 +143,14 @@ class AuditBloc extends Bloc<AuditEvent, AuditState> {
 
     result.fold(
       (failure) => emit(AuditError(failure.message)),
-      (events) => emit(AuditLoaded(
-        events: events,
-        currentFilter: _currentFilter,
-        currentSort: _currentSort,
-        totalCount: events.length,
-      )),
+      (events) => emit(
+        AuditLoaded(
+          events: events,
+          currentFilter: _currentFilter,
+          currentSort: _currentSort,
+          totalCount: events.length,
+        ),
+      ),
     );
   }
 }

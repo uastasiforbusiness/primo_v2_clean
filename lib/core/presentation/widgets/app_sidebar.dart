@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:primo_v2/features/shifts/presentation/bloc/shift_bloc.dart';
-import 'package:primo_v2/features/shifts/presentation/bloc/shift_event.dart';
-import 'package:primo_v2/features/shifts/presentation/bloc/shift_state.dart';
 import 'package:primo_v2/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:primo_v2/features/auth/presentation/bloc/auth_event.dart';
 import 'package:primo_v2/features/auth/presentation/bloc/auth_state.dart';
+import 'package:primo_v2/features/shifts/presentation/bloc/shift_bloc.dart';
+import 'package:primo_v2/features/shifts/presentation/bloc/shift_event.dart';
+import 'package:primo_v2/features/shifts/presentation/bloc/shift_state.dart';
 
 class SidebarItem {
   final IconData icon;

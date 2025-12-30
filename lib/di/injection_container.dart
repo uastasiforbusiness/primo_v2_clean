@@ -1,6 +1,13 @@
 import 'package:get_it/get_it.dart';
 import 'package:uuid/uuid.dart';
 
+// Audit Imports
+import '../features/audit/data/datasources/audit_local_datasource.dart';
+import '../features/audit/data/repositories/audit_repository_impl.dart';
+import '../features/audit/domain/repositories/audit_repository.dart';
+import '../features/audit/domain/usecases/get_audit_events_usecase.dart';
+import '../features/audit/domain/usecases/log_audit_event_usecase.dart';
+import '../features/audit/presentation/bloc/audit_bloc.dart';
 // Auth Imports
 import '../features/auth/data/datasources/auth_local_datasource.dart';
 import '../features/auth/data/repositories/auth_repository_impl.dart';
@@ -105,4 +112,20 @@ Future<void> initDependencies() async {
 
   // Asegurar integridad de datos iniciales (Admin user)
   await sl<AppDatabase>().ensureAdminUser();
+
+  //! Features - Audit
+  sl.registerLazySingleton<AuditLocalDataSource>(
+    () => AuditLocalDataSourceImpl(database: sl(), uuid: sl()),
+  );
+  sl.registerLazySingleton<AuditRepository>(
+    () => AuditRepositoryImpl(localDataSource: sl()),
+  );
+  sl.registerLazySingleton(() => LogAuditEventUseCase(sl()));
+  sl.registerLazySingleton(() => GetAuditEventsUseCase(sl()));
+
+  sl.registerFactory(
+    () => AuditBloc(
+      getAuditEventsUseCase: sl(),
+    ),
+  );
 }

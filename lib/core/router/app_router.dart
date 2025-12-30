@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:primo_v2/core/presentation/widgets/main_layout.dart';
 import 'package:primo_v2/core/shared_kernel/role.dart';
 import 'package:primo_v2/di/injection_container.dart';
+import 'package:primo_v2/features/audit/presentation/pages/audit_page.dart';
 import 'package:primo_v2/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:primo_v2/features/auth/presentation/bloc/auth_state.dart';
 import 'package:primo_v2/features/auth/presentation/pages/clock_in_page.dart';
@@ -111,7 +112,7 @@ class AppRouter {
           GoRoute(
             path: '/dashboard/audit',
             name: 'audit',
-            builder: (context, state) => const Center(child: Text('Auditoría - TODO')),
+            builder: (context, state) => const AuditPage(),
           ),
           GoRoute(
             path: '/dashboard/reports',
