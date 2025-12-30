@@ -111,11 +111,45 @@ class AppSidebar extends StatelessWidget {
                 },
                 itemBuilder: (context) => [
                   PopupMenuItem(
+                    enabled: false,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'ESTADO DEL TURNO',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        _buildInfoRow(
+                          Icons.access_time_rounded,
+                          'Iniciado:',
+                          _formatDateTime((shiftState as ShiftActive).shift.startedAt),
+                        ),
+                        const SizedBox(height: 8),
+                        _buildInfoRow(
+                          Icons.payments_outlined,
+                          'Base:',
+                          (shiftState).shift.initialCash.toFormattedString(),
+                        ),
+                        const SizedBox(height: 4),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuDivider(),
+                  PopupMenuItem(
                     value: 'pause',
                     child: Row(
                       children: [
-                        Icon(Icons.coffee_rounded,
-                            color: Theme.of(context).colorScheme.primary, size: 20),
+                        Icon(
+                          Icons.coffee_rounded,
+                          color: Theme.of(context).colorScheme.primary,
+                          size: 20,
+                        ),
                         const SizedBox(width: 12),
                         const Text('Iniciar Pausa'),
                       ],
@@ -252,6 +286,28 @@ class AppSidebar extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildInfoRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(icon, size: 14, color: Colors.grey[400]),
+        const SizedBox(width: 8),
+        Text(
+          label,
+          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          value,
+          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87),
+        ),
+      ],
+    );
+  }
+
+  String _formatDateTime(DateTime dateTime) {
+    return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
   }
 
   Widget _buildSidebarItem(BuildContext context, SidebarItem item, bool isSelected) {

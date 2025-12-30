@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
 import 'package:primo_v2/core/entities/employee_entity.dart';
-import '../../../shifts/domain/entities/shift_entity.dart';
 import '../../../shifts/presentation/bloc/shift_bloc.dart';
-import '../../../shifts/presentation/bloc/shift_event.dart';
 import '../../../shifts/presentation/bloc/shift_state.dart';
 
 class DashboardPage extends StatelessWidget {
@@ -32,26 +29,60 @@ class DashboardPage extends StatelessWidget {
         }
 
         if (state is ShiftActive || state is ShiftOnBreak) {
-          final shift = (state is ShiftActive) ? state.shift : (state as ShiftOnBreak).shift;
-          final isBreak = state is ShiftOnBreak;
-
           return Padding(
-            padding: const EdgeInsets.all(24.0),
+            padding: const EdgeInsets.all(32.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Dashboard',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Bienvenido, ${employee.name}',
+                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Aquí tienes un resumen de tu actividad de hoy.',
+                      style: TextStyle(color: Colors.grey[600], fontSize: 16),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 24),
-                _buildUserCard(context, shift, isBreak),
-                const SizedBox(height: 24),
-                Expanded(
-                  child: _buildActionGrid(context, shift, isBreak),
+                const SizedBox(height: 120),
+                Center(
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withOpacity(0.05),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.insights_rounded,
+                          size: 80,
+                          color: Theme.of(context).colorScheme.primary.withOpacity(0.5),
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      Text(
+                        'Tu punto de venta está listo.',
+                        style: TextStyle(
+                          fontSize: 20,
+                          color: Colors.grey[700],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Selecciona una opción del menú lateral para comenzar.',
+                        style: TextStyle(color: Colors.grey[500], fontSize: 16),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -61,153 +92,5 @@ class DashboardPage extends StatelessWidget {
         return const Center(child: CircularProgressIndicator());
       },
     );
-  }
-
-  Widget _buildUserCard(BuildContext context, ShiftEntity shift, bool isBreak) {
-    return Card(
-      elevation: 4,
-      color: isBreak ? Colors.orange[50] : null,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 30,
-                  backgroundColor: isBreak ? Colors.orange : Colors.deepPurple,
-                  child: Icon(
-                    isBreak ? Icons.coffee : Icons.person,
-                    size: 30,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        employee.fullName,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        isBreak ? 'EN PAUSA' : employee.role.toValue(),
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: isBreak ? Colors.orange[800] : Colors.deepPurple,
-                              fontWeight: FontWeight.bold,
-                            ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const Divider(height: 24),
-            _buildInfoRow(
-              context,
-              'Turno Iniciado',
-              _formatDateTime(shift.startedAt),
-            ),
-            const SizedBox(height: 8),
-            _buildInfoRow(
-              context,
-              'Fondo Inicial',
-              shift.initialCash.toFormattedString(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionGrid(
-    BuildContext context,
-    ShiftEntity shift,
-    bool isBreak,
-  ) {
-    return GridView.count(
-      crossAxisCount: 2,
-      crossAxisSpacing: 16,
-      mainAxisSpacing: 16,
-      children: [
-        if (!isBreak) ...[
-          _buildActionCard(
-            context,
-            icon: Icons.shopping_cart,
-            title: 'Ventas',
-            color: Colors.green,
-            onTap: () => context.pushNamed('active-shift'),
-          ),
-        ] else
-          _buildActionCard(
-            context,
-            icon: Icons.play_arrow,
-            title: 'Terminar Pausa',
-            color: Colors.green,
-            onTap: () => context.read<ShiftBloc>().add(EndBreakRequested(shift.id)),
-          ),
-        if (employee.role.canManageEmployees && !isBreak)
-          _buildActionCard(
-            context,
-            icon: Icons.people,
-            title: 'Empleados',
-            color: Colors.blue,
-            onTap: () => context.pushNamed('employees'),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildInfoRow(BuildContext context, String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
-        ),
-        Text(
-          value,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionCard(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return Card(
-      elevation: 2,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 48, color: color),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  String _formatDateTime(DateTime dateTime) {
-    return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
   }
 }
