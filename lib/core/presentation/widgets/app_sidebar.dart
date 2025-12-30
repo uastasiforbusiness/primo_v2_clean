@@ -112,57 +112,89 @@ class AppSidebar extends StatelessWidget {
                 itemBuilder: (context) => [
                   PopupMenuItem(
                     enabled: false,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'ESTADO DEL TURNO',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey,
-                            letterSpacing: 1,
+                    child: Container(
+                      width: 200, // Forzar un ancho mínimo mayor
+                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Center(
+                            child: Text(
+                              'ESTADO DEL TURNO',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                                letterSpacing: 1.2,
+                              ),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 12),
-                        _buildInfoRow(
-                          Icons.access_time_rounded,
-                          'Iniciado:',
-                          _formatDateTime((shiftState as ShiftActive).shift.startedAt),
-                        ),
-                        const SizedBox(height: 8),
-                        _buildInfoRow(
-                          Icons.payments_outlined,
-                          'Base:',
-                          (shiftState).shift.initialCash.toFormattedString(),
-                        ),
-                        const SizedBox(height: 4),
-                      ],
+                          const SizedBox(height: 20),
+                          _buildInfoRow(
+                            Icons.access_time_rounded,
+                            'Iniciado:',
+                            _formatDateTime((shiftState as ShiftActive).shift.startedAt),
+                            context,
+                          ),
+                          const SizedBox(height: 12),
+                          _buildInfoRow(
+                            Icons.payments_outlined,
+                            'Base:',
+                            (shiftState).shift.initialCash.toFormattedString(),
+                            context,
+                          ),
+                          const SizedBox(height: 8),
+                        ],
+                      ),
                     ),
                   ),
                   const PopupMenuDivider(),
                   PopupMenuItem(
                     value: 'pause',
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.coffee_rounded,
-                          color: Theme.of(context).colorScheme.primary,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 12),
-                        const Text('Iniciar Pausa'),
-                      ],
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.coffee_rounded,
+                            color: Theme.of(context).colorScheme.primary,
+                            size: 24,
+                          ),
+                          const SizedBox(width: 16),
+                          const Text(
+                            'Iniciar Pausa',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   const PopupMenuItem(
                     value: 'clock_out',
-                    child: Row(
-                      children: [
-                        Icon(Icons.logout_rounded, color: Colors.red, size: 20),
-                        SizedBox(width: 12),
-                        Text('Cerrar Turno'),
-                      ],
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.logout_rounded,
+                            color: Colors.red,
+                            size: 24,
+                          ),
+                          SizedBox(width: 16),
+                          Text(
+                            'Cerrar Turno',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.red,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -288,19 +320,19 @@ class AppSidebar extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value) {
+  Widget _buildInfoRow(IconData icon, String label, String value, BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 14, color: Colors.grey[400]),
-        const SizedBox(width: 8),
+        Icon(icon, size: 24, color: Theme.of(context).colorScheme.primary),
+        const SizedBox(width: 16),
         Text(
           label,
-          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+          style: const TextStyle(fontSize: 15, color: Colors.black87),
         ),
-        const SizedBox(width: 4),
+        const SizedBox(width: 6),
         Text(
           value,
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black87),
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87),
         ),
       ],
     );
