@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logger/logger.dart';
+import '../../../../core/presentation/widgets/app_scaffold.dart';
 
-/// SplashPage - Initial loading screen for PRIMO V2
-/// Responsible for:
-/// - Showing loading indicator
-/// - Validating database integrity
-/// - Redirecting to appropriate route
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
 
@@ -26,18 +22,14 @@ class _SplashPageState extends State<SplashPage> {
   Future<void> _initializeApp() async {
     try {
       logger.i('🚀 Initializing PRIMO V2...');
-      
-      // Small delay to show splash
+
+      // Simular carga de recursos/DB
       await Future.delayed(const Duration(seconds: 2));
-      
-      logger.i('✅ Splash completed - navigating to login');
-      
-      // Navigate to login (GoRouter will handle redirects)
+
       if (mounted) {
         context.go('/login');
       }
-    } catch (e, stackTrace) {
-      logger.e('❌ Splash error: ${e.toString()}', error: e, stackTrace: stackTrace);
+    } catch (e) {
       if (mounted) {
         context.go('/error', extra: 'Error de inicialización');
       }
@@ -46,43 +38,45 @@ class _SplashPageState extends State<SplashPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppScaffold(
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Logo
-            Icon(
-              Icons.point_of_sale,
-              size: 100,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            const SizedBox(height: 32),
-            
-            // Loading indicator
-            CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(
-                Theme.of(context).colorScheme.primary,
+            // No ponemos el icono genérico para que luzca el logo de fondo
+            const SizedBox(height: 48),
+
+            // Un indicador de carga más elegante y fino
+            const SizedBox(
+              width: 40,
+              height: 40,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.deepPurple),
               ),
             ),
-            const SizedBox(height: 32),
-            
-            // App name
+
+            const SizedBox(height: 48),
+
             Text(
-              'PRIMO V2',
+              'PRIMO',
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.w300,
+                    letterSpacing: 8,
+                    color: Colors.black87,
                   ),
             ),
-            const SizedBox(height: 16),
-            
-            // Version
+
+            const SizedBox(height: 8),
+
             Text(
-              'Cargando...',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                  ),
+              'SOFTWARE SYSTEM',
+              style: TextStyle(
+                fontSize: 10,
+                letterSpacing: 4,
+                color: Colors.grey[400],
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
         ),
