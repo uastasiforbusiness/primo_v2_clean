@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/presentation/widgets/app_scaffold.dart';
+import '../../../../core/shared_ui/app_scaffold.dart';
 import '../../../shifts/presentation/bloc/shift_bloc.dart';
 import '../../../shifts/presentation/bloc/shift_event.dart';
 import '../bloc/auth_bloc.dart';

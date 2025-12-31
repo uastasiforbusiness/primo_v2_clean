@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:primo_v2/core/presentation/widgets/app_scaffold.dart';
+import 'package:primo_v2/core/shared_ui/app_scaffold.dart';
 import 'package:primo_v2/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:primo_v2/features/auth/presentation/bloc/auth_event.dart';
 import '../bloc/shift_bloc.dart';

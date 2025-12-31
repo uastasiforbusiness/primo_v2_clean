@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../di/injection_container.dart';
+import '../../../../core/shared_ui/app_scaffold.dart';
 import '../../domain/entities/audit_event_entity.dart';
 import '../../domain/value_objects/audit_filter.dart';
 import '../../domain/value_objects/audit_sort.dart';
@@ -28,9 +29,12 @@ class _AuditPageContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppScaffold(
+      showBackground: false, // El fondo ya lo pone MainLayout
       appBar: AppBar(
         title: const Text('Auditoría de Eventos'),
+        backgroundColor: Colors.white.withAlpha(200),
+        elevation: 0,
         actions: [
           IconButton(
             icon: const Icon(Icons.filter_list),
@@ -42,25 +46,14 @@ class _AuditPageContent extends StatelessWidget {
             tooltip: 'Ordenar',
             onSelected: (field) => _changeSort(context, field),
             itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: AuditSortField.createdAt,
-                child: Text('Por Fecha'),
-              ),
-              const PopupMenuItem(
-                value: AuditSortField.eventType,
-                child: Text('Por Tipo'),
-              ),
-              const PopupMenuItem(
-                value: AuditSortField.employeeId,
-                child: Text('Por Empleado'),
-              ),
+              const PopupMenuItem(value: AuditSortField.createdAt, child: Text('Por Fecha')),
+              const PopupMenuItem(value: AuditSortField.eventType, child: Text('Por Tipo')),
+              const PopupMenuItem(value: AuditSortField.employeeId, child: Text('Por Empleado')),
             ],
           ),
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () {
-              context.read<AuditBloc>().add(const RefreshAuditEvents());
-            },
+            onPressed: () => context.read<AuditBloc>().add(const RefreshAuditEvents()),
             tooltip: 'Refrescar',
           ),
         ],
@@ -78,15 +71,10 @@ class _AuditPageContent extends StatelessWidget {
                 children: [
                   const Icon(Icons.error_outline, size: 64, color: Colors.red),
                   const SizedBox(height: 16),
-                  Text(
-                    'Error: ${state.message}',
-                    style: const TextStyle(color: Colors.red),
-                  ),
+                  Text('Error: ${state.message}', style: const TextStyle(color: Colors.red)),
                   const SizedBox(height: 16),
                   ElevatedButton(
-                    onPressed: () {
-                      context.read<AuditBloc>().add(const LoadAuditEvents());
-                    },
+                    onPressed: () => context.read<AuditBloc>().add(const LoadAuditEvents()),
                     child: const Text('Reintentar'),
                   ),
                 ],
@@ -111,9 +99,7 @@ class _AuditPageContent extends StatelessWidget {
                     if (state.currentFilter?.hasFilters == true) ...[
                       const SizedBox(height: 16),
                       ElevatedButton(
-                        onPressed: () {
-                          context.read<AuditBloc>().add(const ClearAuditFilters());
-                        },
+                        onPressed: () => context.read<AuditBloc>().add(const ClearAuditFilters()),
                         child: const Text('Limpiar Filtros'),
                       ),
                     ],
@@ -124,61 +110,45 @@ class _AuditPageContent extends StatelessWidget {
 
             return Column(
               children: [
-                // Indicador de filtros activos
                 if (state.currentFilter?.hasFilters == true)
                   Container(
                     padding: const EdgeInsets.all(12),
-                    color: Colors.blue.shade50,
+                    color: Colors.blue.shade50.withAlpha(200),
                     child: Row(
                       children: [
                         const Icon(Icons.filter_list, size: 20, color: Colors.blue),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: Text(
-                            _buildFilterDescription(state.currentFilter!),
-                            style: const TextStyle(color: Colors.blue),
-                          ),
-                        ),
+                            child: Text(_buildFilterDescription(state.currentFilter!),
+                                style: const TextStyle(color: Colors.blue))),
                         TextButton(
-                          onPressed: () {
-                            context.read<AuditBloc>().add(const ClearAuditFilters());
-                          },
-                          child: const Text('Limpiar'),
-                        ),
+                            onPressed: () =>
+                                context.read<AuditBloc>().add(const ClearAuditFilters()),
+                            child: const Text('Limpiar')),
                       ],
                     ),
                   ),
-
-                // Lista de eventos
                 Expanded(
                   child: ListView.separated(
                     padding: const EdgeInsets.all(16),
                     itemCount: state.events.length,
                     separatorBuilder: (_, __) => const Divider(),
-                    itemBuilder: (context, index) {
-                      final event = state.events[index];
-                      return _AuditEventTile(event: event);
-                    },
+                    itemBuilder: (context, index) => _AuditEventTile(event: state.events[index]),
                   ),
                 ),
-
-                // Footer con contador
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade100,
+                    color: Colors.grey.shade100.withAlpha(200),
                     border: Border(top: BorderSide(color: Colors.grey.shade300)),
                   ),
-                  child: Text(
-                    'Total: ${state.totalCount} evento(s)',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
-                  ),
+                  child: Text('Total: ${state.totalCount} evento(s)',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center),
                 ),
               ],
             );
           }
-
           return const SizedBox.shrink();
         },
       ),
@@ -188,14 +158,11 @@ class _AuditPageContent extends StatelessWidget {
   void _showFilterDialog(BuildContext context) {
     final currentState = context.read<AuditBloc>().state;
     final currentFilter = currentState is AuditLoaded ? currentState.currentFilter : null;
-
     showDialog(
       context: context,
       builder: (_) => AuditFilterDialog(
         initialFilter: currentFilter,
-        onApply: (filter) {
-          context.read<AuditBloc>().add(ApplyAuditFilter(filter));
-        },
+        onApply: (filter) => context.read<AuditBloc>().add(ApplyAuditFilter(filter)),
       ),
     );
   }
@@ -204,63 +171,46 @@ class _AuditPageContent extends StatelessWidget {
     final currentState = context.read<AuditBloc>().state;
     final currentSort =
         currentState is AuditLoaded ? currentState.currentSort : AuditSort.defaultSort;
-
-    // Toggle order if same field
     final newOrder = currentSort.field == field && currentSort.order == AuditSortOrder.descending
         ? AuditSortOrder.ascending
         : AuditSortOrder.descending;
-
-    context.read<AuditBloc>().add(
-          ChangeAuditSort(AuditSort(field: field, order: newOrder)),
-        );
+    context.read<AuditBloc>().add(ChangeAuditSort(AuditSort(field: field, order: newOrder)));
   }
 
   String _buildFilterDescription(AuditFilter filter) {
     final parts = <String>[];
-
-    if (filter.eventType != null) {
-      parts.add('Tipo: ${filter.eventType}');
-    }
-    if (filter.employeeId != null) {
-      parts.add('Empleado: ${filter.employeeId}');
-    }
-    if (filter.startDate != null) {
+    if (filter.eventType != null) parts.add('Tipo: ${filter.eventType}');
+    if (filter.employeeId != null) parts.add('Empleado: ${filter.employeeId}');
+    if (filter.startDate != null)
       parts.add('Desde: ${DateFormat('dd/MM/yyyy').format(filter.startDate!)}');
-    }
-    if (filter.endDate != null) {
+    if (filter.endDate != null)
       parts.add('Hasta: ${DateFormat('dd/MM/yyyy').format(filter.endDate!)}');
-    }
-
     return 'Filtros activos: ${parts.join(', ')}';
   }
 }
 
 class _AuditEventTile extends StatelessWidget {
   final AuditEventEntity event;
-
   const _AuditEventTile({required this.event});
 
   @override
   Widget build(BuildContext context) {
     return Card(
+      color: Colors.white.withAlpha(200),
       child: ListTile(
         leading: CircleAvatar(
           backgroundColor: _getEventColor(event.eventType),
           child: Icon(_getEventIcon(event.eventType), color: Colors.white),
         ),
-        title: Text(
-          _formatEventType(event.eventType),
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
+        title: Text(_formatEventType(event.eventType),
+            style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (event.employeeId != null) Text('Empleado: ${event.employeeId}'),
             if (event.metadata != null) Text('Detalles: ${event.metadata}'),
-            Text(
-              DateFormat('dd/MM/yyyy HH:mm:ss').format(event.createdAt),
-              style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-            ),
+            Text(DateFormat('dd/MM/yyyy HH:mm:ss').format(event.createdAt),
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
           ],
         ),
         isThreeLine: true,

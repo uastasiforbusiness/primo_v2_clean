@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/entities/employee_entity.dart';
-import '../../../../core/presentation/widgets/app_scaffold.dart';
+import '../../../../core/shared_ui/app_scaffold.dart';
 
 class DashboardPage extends StatelessWidget {
   final EmployeeEntity employee;
@@ -12,9 +12,10 @@ class DashboardPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Limpiamos el dashboard y dejamos que AppScaffold maneje el fondo global
     return const AppScaffold(
-      body: SizedBox.expand(), // Dashboard vacío, solo el fondo que tanto te gusta
+      showBackground:
+          false, // Desactivamos el fondo del scaffold porque MainLayout ya lo pone en el centro
+      body: SizedBox.expand(),
     );
   }
 }
