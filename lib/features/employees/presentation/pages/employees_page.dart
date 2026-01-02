@@ -10,6 +10,7 @@ import '../bloc/employee_event.dart';
 import '../bloc/employee_state.dart';
 import '../../../../core/shared_ui/premium_card.dart';
 import '../../../../core/shared_ui/premium_button.dart';
+import '../../../../core/shared_ui/premium_panel.dart';
 
 class EmployeesPage extends StatefulWidget {
   const EmployeesPage({super.key});
@@ -166,14 +167,11 @@ class _EmployeesPageState extends State<EmployeesPage> {
                       ),
                     ),
                   ),
-                  if (_selectedEmployee != null || _isCreating) ...[
-                    const VerticalDivider(width: 1, thickness: 1, color: Colors.black12),
-                    Container(
-                      width: 400,
-                      color: Colors.white.withAlpha(150),
-                      child: _buildRightPanel(context),
-                    ),
-                  ],
+                  PremiumPanel(
+                    isVisible: _selectedEmployee != null || _isCreating,
+                    width: 320,
+                    child: _buildRightPanel(context),
+                  ),
                 ],
               );
             },

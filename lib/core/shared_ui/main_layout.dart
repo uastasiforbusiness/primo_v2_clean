@@ -29,15 +29,18 @@ class MainLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: AppBackground(
-        child: Row(
+        child: Column(
           children: [
-            AppSidebar(currentRoute: currentRoute),
-            const VerticalDivider(width: 1, thickness: 1, color: Colors.black12),
+            AppHeader(title: _getRouteTitle(currentRoute)),
             Expanded(
-              child: Column(
+              child: Row(
                 children: [
-                  AppHeader(title: _getRouteTitle(currentRoute)),
-                  Expanded(child: child),
+                  AppSidebar(currentRoute: currentRoute),
+                  Expanded(
+                    child: ClipRRect(
+                      child: child,
+                    ),
+                  ),
                 ],
               ),
             ),
