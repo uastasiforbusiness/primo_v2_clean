@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../di/injection_container.dart';
 import '../../../../core/shared_ui/app_scaffold.dart';
+import '../../../../di/injection_container.dart';
 import '../../domain/entities/audit_event_entity.dart';
 import '../../domain/value_objects/audit_filter.dart';
 import '../../domain/value_objects/audit_sort.dart';
@@ -119,12 +119,15 @@ class _AuditPageContent extends StatelessWidget {
                         const Icon(Icons.filter_list, size: 20, color: Colors.blue),
                         const SizedBox(width: 8),
                         Expanded(
-                            child: Text(_buildFilterDescription(state.currentFilter!),
-                                style: const TextStyle(color: Colors.blue))),
+                          child: Text(
+                            _buildFilterDescription(state.currentFilter!),
+                            style: const TextStyle(color: Colors.blue),
+                          ),
+                        ),
                         TextButton(
-                            onPressed: () =>
-                                context.read<AuditBloc>().add(const ClearAuditFilters()),
-                            child: const Text('Limpiar')),
+                          onPressed: () => context.read<AuditBloc>().add(const ClearAuditFilters()),
+                          child: const Text('Limpiar'),
+                        ),
                       ],
                     ),
                   ),
@@ -142,9 +145,11 @@ class _AuditPageContent extends StatelessWidget {
                     color: Colors.grey.shade100.withAlpha(200),
                     border: Border(top: BorderSide(color: Colors.grey.shade300)),
                   ),
-                  child: Text('Total: ${state.totalCount} evento(s)',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                      textAlign: TextAlign.center),
+                  child: Text(
+                    'Total: ${state.totalCount} evento(s)',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ],
             );
@@ -181,10 +186,12 @@ class _AuditPageContent extends StatelessWidget {
     final parts = <String>[];
     if (filter.eventType != null) parts.add('Tipo: ${filter.eventType}');
     if (filter.employeeId != null) parts.add('Empleado: ${filter.employeeId}');
-    if (filter.startDate != null)
+    if (filter.startDate != null) {
       parts.add('Desde: ${DateFormat('dd/MM/yyyy').format(filter.startDate!)}');
-    if (filter.endDate != null)
+    }
+    if (filter.endDate != null) {
       parts.add('Hasta: ${DateFormat('dd/MM/yyyy').format(filter.endDate!)}');
+    }
     return 'Filtros activos: ${parts.join(', ')}';
   }
 }
@@ -202,15 +209,19 @@ class _AuditEventTile extends StatelessWidget {
           backgroundColor: _getEventColor(event.eventType),
           child: Icon(_getEventIcon(event.eventType), color: Colors.white),
         ),
-        title: Text(_formatEventType(event.eventType),
-            style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          _formatEventType(event.eventType),
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (event.employeeId != null) Text('Empleado: ${event.employeeId}'),
             if (event.metadata != null) Text('Detalles: ${event.metadata}'),
-            Text(DateFormat('dd/MM/yyyy HH:mm:ss').format(event.createdAt),
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+            Text(
+              DateFormat('dd/MM/yyyy HH:mm:ss').format(event.createdAt),
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+            ),
           ],
         ),
         isThreeLine: true,

@@ -12,21 +12,27 @@ Es la marca de agua global. Gestiona el logo en tamaño XL con el efecto de cris
 
 - **Uso**: Se coloca en la raíz de los layouts principales.
 
-### 2. `app_scaffold.dart` (El Templo)
+### 2. `app_header.dart` (El Vigía) - ¡NUEVO!
+
+El nuevo header premium que contiene el reloj dinámico y la fecha. Aporta elegancia y utilidad a cada sección.
+
+- **Uso**: Integrado en el MainLayout para control de tiempo y títulos.
+
+### 3. `app_scaffold.dart` (El Templo)
 
 Nuestra versión del Scaffold tradicional. Ya viene preparado para recibir el fondo o mantenerse limpio según se necesite.
 
 - **Uso**: Úsalo en todas las páginas de la aplicación.
 
-### 3. `app_sidebar.dart` (El Navegante)
+### 4. `app_sidebar.dart` (El Navegante)
 
 La columna vertebral de la navegación. Es translúcida para permitir que la identidad visual respire a través de ella.
 
 - **Uso**: Integrada automáticamente en el `MainLayout`.
 
-### 4. `main_layout.dart` (La Estructura)
+### 5. `main_layout.dart` (La Estructura)
 
-El molde que une todo: Sidebar + Contenido + Fondo Global. Es lo que hace que la app se sienta sólida y profesional.
+El molde que une todo: Sidebar + Header + Contenido + Fondo Global. Es lo que hace que la app se sienta sólida y profesional.
 
 ---
 
@@ -36,6 +42,7 @@ El molde que une todo: Sidebar + Contenido + Fondo Global. Es lo que hace que la
 2. **Mantendrás la consistencia**: Si un botón es compartido, debe vivir aquí.
 3. **Honrarás la jerarquía**: Los componentes aquí son intocables a menos que el cambio sea para evolucionar toda la marca.
 4. **Usarás AppScaffold sobre Scaffold**: Para asegurar que nunca perdamos el norte visual.
+5. **El tiempo es oro**: El header debe ser el único lugar donde se gestiona el reloj global del sistema.
 
 ---
 

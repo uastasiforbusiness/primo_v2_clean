@@ -48,11 +48,12 @@ class _LoginPageState extends State<LoginPage> {
       if (_failedAttempts >= 3) {
         _isLocked = true;
         Future.delayed(const Duration(seconds: 30), () {
-          if (mounted)
+          if (mounted) {
             setState(() {
               _isLocked = false;
               _failedAttempts = 0;
             });
+          }
         });
       }
     });

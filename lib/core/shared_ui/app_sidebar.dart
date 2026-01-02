@@ -130,11 +130,19 @@ class AppSidebar extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 20),
-                            _buildInfoRow(Icons.access_time_rounded, 'Iniciado:',
-                                _formatDateTime(shift.startedAt), context),
+                            _buildInfoRow(
+                              Icons.access_time_rounded,
+                              'Iniciado:',
+                              _formatDateTime(shift.startedAt),
+                              context,
+                            ),
                             const SizedBox(height: 12),
-                            _buildInfoRow(Icons.payments_outlined, 'Base:',
-                                shift.initialCash.toFormattedString(), context),
+                            _buildInfoRow(
+                              Icons.payments_outlined,
+                              'Base:',
+                              shift.initialCash.toFormattedString(),
+                              context,
+                            ),
                             const SizedBox(height: 8),
                           ],
                         ),
@@ -148,14 +156,20 @@ class AppSidebar extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         child: Row(
                           children: [
-                            Icon(Icons.coffee_rounded,
-                                color: Theme.of(context).colorScheme.primary, size: 24),
+                            Icon(
+                              Icons.coffee_rounded,
+                              color: Theme.of(context).colorScheme.primary,
+                              size: 24,
+                            ),
                             const SizedBox(width: 16),
-                            const Text('Iniciar Pausa',
-                                style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.black87)),
+                            const Text(
+                              'Iniciar Pausa',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black87,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -169,9 +183,14 @@ class AppSidebar extends StatelessWidget {
                           children: [
                             Icon(Icons.logout_rounded, color: Colors.red, size: 24),
                             SizedBox(width: 16),
-                            Text('Cerrar Turno',
-                                style: TextStyle(
-                                    fontSize: 15, fontWeight: FontWeight.w500, color: Colors.red)),
+                            Text(
+                              'Cerrar Turno',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.red,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -189,9 +208,10 @@ class AppSidebar extends StatelessWidget {
                         child: CircleAvatar(
                           radius: 22,
                           backgroundColor: Colors.blue[50],
-                          child: Text(name[0],
-                              style:
-                                  const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold)),
+                          child: Text(
+                            name[0],
+                            style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -202,23 +222,33 @@ class AppSidebar extends StatelessWidget {
                             Row(
                               children: [
                                 Expanded(
-                                    child: Text(name,
-                                        style: const TextStyle(
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black87),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis)),
+                                  child: Text(
+                                    name,
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
                                 if (hasShift)
-                                  const Icon(Icons.keyboard_arrow_down,
-                                      size: 18, color: Colors.grey),
+                                  const Icon(
+                                    Icons.keyboard_arrow_down,
+                                    size: 18,
+                                    color: Colors.grey,
+                                  ),
                               ],
                             ),
-                            Text('Cashier ID: #$id',
-                                style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey[500],
-                                    fontWeight: FontWeight.w500)),
+                            Text(
+                              'Cashier ID: #$id',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[500],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -261,8 +291,9 @@ class AppSidebar extends StatelessWidget {
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: Text('CANCELAR', style: TextStyle(color: Colors.grey[600]))),
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text('CANCELAR', style: TextStyle(color: Colors.grey[600])),
+          ),
           ElevatedButton(
             onPressed: () {
               final finalCash = double.tryParse(controller.text) ?? 0.0;
@@ -272,9 +303,10 @@ class AppSidebar extends StatelessWidget {
                   .add(ClockOutRequested(shiftId: shiftId, finalCash: finalCash));
             },
             style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
             child: const Text('CERRAR TURNO'),
           ),
         ],
@@ -289,9 +321,10 @@ class AppSidebar extends StatelessWidget {
         const SizedBox(width: 16),
         Text(label, style: const TextStyle(fontSize: 15, color: Colors.black87)),
         const SizedBox(width: 6),
-        Text(value,
-            style:
-                const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87)),
+        Text(
+          value,
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black87),
+        ),
       ],
     );
   }
@@ -311,17 +344,21 @@ class AppSidebar extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-                color: isSelected ? Colors.blue.withAlpha(20) : Colors.transparent,
-                borderRadius: BorderRadius.circular(12)),
+              color: isSelected ? Colors.blue.withAlpha(20) : Colors.transparent,
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Row(
               children: [
                 Icon(item.icon, size: 22, color: isSelected ? Colors.blue[700] : Colors.grey[500]),
                 const SizedBox(width: 16),
-                Text(item.label,
-                    style: TextStyle(
-                        fontSize: 14,
-                        color: isSelected ? Colors.blue[700] : Colors.grey[600],
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500)),
+                Text(
+                  item.label,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: isSelected ? Colors.blue[700] : Colors.grey[600],
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  ),
+                ),
               ],
             ),
           ),
@@ -338,10 +375,14 @@ class AppSidebar extends StatelessWidget {
           const Divider(height: 1, indent: 8, endIndent: 8),
           const SizedBox(height: 8),
           _buildSidebarItem(
-              context,
-              SidebarItem(
-                  icon: Icons.settings_outlined, label: 'Configuraciones', routeName: 'settings'),
-              currentRoute.contains('settings')),
+            context,
+            SidebarItem(
+              icon: Icons.settings_outlined,
+              label: 'Configuraciones',
+              routeName: 'settings',
+            ),
+            currentRoute.contains('settings'),
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
             child: InkWell(
@@ -353,11 +394,14 @@ class AppSidebar extends StatelessWidget {
                   children: [
                     const Icon(Icons.logout, size: 22, color: Colors.redAccent),
                     const SizedBox(width: 16),
-                    Text('Logout',
-                        style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.redAccent[700],
-                            fontWeight: FontWeight.w500)),
+                    Text(
+                      'Logout',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.redAccent[700],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ],
                 ),
               ),
