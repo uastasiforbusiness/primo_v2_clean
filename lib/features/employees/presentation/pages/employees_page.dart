@@ -8,6 +8,8 @@ import '../../../../di/injection_container.dart';
 import '../bloc/employee_bloc.dart';
 import '../bloc/employee_event.dart';
 import '../bloc/employee_state.dart';
+import '../../../../core/shared_ui/premium_card.dart';
+import '../../../../core/shared_ui/premium_button.dart';
 
 class EmployeesPage extends StatefulWidget {
   const EmployeesPage({super.key});
@@ -19,6 +21,8 @@ class EmployeesPage extends StatefulWidget {
 class _EmployeesPageState extends State<EmployeesPage> {
   EmployeeEntity? _selectedEmployee;
   bool _isCreating = false;
+  bool _isEditing = false;
+  List<EmployeeEntity> _employees = [];
 
   void _onEmployeeSelected(EmployeeEntity employee) {
     setState(() {
@@ -38,31 +42,86 @@ class _EmployeesPageState extends State<EmployeesPage> {
     setState(() {
       _selectedEmployee = null;
       _isCreating = false;
+      _isEditing = false;
     });
+  }
+
+  void _onStartEditing(EmployeeEntity employee) {
+    setState(() {
+      _selectedEmployee = employee;
+      _isCreating = false;
+      _isEditing = true;
+    });
+  }
+
+  void _showErrorDialog(BuildContext context, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Error'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => sl<EmployeeBloc>()..add(const LoadEmployees()),
-      child: AppScaffold(
-        showBackground: false,
-        body: BlocBuilder<EmployeeBloc, EmployeeState>(
-          builder: (context, state) {
-            if (state is EmployeeLoading) {
-              return const Center(child: CircularProgressIndicator(strokeWidth: 2));
-            }
+      child: BlocListener<EmployeeBloc, EmployeeState>(
+        listener: (context, state) {
+          if (state is EmployeeError) {
+            _showErrorDialog(context, state.message);
+          }
+          if (state is EmployeeOperationSuccess) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.greenAccent[700],
+                behavior: SnackBarBehavior.floating,
+                margin: const EdgeInsets.all(20),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            );
+          }
+        },
+        child: AppScaffold(
+          showBackground: false,
+          body: BlocBuilder<EmployeeBloc, EmployeeState>(
+            builder: (context, state) {
+              if (state is EmployeeLoading && _employees.isEmpty) {
+                return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+              }
 
-            if (state is EmployeeError) {
-              return Center(child: Text(state.message));
-            }
+              if (state is EmployeeLoaded) {
+                _employees = state.employees;
+              }
 
-            if (state is EmployeeLoaded) {
-              final employees = state.employees;
+              if (state is EmployeeError && _employees.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.error_outline, size: 48, color: Colors.redAccent),
+                      const SizedBox(height: 16),
+                      Text(state.message),
+                      TextButton(
+                        onPressed: () => context.read<EmployeeBloc>().add(const LoadEmployees()),
+                        child: const Text('REINTENTAR'),
+                      ),
+                    ],
+                  ),
+                );
+              }
 
               return Row(
                 children: [
-                  // Columna 2: Lista de Empleados
                   Expanded(
                     flex: 2,
                     child: Padding(
@@ -70,18 +129,10 @@ class _EmployeesPageState extends State<EmployeesPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          ElevatedButton.icon(
+                          PremiumButton(
                             onPressed: _onStartCreating,
-                            icon: const Icon(Icons.add, size: 18),
-                            label: const Text('NUEVO EMPLEADO'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue[700],
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                              shape:
-                                  RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              elevation: 0,
-                            ),
+                            icon: Icons.add,
+                            label: 'NUEVO EMPLEADO',
                           ),
                           const SizedBox(height: 32),
                           Expanded(
@@ -89,13 +140,20 @@ class _EmployeesPageState extends State<EmployeesPage> {
                               child: Wrap(
                                 spacing: 24,
                                 runSpacing: 24,
-                                children: employees.map((employee) {
+                                children: _employees.map((employee) {
                                   final isSelected = _selectedEmployee?.id == employee.id;
+                                  final initials = employee.name[0].toUpperCase() +
+                                      (employee.lastName.isNotEmpty
+                                          ? employee.lastName[0].toUpperCase()
+                                          : '');
                                   return SizedBox(
                                     width: 160,
                                     height: 160,
-                                    child: _ModernEmployeeCard(
-                                      employee: employee,
+                                    child: PremiumCard(
+                                      title: employee.fullName,
+                                      subtitle: employee.role.toValue(),
+                                      avatarText: initials,
+                                      isActive: employee.isActive,
                                       isSelected: isSelected,
                                       onTap: () => _onEmployeeSelected(employee),
                                     ),
@@ -108,10 +166,8 @@ class _EmployeesPageState extends State<EmployeesPage> {
                       ),
                     ),
                   ),
-
                   if (_selectedEmployee != null || _isCreating) ...[
                     const VerticalDivider(width: 1, thickness: 1, color: Colors.black12),
-                    // Columna 3: Detalles o Formulario (Ancho fijo)
                     Container(
                       width: 400,
                       color: Colors.white.withAlpha(150),
@@ -120,26 +176,34 @@ class _EmployeesPageState extends State<EmployeesPage> {
                   ],
                 ],
               );
-            }
-
-            return const SizedBox();
-          },
+            },
+          ),
         ),
       ),
     );
   }
 
   Widget _buildRightPanel(BuildContext context) {
-    if (_isCreating) {
+    if (_isCreating || _isEditing) {
       return _EmployeeForm(
+        employee: _isEditing ? _selectedEmployee : null,
         onCancel: _onCancel,
         onSave: (employee, pin) {
-          context.read<EmployeeBloc>().add(
-                CreateEmployeeRequested(
-                  employee: employee,
-                  pin: pin,
-                ),
-              );
+          if (_isEditing) {
+            context.read<EmployeeBloc>().add(
+                  UpdateEmployeeRequested(
+                    employee: employee,
+                    newPin: pin.isNotEmpty ? pin : null,
+                  ),
+                );
+          } else {
+            context.read<EmployeeBloc>().add(
+                  CreateEmployeeRequested(
+                    employee: employee,
+                    pin: pin,
+                  ),
+                );
+          }
           _onCancel();
         },
       );
@@ -149,6 +213,7 @@ class _EmployeesPageState extends State<EmployeesPage> {
       return _EmployeeDetails(
         employee: _selectedEmployee!,
         onClose: _onCancel,
+        onEdit: () => _onStartEditing(_selectedEmployee!),
         onDelete: (id) {
           context.read<EmployeeBloc>().add(DeleteEmployeeRequested(id));
           _onCancel();
@@ -160,132 +225,16 @@ class _EmployeesPageState extends State<EmployeesPage> {
   }
 }
 
-class _ModernEmployeeCard extends StatelessWidget {
-  final EmployeeEntity employee;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _ModernEmployeeCard({
-    required this.employee,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final initials = employee.name[0].toUpperCase() +
-        (employee.lastName.isNotEmpty ? employee.lastName[0].toUpperCase() : '');
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          decoration: BoxDecoration(
-            color: isSelected ? Colors.blue[50] : Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: isSelected ? Colors.blue[300]! : Colors.black.withAlpha(15),
-              width: isSelected ? 2 : 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withAlpha(5),
-                blurRadius: 15,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Stack(
-            children: [
-              Positioned(
-                top: 16,
-                right: 16,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: employee.isActive ? Colors.greenAccent[700] : Colors.grey[400],
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Colors.blue[400]!, Colors.blue[700]!],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Text(
-                          initials,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      employee.fullName.toUpperCase(),
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: isSelected ? Colors.blue[900] : Colors.black87,
-                      ),
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: isSelected ? Colors.blue[100] : Colors.grey[100],
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        employee.role.toValue(),
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w800,
-                          color: isSelected ? Colors.blue[700] : Colors.grey[600],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _EmployeeDetails extends StatelessWidget {
   final EmployeeEntity employee;
   final VoidCallback onClose;
+  final VoidCallback onEdit;
   final Function(String) onDelete;
 
   const _EmployeeDetails({
     required this.employee,
     required this.onClose,
+    required this.onEdit,
     required this.onDelete,
   });
 
@@ -347,6 +296,22 @@ class _EmployeeDetails extends StatelessWidget {
           const Spacer(),
           SizedBox(
             width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: onEdit,
+              icon: const Icon(Icons.edit_outlined, size: 18),
+              label: const Text('EDITAR EMPLEADO'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue[700],
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                elevation: 0,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
             child: OutlinedButton.icon(
               onPressed: () => onDelete(employee.id),
               icon: const Icon(Icons.delete_outline, size: 18),
@@ -371,19 +336,25 @@ class _EmployeeDetails extends StatelessWidget {
         children: [
           Icon(icon, size: 20, color: Colors.black26),
           const SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 11,
-                  color: Colors.black38,
-                  fontWeight: FontWeight.bold,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Colors.black38,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-            ],
+                Text(
+                  value,
+                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -392,24 +363,47 @@ class _EmployeeDetails extends StatelessWidget {
 }
 
 class _EmployeeForm extends StatefulWidget {
+  final EmployeeEntity? employee;
   final VoidCallback onCancel;
   final Function(EmployeeEntity, String) onSave;
 
-  const _EmployeeForm({required this.onCancel, required this.onSave});
+  const _EmployeeForm({
+    this.employee,
+    required this.onCancel,
+    required this.onSave,
+  });
 
   @override
   State<_EmployeeForm> createState() => _EmployeeFormState();
 }
 
 class _EmployeeFormState extends State<_EmployeeForm> {
-  final _id = const Uuid().v4();
+  late String _id;
   final _nameController = TextEditingController();
   final _lastNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _emergencyController = TextEditingController();
   final _pinController = TextEditingController();
-  Role _selectedRole = Role.staff;
+  late Role _selectedRole;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.employee != null) {
+      _id = widget.employee!.id;
+      _nameController.text = widget.employee!.name;
+      _lastNameController.text = widget.employee!.lastName;
+      _emailController.text = widget.employee!.email ?? '';
+      _phoneController.text = widget.employee!.phone ?? '';
+      _emergencyController.text = widget.employee!.emergencyPhone;
+      _selectedRole = widget.employee!.role;
+      _pinController.text = '';
+    } else {
+      _id = const Uuid().v4();
+      _selectedRole = Role.staff;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -419,9 +413,9 @@ class _EmployeeFormState extends State<_EmployeeForm> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'NUEVO EMPLEADO',
-              style: TextStyle(fontWeight: FontWeight.w800, letterSpacing: 1.5, fontSize: 12),
+            Text(
+              widget.employee != null ? 'EDITAR EMPLEADO' : 'NUEVO EMPLEADO',
+              style: const TextStyle(fontWeight: FontWeight.w800, letterSpacing: 1.5, fontSize: 12),
             ),
             const SizedBox(height: 32),
             _buildTextField('Nombre', _nameController),
@@ -456,7 +450,13 @@ class _EmployeeFormState extends State<_EmployeeForm> {
             const SizedBox(height: 16),
             _buildTextField('Teléfono', _phoneController),
             const SizedBox(height: 16),
-            _buildTextField('PIN (4 dígitos)', _pinController, isObscure: true),
+            _buildTextField('Teléfono de Emergencia', _emergencyController),
+            const SizedBox(height: 16),
+            _buildTextField(
+              widget.employee != null ? 'Nuevo PIN (Opcional)' : 'PIN (4 dígitos)',
+              _pinController,
+              isObscure: true,
+            ),
             const SizedBox(height: 32),
             Row(
               children: [
