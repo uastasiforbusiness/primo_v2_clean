@@ -32,11 +32,8 @@ class _AppHeaderState extends State<AppHeader> {
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white.withAlpha(200),
-        border: const Border(
-          bottom: BorderSide(color: Colors.black12, width: 1),
-        ),
+      decoration: const BoxDecoration(
+        color: Colors.transparent,
       ),
       child: Row(
         children: [
@@ -54,36 +51,9 @@ class _AppHeaderState extends State<AppHeader> {
             ),
           ),
 
-          // Bloque Central: Las 4 Teclas distribuidas
-          Expanded(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(4, (index) {
-                return Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () {},
-                    borderRadius: BorderRadius.circular(10),
-                    child: Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withAlpha(150),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.black12, width: 1.5),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withAlpha(5),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              }),
-            ),
+          // Bloque Central: Vacío
+          const Expanded(
+            child: SizedBox(),
           ),
 
           // Bloque Derecho: Reloj (con ancho fijo para que no mueva las teclas)
