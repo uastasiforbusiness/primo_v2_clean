@@ -25,7 +25,8 @@ class _AppHeaderState extends State<AppHeader> {
   @override
   void initState() {
     super.initState();
-    _clockStream = Stream.periodic(const Duration(seconds: 1), (_) => DateTime.now());
+    _clockStream =
+        Stream.periodic(const Duration(seconds: 1), (_) => DateTime.now()).asBroadcastStream();
   }
 
   @override
@@ -134,13 +135,16 @@ class _AppHeaderState extends State<AppHeader> {
             final bool isActive = shiftState is ShiftActive;
             final bool isOnBreak = shiftState is ShiftOnBreak;
             final bool hasShift = isActive || isOnBreak;
+            final bool hasLaborShift =
+                authState is AuthAuthenticated && authState.workShift != null;
+            final bool isMenuEnabled = hasShift || hasLaborShift;
             final shift = isActive ? shiftState.shift : (isOnBreak ? shiftState.shift : null);
 
             return PopupMenuButton<String>(
               offset: const Offset(0, 50),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               position: PopupMenuPosition.under,
-              enabled: hasShift,
+              enabled: isMenuEnabled,
               onSelected: (value) {
                 if (value == 'pause' && isActive) {
                   context.read<ShiftBloc>().add(StartBreakRequested(shift!.id));
@@ -149,7 +153,7 @@ class _AppHeaderState extends State<AppHeader> {
                 }
               },
               itemBuilder: (context) => [
-                if (shift != null)
+                if (authState is AuthAuthenticated && authState.workShift != null)
                   PopupMenuItem(
                     enabled: false,
                     child: Container(
@@ -158,30 +162,38 @@ class _AppHeaderState extends State<AppHeader> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Center(
+                          const Center(
                             child: Text(
-                              isOnBreak ? 'TURNO EN PAUSA' : 'ESTADO DEL TURNO',
+                              'ESTADO DE TURNO',
                               style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                                color: isOnBreak ? Colors.orange[800] : Colors.black,
-                                letterSpacing: 1.2,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.black87,
+                                letterSpacing: 1.1,
                               ),
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 12),
                           _buildInfoRow(
-                            Icons.access_time_rounded,
-                            'Iniciado:',
-                            _formatDateTime(shift.startedAt),
+                            Icons.calendar_today_rounded,
+                            'Entrada:',
+                            _formatDateTime(authState.workShift!.clockIn),
                             context,
                           ),
-                          const SizedBox(height: 8),
-                          _buildInfoRow(
-                            Icons.payments_outlined,
-                            'Base:',
-                            shift.initialCash.toFormattedString(),
-                            context,
+                          const SizedBox(height: 4),
+                          StreamBuilder<DateTime>(
+                            stream: _clockStream,
+                            builder: (context, snapshot) {
+                              final clockIn = authState.workShift!.clockIn;
+                              final now = snapshot.data ?? DateTime.now();
+                              final diff = now.difference(clockIn);
+                              return _buildInfoRow(
+                                Icons.timer_outlined,
+                                'Tiempo:',
+                                '${diff.inHours}h ${diff.inMinutes.remainder(60)}m',
+                                context,
+                              );
+                            },
                           ),
                         ],
                       ),
@@ -214,7 +226,10 @@ class _AppHeaderState extends State<AppHeader> {
                       child: Text(
                         name[0],
                         style: const TextStyle(
-                            color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 12),
+                          color: Colors.blue,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -225,12 +240,18 @@ class _AppHeaderState extends State<AppHeader> {
                         Text(
                           name,
                           style: const TextStyle(
-                              fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black87),
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
                         ),
                         Text(
                           'ID: #$id',
                           style: TextStyle(
-                              fontSize: 10, color: Colors.grey[500], fontWeight: FontWeight.w500),
+                            fontSize: 10,
+                            color: Colors.grey[500],
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ],
                     ),

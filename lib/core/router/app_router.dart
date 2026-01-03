@@ -10,6 +10,7 @@ import 'package:primo_v2/features/audit/presentation/pages/audit_page.dart';
 import 'package:primo_v2/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:primo_v2/features/auth/presentation/bloc/auth_state.dart';
 import 'package:primo_v2/features/auth/presentation/pages/clock_in_page.dart';
+import 'package:primo_v2/features/auth/presentation/pages/labor_clock_in_page.dart';
 import 'package:primo_v2/features/auth/presentation/pages/login_page.dart';
 import 'package:primo_v2/features/employees/presentation/pages/dashboard_page.dart';
 import 'package:primo_v2/features/employees/presentation/pages/employees_page.dart';
@@ -67,6 +68,17 @@ class AppRouter {
         path: '/forbidden',
         name: 'forbidden',
         builder: (context, state) => const ForbiddenPage(),
+      ),
+      GoRoute(
+        path: '/labor-clock-in',
+        name: 'labor-clock-in',
+        builder: (context, state) {
+          final authState = context.read<AuthBloc>().state;
+          if (authState is AuthClockInRequired) {
+            return LaborClockInPage(employee: authState.employee);
+          }
+          return const LoginPage();
+        },
       ),
 
       /// Protected routes with Sidebar
@@ -145,12 +157,25 @@ class AppRouter {
       final shiftState = context.read<ShiftBloc>().state;
 
       final isAuthenticated = authState is AuthAuthenticated;
+      final isClockInRequired = authState is AuthClockInRequired;
       final isGoingToLogin = state.matchedLocation == '/login';
+      final isGoingToLaborClockIn = state.matchedLocation == '/labor-clock-in';
 
-      // 1. Guardia de Autenticación
+      // 1. Guardia de Fichaje Obligatorio (Asistencia)
+      if (isClockInRequired) {
+        if (state.matchedLocation == '/error' ||
+            state.matchedLocation == '/forbidden' ||
+            isGoingToLaborClockIn) {
+          return null;
+        }
+        return '/labor-clock-in';
+      }
+
+      // 2. Guardia de Autenticación General
       if (!isAuthenticated) {
         // Permitir solo Splash, Login y errores si no está autenticado
         if (state.matchedLocation == '/' ||
+            state.matchedLocation == '/login' ||
             state.matchedLocation == '/error' ||
             state.matchedLocation == '/forbidden') {
           return null;
@@ -158,8 +183,9 @@ class AppRouter {
         return '/login';
       }
 
-      // 2. Si está autenticado y está en Login o Splash -> Al Dashboard
-      if (isAuthenticated && (isGoingToLogin || state.matchedLocation == '/')) {
+      // 3. Si está autenticado y está en Login o Splash o Labor Clock-In -> Al Dashboard
+      if (isAuthenticated &&
+          (isGoingToLogin || state.matchedLocation == '/' || isGoingToLaborClockIn)) {
         return '/dashboard';
       }
 

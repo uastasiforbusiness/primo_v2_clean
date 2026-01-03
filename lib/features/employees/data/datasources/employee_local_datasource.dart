@@ -5,4 +5,10 @@ abstract class EmployeeLocalDataSource {
   Future<void> createEmployee(Employee employee);
   Future<void> updateEmployee(Employee employee, {String? newPinHash});
   Future<void> deleteEmployee(String employeeId);
+
+  // Work Shifts
+  Future<WorkShift> clockIn(String employeeId, double? hourlyRate);
+  Future<WorkShift> clockOut(String employeeId);
+  Future<WorkShift?> getActiveWorkShift(String employeeId);
+  Future<List<WorkShift>> getWorkShifts(String employeeId);
 }

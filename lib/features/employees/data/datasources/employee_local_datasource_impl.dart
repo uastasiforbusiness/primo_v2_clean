@@ -126,4 +126,63 @@ class EmployeeLocalDataSourceImpl implements EmployeeLocalDataSource {
       throw DatabaseException('Delete employee failed: ${e.toString()}');
     }
   }
+
+  @override
+  Future<WorkShift> clockIn(String employeeId, double? hourlyRate) async {
+    try {
+      // 1. Verify if there is already an active shift
+      final activeShift = await database.getActiveWorkShiftByEmployeeId(employeeId);
+      if (activeShift != null) {
+        throw DuplicateException('Employee already clocked in');
+      }
+
+      final id = uuid.v4();
+      final shift = WorkShiftsCompanion.insert(
+        id: id,
+        employeeId: employeeId,
+        hourlyRateSnapshot: Value(hourlyRate),
+        clockIn: Value(DateTime.now()),
+      );
+
+      await database.insertWorkShift(shift);
+
+      // Return the created shift (fetch it to be sure)
+      final createdShift =
+          await (database.select(database.workShifts)..where((s) => s.id.equals(id))).getSingle();
+      return createdShift;
+    } catch (e) {
+      if (e is DuplicateException) rethrow;
+      throw DatabaseException('Clock-in failed: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<WorkShift> clockOut(String employeeId) async {
+    try {
+      final activeShift = await database.getActiveWorkShiftByEmployeeId(employeeId);
+      if (activeShift == null) {
+        throw DatabaseException('No active shift found to clock out');
+      }
+
+      await database.closeWorkShift(activeShift.id);
+
+      // Return updated shift
+      final updatedShift = await (database.select(database.workShifts)
+            ..where((s) => s.id.equals(activeShift.id)))
+          .getSingle();
+      return updatedShift;
+    } catch (e) {
+      throw DatabaseException('Clock-out failed: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<WorkShift?> getActiveWorkShift(String employeeId) async {
+    return await database.getActiveWorkShiftByEmployeeId(employeeId);
+  }
+
+  @override
+  Future<List<WorkShift>> getWorkShifts(String employeeId) async {
+    return await database.getWorkShiftsByEmployeeId(employeeId);
+  }
 }

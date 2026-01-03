@@ -17,6 +17,7 @@ class Employees extends Table {
   TextColumn get email => text().nullable()();
   TextColumn get phone => text().nullable()();
   TextColumn get emergencyPhone => text().named('emergency_phone')();
+  RealColumn get hourlyRate => real().named('hourly_rate').nullable()();
   TextColumn get role => text()();
   TextColumn get pinHash => text().named('pin_hash')();
   BoolColumn get isActive => boolean().named('is_active').withDefault(const Constant(true))();
@@ -72,6 +73,17 @@ class AuditEvents extends Table {
   Set<Column> get primaryKey => {id};
 }
 
+class WorkShifts extends Table {
+  TextColumn get id => text()();
+  TextColumn get employeeId => text().named('employee_id').references(Employees, #id)();
+  DateTimeColumn get clockIn => dateTime().named('clock_in').withDefault(currentDateAndTime)();
+  DateTimeColumn get clockOut => dateTime().named('clock_out').nullable()();
+  RealColumn get hourlyRateSnapshot => real().named('hourly_rate_snapshot').nullable()();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
 // ==================== DATABASE ====================
 
 @DriftDatabase(
@@ -80,6 +92,7 @@ class AuditEvents extends Table {
     CashRegisters,
     Shifts,
     Breaks,
+    WorkShifts,
     AuditEvents,
   ],
 )
@@ -87,7 +100,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -96,7 +109,12 @@ class AppDatabase extends _$AppDatabase {
           await _seedInitialData();
         },
         onUpgrade: (Migrator m, int from, int to) async {
-          // Future migrations here
+          if (from < 2) {
+            await m.addColumn(employees, employees.hourlyRate as GeneratedColumn<Object>);
+          }
+          if (from < 3) {
+            await m.createTable(workShifts);
+          }
         },
       );
 
@@ -197,6 +215,27 @@ class AppDatabase extends _$AppDatabase {
 
   Future<int> endBreak(String breakId) => (update(breaks)..where((b) => b.id.equals(breakId)))
       .write(BreaksCompanion(endedAt: Value(DateTime.now())));
+
+  // ==================== WORK SHIFT QUERIES ====================
+
+  Future<WorkShift?> getActiveWorkShiftByEmployeeId(String employeeId) => (select(workShifts)
+        ..where((s) => s.employeeId.equals(employeeId))
+        ..where((s) => s.clockOut.isNull()))
+      .getSingleOrNull();
+
+  Future<List<WorkShift>> getWorkShiftsByEmployeeId(String employeeId) => (select(workShifts)
+        ..where((s) => s.employeeId.equals(employeeId))
+        ..orderBy([(s) => OrderingTerm.desc(s.clockIn)]))
+      .get();
+
+  Future<int> insertWorkShift(WorkShiftsCompanion shift) => into(workShifts).insert(shift);
+
+  Future<int> closeWorkShift(String shiftId) =>
+      (update(workShifts)..where((s) => s.id.equals(shiftId))).write(
+        WorkShiftsCompanion(
+          clockOut: Value(DateTime.now()),
+        ),
+      );
 
   // ==================== AUDIT QUERIES ====================
 

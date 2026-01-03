@@ -8,6 +8,7 @@ class EmployeeEntity extends Equatable {
   final String? email;
   final String? phone;
   final String emergencyPhone;
+  final double? hourlyRate;
   final Role role;
   final bool isActive;
   final DateTime createdAt;
@@ -20,6 +21,7 @@ class EmployeeEntity extends Equatable {
     this.email,
     this.phone,
     required this.emergencyPhone,
+    this.hourlyRate,
     required this.role,
     required this.isActive,
     required this.createdAt,
@@ -36,6 +38,7 @@ class EmployeeEntity extends Equatable {
         email,
         phone,
         emergencyPhone,
+        hourlyRate,
         role,
         isActive,
         createdAt,

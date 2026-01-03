@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:primo_v2/core/entities/employee_entity.dart';
 
 abstract class AuthEvent extends Equatable {
   const AuthEvent();
@@ -19,4 +20,11 @@ class LogoutRequested extends AuthEvent {
 
 class CheckAuthStatus extends AuthEvent {
   const CheckAuthStatus();
+}
+
+class ConfirmClockInRequested extends AuthEvent {
+  final EmployeeEntity employee;
+  const ConfirmClockInRequested(this.employee);
+  @override
+  List<Object?> get props => [employee];
 }

@@ -415,6 +415,7 @@ class _EmployeeFormState extends State<_EmployeeForm> {
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _emergencyController = TextEditingController();
+  final _hourlyRateController = TextEditingController();
   final _pinController = TextEditingController();
   late Role _selectedRole;
 
@@ -428,6 +429,7 @@ class _EmployeeFormState extends State<_EmployeeForm> {
       _emailController.text = widget.employee!.email ?? '';
       _phoneController.text = widget.employee!.phone ?? '';
       _emergencyController.text = widget.employee!.emergencyPhone;
+      _hourlyRateController.text = widget.employee!.hourlyRate?.toString() ?? '';
       _selectedRole = widget.employee!.role;
       _pinController.text = '';
     } else {
@@ -450,7 +452,10 @@ class _EmployeeFormState extends State<_EmployeeForm> {
                   Text(
                     widget.employee != null ? 'EDITAR EMPLEADO' : 'NUEVO EMPLEADO',
                     style: const TextStyle(
-                        fontWeight: FontWeight.w800, letterSpacing: 1.5, fontSize: 10),
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.5,
+                      fontSize: 10,
+                    ),
                   ),
                   const SizedBox(height: 32),
                   _buildTextField('Nombre', _nameController),
@@ -468,7 +473,9 @@ class _EmployeeFormState extends State<_EmployeeForm> {
                     items: [
                       DropdownMenuItem(value: Role.admin, child: Text(Role.admin.toValue())),
                       DropdownMenuItem(
-                          value: Role.supervisor, child: Text(Role.supervisor.toValue())),
+                        value: Role.supervisor,
+                        child: Text(Role.supervisor.toValue()),
+                      ),
                       DropdownMenuItem(value: Role.staff, child: Text(Role.staff.toValue())),
                       DropdownMenuItem(value: Role.kitchen, child: Text(Role.kitchen.toValue())),
                     ],
@@ -488,6 +495,12 @@ class _EmployeeFormState extends State<_EmployeeForm> {
                   _buildTextField('Teléfono', _phoneController),
                   const SizedBox(height: 16),
                   _buildTextField('Teléfono de Emergencia', _emergencyController),
+                  const SizedBox(height: 16),
+                  _buildTextField(
+                    'Salario por Hora (Opcional)',
+                    _hourlyRateController,
+                    isNumber: true,
+                  ),
                   const SizedBox(height: 16),
                   _buildTextField(
                     widget.employee != null ? 'Nuevo PIN (Opcional)' : 'PIN (4 dígitos)',
@@ -519,6 +532,7 @@ class _EmployeeFormState extends State<_EmployeeForm> {
                       email: _emailController.text.isNotEmpty ? _emailController.text : null,
                       phone: _phoneController.text.isNotEmpty ? _phoneController.text : null,
                       emergencyPhone: _emergencyController.text,
+                      hourlyRate: double.tryParse(_hourlyRateController.text),
                       role: _selectedRole,
                       isActive: true,
                       createdAt: DateTime.now(),
@@ -543,7 +557,12 @@ class _EmployeeFormState extends State<_EmployeeForm> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, {bool isObscure = false}) {
+  Widget _buildTextField(
+    String label,
+    TextEditingController controller, {
+    bool isObscure = false,
+    bool isNumber = false,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -555,6 +574,7 @@ class _EmployeeFormState extends State<_EmployeeForm> {
         TextField(
           controller: controller,
           obscureText: isObscure,
+          keyboardType: isNumber ? const TextInputType.numberWithOptions(decimal: true) : null,
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.grey[50],

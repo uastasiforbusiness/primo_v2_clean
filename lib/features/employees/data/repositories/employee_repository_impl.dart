@@ -36,6 +36,7 @@ class EmployeeRepositoryImpl implements EmployeeRepository {
         email: employee.email,
         phone: employee.phone,
         emergencyPhone: employee.emergencyPhone,
+        hourlyRate: employee.hourlyRate,
         role: employee.role.toValue(),
         pinHash: pinHash,
         isActive: true,
@@ -65,6 +66,7 @@ class EmployeeRepositoryImpl implements EmployeeRepository {
         email: employee.email,
         phone: employee.phone,
         emergencyPhone: employee.emergencyPhone,
+        hourlyRate: employee.hourlyRate,
         role: employee.role.toValue(),
         pinHash: '', // Placeholder, actual PIN handled by datasource
         isActive: employee.isActive,
