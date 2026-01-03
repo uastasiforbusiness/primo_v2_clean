@@ -1,9 +1,12 @@
 import 'dart:convert';
+import 'dart:math';
 
-import 'package:crypto/crypto.dart';
+import 'package:argon2/argon2.dart';
 import 'package:equatable/equatable.dart';
 
 class Pin extends Equatable {
+  static const int _saltLength = 16;
+
   final String value;
 
   const Pin._(this.value);
@@ -20,20 +23,49 @@ class Pin extends Equatable {
     return Pin._(plainText);
   }
 
-  factory Pin.fromHash(String hash) {
-    return Pin._(hash);
+  /// Genera un hash seguro usando Argon2id + Salt aleatorio + Pepper
+  Future<String> toHashWithSalt(String salt, String pepper) async {
+    final passwordBytes = utf8.encode('$value$pepper');
+    final saltBytes = utf8.encode(salt);
+
+    final parameters = Argon2Parameters(
+      Argon2Parameters.ARGON2_id,
+      saltBytes,
+      version: Argon2Parameters.ARGON2_VERSION_13,
+      iterations: 3,
+      memory: 65536,
+      lanes: 4,
+    );
+
+    final argon2 = Argon2Bytes(parameters);
+    final result = argon2.calculateHash(passwordBytes);
+    return base64Encode(result);
   }
 
-  String toHash() {
-    final bytes = utf8.encode(value);
-    final digest = sha256.convert(bytes);
-    return digest.toString();
+  /// Genera un Blind Index determinista usando Argon2id + Pepper
+  /// Se usa para búsquedas rápidas en DB sin revelar el PIN original.
+  Future<String> toBlindIndex(String pepper) async {
+    final passwordBytes = utf8.encode(value);
+    final saltBytes = utf8.encode(pepper); // El pepper actúa como el salt para ser determinista
+
+    final parameters = Argon2Parameters(
+      Argon2Parameters.ARGON2_id,
+      saltBytes,
+      version: Argon2Parameters.ARGON2_VERSION_13,
+      iterations: 3,
+      memory: 65536,
+      lanes: 4,
+    );
+
+    final argon2 = Argon2Bytes(parameters);
+    final result = argon2.calculateHash(passwordBytes);
+    return base64Encode(result);
   }
 
-  bool verify(String plainText) {
-    final bytes = utf8.encode(plainText);
-    final digest = sha256.convert(bytes);
-    return digest.toString() == value;
+  static String generateSalt() {
+    final random = Random.secure();
+    final bytes = List.generate(_saltLength, (_) => random.nextInt(256));
+    return base64Encode(bytes);
   }
 
   @override

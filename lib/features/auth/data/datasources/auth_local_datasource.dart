@@ -3,6 +3,7 @@ import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../../core/error/exceptions.dart';
+import '../../../../core/security/security_service.dart';
 import '../../../../core/shared_kernel/pin.dart';
 import '../../../../infrastructure/database/app_database.dart';
 
@@ -17,25 +18,30 @@ abstract class AuthLocalDataSource {
 
 class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   final AppDatabase database;
+  final SecurityService securityService;
   final Uuid uuid;
   final Logger logger = Logger();
 
   AuthLocalDataSourceImpl({
     required this.database,
+    required this.securityService,
     required this.uuid,
   });
 
   @override
   Future<Employee> loginWithPin(String pin) async {
     try {
-      logger.d('🔐 Login attempt with PIN: $pin');
-      final pinHash = Pin.fromPlainText(pin).toHash();
-      logger.d('🔑 Generated hash: $pinHash');
+      logger.d('Login attempt initiated');
 
-      final employee = await database.getEmployeeByPinHash(pinHash);
-      logger.d('👤 Employee found: ${employee != null ? employee.id : 'null'}');
+      final pepper = await securityService.getMasterPepper();
+      final pinObj = Pin.fromPlainText(pin);
+      final blindIndex = await pinObj.toBlindIndex(pepper);
 
-      if (employee == null) {
+      final Employee? matchedEmployee = await database.getEmployeeByBlindIndex(blindIndex);
+
+      logger.d('Employee lookup result: ${matchedEmployee != null ? 'found' : 'not found'}');
+
+      if (matchedEmployee == null) {
         await logAuditEvent(
           eventType: 'login_failed',
           metadata: 'Invalid PIN attempt',
@@ -43,21 +49,37 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
         throw AuthException('Invalid PIN');
       }
 
-      if (!employee.isActive) {
+      if (!matchedEmployee.isActive) {
         await logAuditEvent(
           eventType: 'login_failed',
-          employeeId: employee.id,
+          employeeId: matchedEmployee.id,
           metadata: 'Inactive employee',
         );
         throw AuthException('Employee is inactive');
       }
 
+      // Verificación ADICIONAL (Defensa en Profundidad)
+      // Aunque el Blind Index coincide, verificamos contra el hash salteado completo
+      final salt = matchedEmployee.pinSalt;
+      if (salt == null) {
+        logger.e('Crucial data missing: pinSalt for employee ${matchedEmployee.id}');
+        throw AuthException('Security integrity failure');
+      }
+
+      final verifiedHash = await pinObj.toHashWithSalt(salt, pepper);
+      if (verifiedHash != matchedEmployee.pinHash) {
+        logger.w(
+          'CRITICAL: Blind Index matched but hash verification failed for ${matchedEmployee.id}',
+        );
+        throw AuthException('Invalid PIN');
+      }
+
       await logAuditEvent(
         eventType: 'login_success',
-        employeeId: employee.id,
+        employeeId: matchedEmployee.id,
       );
 
-      return employee;
+      return matchedEmployee;
     } catch (e) {
       if (e is AuthException) rethrow;
       throw DatabaseException('Login failed: ${e.toString()}');
