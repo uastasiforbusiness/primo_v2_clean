@@ -7,11 +7,11 @@ import 'package:primo_v2/core/entities/employee_entity.dart';
 import 'package:primo_v2/core/error/failures.dart';
 import 'package:primo_v2/core/shared_kernel/role.dart';
 import 'package:primo_v2/features/auth/domain/usecases/login_with_pin_usecase.dart';
-import 'package:primo_v2/features/employees/domain/usecases/get_active_work_shift_usecase.dart';
-import 'package:primo_v2/features/employees/domain/usecases/clock_in_usecase.dart';
 import 'package:primo_v2/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:primo_v2/features/auth/presentation/bloc/auth_event.dart';
 import 'package:primo_v2/features/auth/presentation/bloc/auth_state.dart';
+import 'package:primo_v2/features/employees/domain/usecases/clock_in_usecase.dart';
+import 'package:primo_v2/features/employees/domain/usecases/get_active_work_shift_usecase.dart';
 
 import 'auth_bloc_test.mocks.dart';
 

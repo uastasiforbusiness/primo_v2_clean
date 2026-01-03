@@ -58,6 +58,26 @@ class $EmployeesTable extends Employees
   late final GeneratedColumn<String> pinHash = GeneratedColumn<String>(
       'pin_hash', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _pinSaltMeta =
+      const VerificationMeta('pinSalt');
+  @override
+  late final GeneratedColumn<String> pinSalt = GeneratedColumn<String>(
+      'pin_salt', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _pinBlindIndexMeta =
+      const VerificationMeta('pinBlindIndex');
+  @override
+  late final GeneratedColumn<String> pinBlindIndex = GeneratedColumn<String>(
+      'pin_blind_index', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _securityVersionMeta =
+      const VerificationMeta('securityVersion');
+  @override
+  late final GeneratedColumn<int> securityVersion = GeneratedColumn<int>(
+      'security_version', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
   static const VerificationMeta _isActiveMeta =
       const VerificationMeta('isActive');
   @override
@@ -95,6 +115,9 @@ class $EmployeesTable extends Employees
         hourlyRate,
         role,
         pinHash,
+        pinSalt,
+        pinBlindIndex,
+        securityVersion,
         isActive,
         createdAt,
         updatedAt
@@ -160,6 +183,22 @@ class $EmployeesTable extends Employees
     } else if (isInserting) {
       context.missing(_pinHashMeta);
     }
+    if (data.containsKey('pin_salt')) {
+      context.handle(_pinSaltMeta,
+          pinSalt.isAcceptableOrUnknown(data['pin_salt']!, _pinSaltMeta));
+    }
+    if (data.containsKey('pin_blind_index')) {
+      context.handle(
+          _pinBlindIndexMeta,
+          pinBlindIndex.isAcceptableOrUnknown(
+              data['pin_blind_index']!, _pinBlindIndexMeta));
+    }
+    if (data.containsKey('security_version')) {
+      context.handle(
+          _securityVersionMeta,
+          securityVersion.isAcceptableOrUnknown(
+              data['security_version']!, _securityVersionMeta));
+    }
     if (data.containsKey('is_active')) {
       context.handle(_isActiveMeta,
           isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta));
@@ -199,6 +238,12 @@ class $EmployeesTable extends Employees
           .read(DriftSqlType.string, data['${effectivePrefix}role'])!,
       pinHash: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}pin_hash'])!,
+      pinSalt: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}pin_salt']),
+      pinBlindIndex: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}pin_blind_index']),
+      securityVersion: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}security_version'])!,
       isActive: attachedDatabase.typeMapping
           .read(DriftSqlType.bool, data['${effectivePrefix}is_active'])!,
       createdAt: attachedDatabase.typeMapping
@@ -224,6 +269,9 @@ class Employee extends DataClass implements Insertable<Employee> {
   final double? hourlyRate;
   final String role;
   final String pinHash;
+  final String? pinSalt;
+  final String? pinBlindIndex;
+  final int securityVersion;
   final bool isActive;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -237,6 +285,9 @@ class Employee extends DataClass implements Insertable<Employee> {
       this.hourlyRate,
       required this.role,
       required this.pinHash,
+      this.pinSalt,
+      this.pinBlindIndex,
+      required this.securityVersion,
       required this.isActive,
       required this.createdAt,
       required this.updatedAt});
@@ -258,6 +309,13 @@ class Employee extends DataClass implements Insertable<Employee> {
     }
     map['role'] = Variable<String>(role);
     map['pin_hash'] = Variable<String>(pinHash);
+    if (!nullToAbsent || pinSalt != null) {
+      map['pin_salt'] = Variable<String>(pinSalt);
+    }
+    if (!nullToAbsent || pinBlindIndex != null) {
+      map['pin_blind_index'] = Variable<String>(pinBlindIndex);
+    }
+    map['security_version'] = Variable<int>(securityVersion);
     map['is_active'] = Variable<bool>(isActive);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -279,6 +337,13 @@ class Employee extends DataClass implements Insertable<Employee> {
           : Value(hourlyRate),
       role: Value(role),
       pinHash: Value(pinHash),
+      pinSalt: pinSalt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pinSalt),
+      pinBlindIndex: pinBlindIndex == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pinBlindIndex),
+      securityVersion: Value(securityVersion),
       isActive: Value(isActive),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
@@ -298,6 +363,9 @@ class Employee extends DataClass implements Insertable<Employee> {
       hourlyRate: serializer.fromJson<double?>(json['hourlyRate']),
       role: serializer.fromJson<String>(json['role']),
       pinHash: serializer.fromJson<String>(json['pinHash']),
+      pinSalt: serializer.fromJson<String?>(json['pinSalt']),
+      pinBlindIndex: serializer.fromJson<String?>(json['pinBlindIndex']),
+      securityVersion: serializer.fromJson<int>(json['securityVersion']),
       isActive: serializer.fromJson<bool>(json['isActive']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
@@ -316,6 +384,9 @@ class Employee extends DataClass implements Insertable<Employee> {
       'hourlyRate': serializer.toJson<double?>(hourlyRate),
       'role': serializer.toJson<String>(role),
       'pinHash': serializer.toJson<String>(pinHash),
+      'pinSalt': serializer.toJson<String?>(pinSalt),
+      'pinBlindIndex': serializer.toJson<String?>(pinBlindIndex),
+      'securityVersion': serializer.toJson<int>(securityVersion),
       'isActive': serializer.toJson<bool>(isActive),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
@@ -332,6 +403,9 @@ class Employee extends DataClass implements Insertable<Employee> {
           Value<double?> hourlyRate = const Value.absent(),
           String? role,
           String? pinHash,
+          Value<String?> pinSalt = const Value.absent(),
+          Value<String?> pinBlindIndex = const Value.absent(),
+          int? securityVersion,
           bool? isActive,
           DateTime? createdAt,
           DateTime? updatedAt}) =>
@@ -345,6 +419,10 @@ class Employee extends DataClass implements Insertable<Employee> {
         hourlyRate: hourlyRate.present ? hourlyRate.value : this.hourlyRate,
         role: role ?? this.role,
         pinHash: pinHash ?? this.pinHash,
+        pinSalt: pinSalt.present ? pinSalt.value : this.pinSalt,
+        pinBlindIndex:
+            pinBlindIndex.present ? pinBlindIndex.value : this.pinBlindIndex,
+        securityVersion: securityVersion ?? this.securityVersion,
         isActive: isActive ?? this.isActive,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
@@ -363,6 +441,13 @@ class Employee extends DataClass implements Insertable<Employee> {
           data.hourlyRate.present ? data.hourlyRate.value : this.hourlyRate,
       role: data.role.present ? data.role.value : this.role,
       pinHash: data.pinHash.present ? data.pinHash.value : this.pinHash,
+      pinSalt: data.pinSalt.present ? data.pinSalt.value : this.pinSalt,
+      pinBlindIndex: data.pinBlindIndex.present
+          ? data.pinBlindIndex.value
+          : this.pinBlindIndex,
+      securityVersion: data.securityVersion.present
+          ? data.securityVersion.value
+          : this.securityVersion,
       isActive: data.isActive.present ? data.isActive.value : this.isActive,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
@@ -381,6 +466,9 @@ class Employee extends DataClass implements Insertable<Employee> {
           ..write('hourlyRate: $hourlyRate, ')
           ..write('role: $role, ')
           ..write('pinHash: $pinHash, ')
+          ..write('pinSalt: $pinSalt, ')
+          ..write('pinBlindIndex: $pinBlindIndex, ')
+          ..write('securityVersion: $securityVersion, ')
           ..write('isActive: $isActive, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
@@ -399,6 +487,9 @@ class Employee extends DataClass implements Insertable<Employee> {
       hourlyRate,
       role,
       pinHash,
+      pinSalt,
+      pinBlindIndex,
+      securityVersion,
       isActive,
       createdAt,
       updatedAt);
@@ -415,6 +506,9 @@ class Employee extends DataClass implements Insertable<Employee> {
           other.hourlyRate == this.hourlyRate &&
           other.role == this.role &&
           other.pinHash == this.pinHash &&
+          other.pinSalt == this.pinSalt &&
+          other.pinBlindIndex == this.pinBlindIndex &&
+          other.securityVersion == this.securityVersion &&
           other.isActive == this.isActive &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
@@ -430,6 +524,9 @@ class EmployeesCompanion extends UpdateCompanion<Employee> {
   final Value<double?> hourlyRate;
   final Value<String> role;
   final Value<String> pinHash;
+  final Value<String?> pinSalt;
+  final Value<String?> pinBlindIndex;
+  final Value<int> securityVersion;
   final Value<bool> isActive;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
@@ -444,6 +541,9 @@ class EmployeesCompanion extends UpdateCompanion<Employee> {
     this.hourlyRate = const Value.absent(),
     this.role = const Value.absent(),
     this.pinHash = const Value.absent(),
+    this.pinSalt = const Value.absent(),
+    this.pinBlindIndex = const Value.absent(),
+    this.securityVersion = const Value.absent(),
     this.isActive = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -459,6 +559,9 @@ class EmployeesCompanion extends UpdateCompanion<Employee> {
     this.hourlyRate = const Value.absent(),
     required String role,
     required String pinHash,
+    this.pinSalt = const Value.absent(),
+    this.pinBlindIndex = const Value.absent(),
+    this.securityVersion = const Value.absent(),
     this.isActive = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
@@ -479,6 +582,9 @@ class EmployeesCompanion extends UpdateCompanion<Employee> {
     Expression<double>? hourlyRate,
     Expression<String>? role,
     Expression<String>? pinHash,
+    Expression<String>? pinSalt,
+    Expression<String>? pinBlindIndex,
+    Expression<int>? securityVersion,
     Expression<bool>? isActive,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
@@ -494,6 +600,9 @@ class EmployeesCompanion extends UpdateCompanion<Employee> {
       if (hourlyRate != null) 'hourly_rate': hourlyRate,
       if (role != null) 'role': role,
       if (pinHash != null) 'pin_hash': pinHash,
+      if (pinSalt != null) 'pin_salt': pinSalt,
+      if (pinBlindIndex != null) 'pin_blind_index': pinBlindIndex,
+      if (securityVersion != null) 'security_version': securityVersion,
       if (isActive != null) 'is_active': isActive,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
@@ -511,6 +620,9 @@ class EmployeesCompanion extends UpdateCompanion<Employee> {
       Value<double?>? hourlyRate,
       Value<String>? role,
       Value<String>? pinHash,
+      Value<String?>? pinSalt,
+      Value<String?>? pinBlindIndex,
+      Value<int>? securityVersion,
       Value<bool>? isActive,
       Value<DateTime>? createdAt,
       Value<DateTime>? updatedAt,
@@ -525,6 +637,9 @@ class EmployeesCompanion extends UpdateCompanion<Employee> {
       hourlyRate: hourlyRate ?? this.hourlyRate,
       role: role ?? this.role,
       pinHash: pinHash ?? this.pinHash,
+      pinSalt: pinSalt ?? this.pinSalt,
+      pinBlindIndex: pinBlindIndex ?? this.pinBlindIndex,
+      securityVersion: securityVersion ?? this.securityVersion,
       isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -562,6 +677,15 @@ class EmployeesCompanion extends UpdateCompanion<Employee> {
     if (pinHash.present) {
       map['pin_hash'] = Variable<String>(pinHash.value);
     }
+    if (pinSalt.present) {
+      map['pin_salt'] = Variable<String>(pinSalt.value);
+    }
+    if (pinBlindIndex.present) {
+      map['pin_blind_index'] = Variable<String>(pinBlindIndex.value);
+    }
+    if (securityVersion.present) {
+      map['security_version'] = Variable<int>(securityVersion.value);
+    }
     if (isActive.present) {
       map['is_active'] = Variable<bool>(isActive.value);
     }
@@ -589,6 +713,9 @@ class EmployeesCompanion extends UpdateCompanion<Employee> {
           ..write('hourlyRate: $hourlyRate, ')
           ..write('role: $role, ')
           ..write('pinHash: $pinHash, ')
+          ..write('pinSalt: $pinSalt, ')
+          ..write('pinBlindIndex: $pinBlindIndex, ')
+          ..write('securityVersion: $securityVersion, ')
           ..write('isActive: $isActive, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
@@ -2217,6 +2344,9 @@ typedef $$EmployeesTableCreateCompanionBuilder = EmployeesCompanion Function({
   Value<double?> hourlyRate,
   required String role,
   required String pinHash,
+  Value<String?> pinSalt,
+  Value<String?> pinBlindIndex,
+  Value<int> securityVersion,
   Value<bool> isActive,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
@@ -2232,6 +2362,9 @@ typedef $$EmployeesTableUpdateCompanionBuilder = EmployeesCompanion Function({
   Value<double?> hourlyRate,
   Value<String> role,
   Value<String> pinHash,
+  Value<String?> pinSalt,
+  Value<String?> pinBlindIndex,
+  Value<int> securityVersion,
   Value<bool> isActive,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
@@ -2324,6 +2457,16 @@ class $$EmployeesTableFilterComposer
 
   ColumnFilters<String> get pinHash => $composableBuilder(
       column: $table.pinHash, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get pinSalt => $composableBuilder(
+      column: $table.pinSalt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get pinBlindIndex => $composableBuilder(
+      column: $table.pinBlindIndex, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get securityVersion => $composableBuilder(
+      column: $table.securityVersion,
+      builder: (column) => ColumnFilters(column));
 
   ColumnFilters<bool> get isActive => $composableBuilder(
       column: $table.isActive, builder: (column) => ColumnFilters(column));
@@ -2435,6 +2578,17 @@ class $$EmployeesTableOrderingComposer
   ColumnOrderings<String> get pinHash => $composableBuilder(
       column: $table.pinHash, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get pinSalt => $composableBuilder(
+      column: $table.pinSalt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get pinBlindIndex => $composableBuilder(
+      column: $table.pinBlindIndex,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get securityVersion => $composableBuilder(
+      column: $table.securityVersion,
+      builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<bool> get isActive => $composableBuilder(
       column: $table.isActive, builder: (column) => ColumnOrderings(column));
 
@@ -2480,6 +2634,15 @@ class $$EmployeesTableAnnotationComposer
 
   GeneratedColumn<String> get pinHash =>
       $composableBuilder(column: $table.pinHash, builder: (column) => column);
+
+  GeneratedColumn<String> get pinSalt =>
+      $composableBuilder(column: $table.pinSalt, builder: (column) => column);
+
+  GeneratedColumn<String> get pinBlindIndex => $composableBuilder(
+      column: $table.pinBlindIndex, builder: (column) => column);
+
+  GeneratedColumn<int> get securityVersion => $composableBuilder(
+      column: $table.securityVersion, builder: (column) => column);
 
   GeneratedColumn<bool> get isActive =>
       $composableBuilder(column: $table.isActive, builder: (column) => column);
@@ -2587,6 +2750,9 @@ class $$EmployeesTableTableManager extends RootTableManager<
             Value<double?> hourlyRate = const Value.absent(),
             Value<String> role = const Value.absent(),
             Value<String> pinHash = const Value.absent(),
+            Value<String?> pinSalt = const Value.absent(),
+            Value<String?> pinBlindIndex = const Value.absent(),
+            Value<int> securityVersion = const Value.absent(),
             Value<bool> isActive = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
@@ -2602,6 +2768,9 @@ class $$EmployeesTableTableManager extends RootTableManager<
             hourlyRate: hourlyRate,
             role: role,
             pinHash: pinHash,
+            pinSalt: pinSalt,
+            pinBlindIndex: pinBlindIndex,
+            securityVersion: securityVersion,
             isActive: isActive,
             createdAt: createdAt,
             updatedAt: updatedAt,
@@ -2617,6 +2786,9 @@ class $$EmployeesTableTableManager extends RootTableManager<
             Value<double?> hourlyRate = const Value.absent(),
             required String role,
             required String pinHash,
+            Value<String?> pinSalt = const Value.absent(),
+            Value<String?> pinBlindIndex = const Value.absent(),
+            Value<int> securityVersion = const Value.absent(),
             Value<bool> isActive = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
@@ -2632,6 +2804,9 @@ class $$EmployeesTableTableManager extends RootTableManager<
             hourlyRate: hourlyRate,
             role: role,
             pinHash: pinHash,
+            pinSalt: pinSalt,
+            pinBlindIndex: pinBlindIndex,
+            securityVersion: securityVersion,
             isActive: isActive,
             createdAt: createdAt,
             updatedAt: updatedAt,

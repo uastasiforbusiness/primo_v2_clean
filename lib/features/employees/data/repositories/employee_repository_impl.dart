@@ -1,7 +1,9 @@
 import 'package:dartz/dartz.dart';
+import 'package:drift/drift.dart';
 import 'package:primo_v2/core/entities/employee_entity.dart';
 
 import '../../../../core/error/failures.dart';
+import '../../../../core/security/security_service.dart';
 import '../../../../core/shared_kernel/pin.dart';
 import '../../../auth/data/models/employee_model.dart';
 import '../../../../infrastructure/database/app_database.dart';
@@ -10,8 +12,12 @@ import '../datasources/employee_local_datasource.dart';
 
 class EmployeeRepositoryImpl implements EmployeeRepository {
   final EmployeeLocalDataSource localDataSource;
+  final SecurityService securityService;
 
-  EmployeeRepositoryImpl({required this.localDataSource});
+  EmployeeRepositoryImpl({
+    required this.localDataSource,
+    required this.securityService,
+  });
 
   @override
   Future<Either<Failure, List<EmployeeEntity>>> getEmployees() async {
@@ -25,10 +31,18 @@ class EmployeeRepositoryImpl implements EmployeeRepository {
   }
 
   @override
-  Future<Either<Failure, void>> createEmployee(EmployeeEntity employee, String pin) async {
+  Future<Either<Failure, void>> createEmployee(EmployeeEntity employee, String pinText) async {
     try {
-      final pinHash = Pin.fromPlainText(pin).toHash();
+      // 1. Get Security Secrets
+      final pepper = await securityService.getMasterPepper();
+      final pinSalt = Pin.generateSalt();
 
+      // 2. Perform Cryptography
+      final pin = Pin.fromPlainText(pinText);
+      final pinHash = await pin.toHashWithSalt(pinSalt, pepper);
+      final pinBlindIndex = await pin.toBlindIndex(pepper);
+
+      // 3. Create Data Object
       final employeeDrift = Employee(
         id: employee.id,
         name: employee.name,
@@ -36,12 +50,15 @@ class EmployeeRepositoryImpl implements EmployeeRepository {
         email: employee.email,
         phone: employee.phone,
         emergencyPhone: employee.emergencyPhone,
-        hourlyRate: employee.hourlyRate,
         role: employee.role.toValue(),
         pinHash: pinHash,
-        isActive: true,
+        pinSalt: pinSalt,
+        pinBlindIndex: pinBlindIndex,
+        securityVersion: 1, // Start with version 1 (Argon2id)
+        isActive: true, // Default to true on create
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
+        hourlyRate: employee.hourlyRate,
       );
 
       await localDataSource.createEmployee(employeeDrift);
@@ -54,11 +71,25 @@ class EmployeeRepositoryImpl implements EmployeeRepository {
   @override
   Future<Either<Failure, void>> updateEmployee(EmployeeEntity employee, {String? newPin}) async {
     try {
-      // Hash new PIN if provided
-      final pinHash = newPin != null ? Pin.fromPlainText(newPin).toHash() : null;
+      String? newPinHash;
+      String? newPinSalt;
+      String? newPinBlindIndex;
+      int? newSecurityVersion;
 
-      // Note: We pass a minimal Employee object for update
-      // The datasource will handle partial updates via EmployeesCompanion
+      if (newPin != null) {
+        final pepper = await securityService.getMasterPepper();
+        final salt = Pin.generateSalt();
+        final pinObj = Pin.fromPlainText(newPin);
+
+        newPinHash = await pinObj.toHashWithSalt(salt, pepper);
+        newPinSalt = salt;
+        newPinBlindIndex = await pinObj.toBlindIndex(pepper);
+        newSecurityVersion = 1;
+      }
+
+      // We pass the existing employee data, but datasource might not need everything if using partial update logic
+      // However, createEmployee() in repo logic passed a full object.
+      // Here we construct a Drift Employee object to pass Identity.
       final employeeDrift = Employee(
         id: employee.id,
         name: employee.name,
@@ -66,15 +97,28 @@ class EmployeeRepositoryImpl implements EmployeeRepository {
         email: employee.email,
         phone: employee.phone,
         emergencyPhone: employee.emergencyPhone,
-        hourlyRate: employee.hourlyRate,
         role: employee.role.toValue(),
-        pinHash: '', // Placeholder, actual PIN handled by datasource
+        // Pass existing hashed values (though they won't be used if we provide new ones via params)
+        // But to satisfy constructor we need strings. Passing empty string or existing from entity would be better
+        // if entity had them. Entity doesn't have secrets.
+        // We can pass empty, assuming DataSource uses new params if provided. Update logic in datasource uses specific params.
+        pinHash: '',
+        pinSalt: '',
+        pinBlindIndex: '',
+        securityVersion: employee.securityVersion,
         isActive: employee.isActive,
         createdAt: employee.createdAt,
         updatedAt: DateTime.now(),
+        hourlyRate: employee.hourlyRate,
       );
 
-      await localDataSource.updateEmployee(employeeDrift, newPinHash: pinHash);
+      await localDataSource.updateEmployee(
+        employeeDrift,
+        newPinHash: newPinHash,
+        newPinSalt: newPinSalt,
+        newPinBlindIndex: newPinBlindIndex,
+        newSecurityVersion: newSecurityVersion,
+      );
       return const Right(null);
     } catch (e) {
       return Left(DatabaseFailure(message: e.toString()));

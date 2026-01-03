@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:argon2/argon2.dart';
 import 'package:equatable/equatable.dart';
@@ -37,8 +38,11 @@ class Pin extends Equatable {
       lanes: 4,
     );
 
-    final argon2 = Argon2Bytes(parameters);
-    final result = argon2.calculateHash(passwordBytes);
+    final argon2 = Argon2BytesGenerator();
+    argon2.init(parameters);
+
+    final result = Uint8List(32);
+    argon2.generateBytes(passwordBytes, result);
     return base64Encode(result);
   }
 
@@ -57,8 +61,11 @@ class Pin extends Equatable {
       lanes: 4,
     );
 
-    final argon2 = Argon2Bytes(parameters);
-    final result = argon2.calculateHash(passwordBytes);
+    final argon2 = Argon2BytesGenerator();
+    argon2.init(parameters);
+
+    final result = Uint8List(32);
+    argon2.generateBytes(passwordBytes, result);
     return base64Encode(result);
   }
 

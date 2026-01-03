@@ -6,6 +6,9 @@ import 'package:logger/logger.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+import '../../core/security/security_service.dart';
+import '../../core/shared_kernel/pin.dart';
+
 part 'app_database.g.dart';
 
 // ==================== TABLES ====================
@@ -19,7 +22,13 @@ class Employees extends Table {
   TextColumn get emergencyPhone => text().named('emergency_phone')();
   RealColumn get hourlyRate => real().named('hourly_rate').nullable()();
   TextColumn get role => text()();
+  // Security V2 Columns
   TextColumn get pinHash => text().named('pin_hash')();
+  TextColumn get pinSalt => text().named('pin_salt').nullable()();
+  TextColumn get pinBlindIndex => text().named('pin_blind_index').nullable()();
+  IntColumn get securityVersion =>
+      integer().named('security_version').withDefault(const Constant(0))();
+
   BoolColumn get isActive => boolean().named('is_active').withDefault(const Constant(true))();
   DateTimeColumn get createdAt => dateTime().named('created_at').withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().named('updated_at').withDefault(currentDateAndTime)();
@@ -97,10 +106,12 @@ class WorkShifts extends Table {
   ],
 )
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(_openConnection());
+  final SecurityService securityService;
+
+  AppDatabase(this.securityService) : super(_openConnection());
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -115,6 +126,25 @@ class AppDatabase extends _$AppDatabase {
           if (from < 3) {
             await m.createTable(workShifts);
           }
+          if (from < 5) {
+            try {
+              await delete(employees).go();
+            } catch (_) {}
+
+            try {
+              await m.addColumn(employees, employees.pinSalt as GeneratedColumn<Object>);
+            } catch (_) {}
+
+            try {
+              await m.addColumn(employees, employees.pinBlindIndex as GeneratedColumn<Object>);
+            } catch (_) {}
+
+            try {
+              await m.addColumn(employees, employees.securityVersion as GeneratedColumn<Object>);
+            } catch (_) {}
+
+            await _seedInitialData();
+          }
         },
       );
 
@@ -122,29 +152,19 @@ class AppDatabase extends _$AppDatabase {
     final logger = Logger();
     logger.i('🌱 Seeding initial data...');
 
-    // Default cash register
-    await into(cashRegisters).insert(
-      CashRegistersCompanion.insert(
-        id: 'default-register',
-        name: 'Caja Principal',
-      ),
-    );
-    logger.i('✅ Cash register created: default-register');
+    try {
+      await into(cashRegisters).insert(
+        CashRegistersCompanion.insert(
+          id: 'default-register',
+          name: 'Caja Principal',
+        ),
+      );
+      logger.i('✅ Cash register created: default-register');
+    } catch (e) {
+      logger.w('Cash register already exists or failed: $e');
+    }
 
-    // Default admin user (PIN: 1234)
-    // Hash SHA-256 de "1234": 03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4
-    await into(employees).insert(
-      EmployeesCompanion.insert(
-        id: 'admin-001',
-        name: 'Administrador',
-        lastName: 'Sistema',
-        emergencyPhone: '000000000',
-        role: 'ADMIN',
-        pinHash: '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4',
-        email: const Value('admin@primo.com'),
-      ),
-    );
-    logger.i('✅ Admin user created: admin-001 with PIN hash');
+    await ensureAdminUser();
   }
 
   // ==================== EMPLOYEE QUERIES ====================
@@ -157,11 +177,16 @@ class AppDatabase extends _$AppDatabase {
   Future<Employee?> getEmployeeById(String id) =>
       (select(employees)..where((e) => e.id.equals(id))).getSingleOrNull();
 
+  // Deprecated: Use Blind Index instead
   Future<Employee?> getEmployeeByPinHash(String pinHash) =>
       (select(employees)..where((e) => e.pinHash.equals(pinHash))).getSingleOrNull();
 
-  Future<bool> isPinUnique(String pinHash, {String? excludeEmployeeId}) async {
-    final query = select(employees)..where((e) => e.pinHash.equals(pinHash));
+  Future<Employee?> getEmployeeByBlindIndex(String blindIndex) =>
+      (select(employees)..where((e) => e.pinBlindIndex.equals(blindIndex))).getSingleOrNull();
+
+  Future<bool> isPinUnique(String blindIndex, {String? excludeEmployeeId}) async {
+    // Usamos el Blind Index para verificar unicidad
+    final query = select(employees)..where((e) => e.pinBlindIndex.equals(blindIndex));
 
     if (excludeEmployeeId != null) {
       query.where((e) => e.id.equals(excludeEmployeeId).not());
@@ -248,19 +273,38 @@ class AppDatabase extends _$AppDatabase {
 
   // Asegura que el usuario administrador por defecto siempre exista
   Future<void> ensureAdminUser() async {
-    final admin = await getEmployeeById('admin-001');
-    if (admin == null) {
-      await into(employees).insert(
-        EmployeesCompanion.insert(
-          id: 'admin-001',
-          name: 'Administrador',
-          lastName: 'Sistema',
-          emergencyPhone: '000000000',
-          role: 'ADMIN',
-          pinHash: '03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4',
-          email: const Value('admin@primo.com'),
-        ),
-      );
+    try {
+      final admin = await (select(employees)..where((e) => e.id.equals('admin-001'))).getSingleOrNull();
+      if (admin == null) {
+        final logger = Logger();
+        logger.i('👤 Generating secure default admin...');
+
+        final pepper = await securityService.getMasterPepper();
+        final pin = Pin.fromPlainText('1234');
+
+        final salt = Pin.generateSalt();
+        final hash = await pin.toHashWithSalt(salt, pepper);
+        final blindIndex = await pin.toBlindIndex(pepper);
+
+        await into(employees).insert(
+          EmployeesCompanion.insert(
+            id: 'admin-001',
+            name: 'Administrador',
+            lastName: 'Sistema',
+            emergencyPhone: '000000000',
+            role: 'ADMIN',
+            pinHash: hash,
+            pinSalt: Value(salt),
+            pinBlindIndex: Value(blindIndex),
+            securityVersion: const Value(1),
+            email: const Value('admin@primo.com'),
+          ),
+        );
+        logger.i('✅ Secure Admin created successfully (v5).');
+      }
+    } catch (e) {
+      final logger = Logger();
+      logger.e('Error ensuring admin user: $e');
     }
   }
 }
@@ -268,7 +312,7 @@ class AppDatabase extends _$AppDatabase {
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final dbFolder = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dbFolder.path, 'primo_v2.db'));
+    final file = File(p.join(dbFolder.path, 'primo_v2_v5.db'));
     return NativeDatabase(file);
   });
 }

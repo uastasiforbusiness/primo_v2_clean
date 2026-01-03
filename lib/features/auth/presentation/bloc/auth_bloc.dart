@@ -1,8 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:logger/logger.dart';
-import '../../domain/usecases/login_with_pin_usecase.dart';
-import '../../../../features/employees/domain/usecases/get_active_work_shift_usecase.dart';
+
 import '../../../../features/employees/domain/usecases/clock_in_usecase.dart';
+import '../../../../features/employees/domain/usecases/get_active_work_shift_usecase.dart';
+import '../../domain/usecases/login_with_pin_usecase.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 

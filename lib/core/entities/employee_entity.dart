@@ -13,6 +13,7 @@ class EmployeeEntity extends Equatable {
   final bool isActive;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final int securityVersion;
 
   const EmployeeEntity({
     required this.id,
@@ -26,6 +27,7 @@ class EmployeeEntity extends Equatable {
     required this.isActive,
     required this.createdAt,
     required this.updatedAt,
+    this.securityVersion = 1,
   });
 
   String get fullName => '$name $lastName';

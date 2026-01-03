@@ -16,6 +16,7 @@ class EmployeeModel extends EmployeeEntity {
     required super.isActive,
     required super.createdAt,
     required super.updatedAt,
+    super.securityVersion,
   });
 
   factory EmployeeModel.fromDrift(Employee employee) {
@@ -31,6 +32,7 @@ class EmployeeModel extends EmployeeEntity {
       isActive: employee.isActive,
       createdAt: employee.createdAt,
       updatedAt: employee.updatedAt,
+      securityVersion: employee.securityVersion,
     );
   }
 
@@ -47,6 +49,7 @@ class EmployeeModel extends EmployeeEntity {
       isActive: isActive,
       createdAt: createdAt,
       updatedAt: updatedAt,
+      securityVersion: securityVersion,
     );
   }
 }

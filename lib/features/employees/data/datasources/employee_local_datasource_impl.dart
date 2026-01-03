@@ -34,6 +34,9 @@ class EmployeeLocalDataSourceImpl implements EmployeeLocalDataSource {
             emergencyPhone: employee.emergencyPhone,
             role: employee.role,
             pinHash: employee.pinHash,
+            pinSalt: Value(employee.pinSalt),
+            pinBlindIndex: Value(employee.pinBlindIndex),
+            securityVersion: Value(employee.securityVersion),
             email: Value(employee.email),
             phone: Value(employee.phone),
           ),
@@ -57,13 +60,17 @@ class EmployeeLocalDataSourceImpl implements EmployeeLocalDataSource {
   }
 
   @override
-  Future<void> updateEmployee(Employee employee, {String? newPinHash}) async {
+  Future<void> updateEmployee(Employee employee,
+      {String? newPinHash,
+      String? newPinSalt,
+      String? newPinBlindIndex,
+      int? newSecurityVersion}) async {
     try {
       await database.transaction(() async {
         // 1. Si hay nuevo PIN, validar unicidad (excluyendo el empleado actual)
-        if (newPinHash != null) {
+        if (newPinBlindIndex != null) {
           final isPinUnique = await database.isPinUnique(
-            newPinHash,
+            newPinBlindIndex,
             excludeEmployeeId: employee.id,
           );
           if (!isPinUnique) {
@@ -81,6 +88,12 @@ class EmployeeLocalDataSourceImpl implements EmployeeLocalDataSource {
           emergencyPhone: Value(employee.emergencyPhone),
           role: Value(employee.role),
           pinHash: newPinHash != null ? Value(newPinHash) : Value(employee.pinHash),
+          pinSalt: newPinSalt != null ? Value(newPinSalt) : Value(employee.pinSalt),
+          pinBlindIndex:
+              newPinBlindIndex != null ? Value(newPinBlindIndex) : Value(employee.pinBlindIndex),
+          securityVersion: newSecurityVersion != null
+              ? Value(newSecurityVersion)
+              : Value(employee.securityVersion),
           isActive: Value(employee.isActive),
           updatedAt: Value(DateTime.now()),
         );

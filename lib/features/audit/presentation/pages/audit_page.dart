@@ -8,6 +8,13 @@ import '../../../employees/presentation/bloc/employee_state.dart';
 import '../../../../core/entities/employee_entity.dart';
 import '../../../../core/shared_ui/premium_card.dart';
 import '../../../../core/shared_kernel/role.dart';
+import '../../../../core/shared_ui/premium_panel.dart';
+import '../bloc/audit_bloc.dart';
+import '../bloc/audit_event.dart';
+import '../bloc/audit_state.dart';
+import '../../domain/value_objects/audit_filter.dart';
+import '../../domain/entities/audit_event_entity.dart';
+import 'package:intl/intl.dart';
 
 enum AuditCategory { employees, inventory, sales }
 
@@ -21,57 +28,86 @@ class AuditPage extends StatefulWidget {
 class _AuditPageState extends State<AuditPage> {
   AuditCategory _selectedCategory = AuditCategory.employees;
   late final EmployeeBloc _employeeBloc;
+  late final AuditBloc _auditBloc;
+  EmployeeEntity? _selectedEmployee;
 
   @override
   void initState() {
     super.initState();
     _employeeBloc = sl<EmployeeBloc>()..add(const LoadEmployees());
+    _auditBloc = sl<AuditBloc>();
   }
 
   @override
   void dispose() {
     _employeeBloc.close();
+    _auditBloc.close();
     super.dispose();
+  }
+
+  void _onEmployeeSelected(EmployeeEntity employee) {
+    setState(() {
+      _selectedEmployee = employee;
+    });
+    _auditBloc.add(ApplyAuditFilter(AuditFilter(employeeId: employee.id)));
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: _employeeBloc,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: _employeeBloc),
+        BlocProvider.value(value: _auditBloc),
+      ],
       child: AppScaffold(
         showBackground: false,
-        body: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  _buildTopItem(
-                    category: AuditCategory.employees,
-                    icon: Icons.people_outline,
-                    label: 'Empleados',
-                  ),
-                  const SizedBox(width: 8),
-                  _buildTopItem(
-                    category: AuditCategory.inventory,
-                    icon: Icons.inventory_2_outlined,
-                    label: 'Inventario',
-                  ),
-                  const SizedBox(width: 8),
-                  _buildTopItem(
-                    category: AuditCategory.sales,
-                    icon: Icons.shopping_cart_outlined,
-                    label: 'Venta',
-                  ),
-                ],
+        body: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Panel Principal Izquierdo
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        _buildTopItem(
+                          category: AuditCategory.employees,
+                          icon: Icons.people_outline,
+                          label: 'Empleados',
+                        ),
+                        const SizedBox(width: 8),
+                        _buildTopItem(
+                          category: AuditCategory.inventory,
+                          icon: Icons.inventory_2_outlined,
+                          label: 'Inventario',
+                        ),
+                        const SizedBox(width: 8),
+                        _buildTopItem(
+                          category: AuditCategory.sales,
+                          icon: Icons.shopping_cart_outlined,
+                          label: 'Venta',
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 32),
+                    Expanded(
+                      child: _buildCategoryContent(),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 32),
-              Expanded(
-                child: _buildCategoryContent(),
-              ),
-            ],
-          ),
+            ),
+
+            // Panel Lateral Derecho de Auditoría
+            PremiumPanel(
+              isVisible: _selectedEmployee != null,
+              width: 450,
+              child: _buildAuditPanel(),
+            ),
+          ],
         ),
       ),
     );
@@ -166,11 +202,8 @@ class _AuditPageState extends State<AuditPage> {
                     subtitle: employee.role.toValue(),
                     avatarText: initials,
                     isActive: employee.isActive,
-                    isSelected:
-                        false, // In Audit we just view, so no selection state needed for now
-                    onTap: () {
-                      // Action when clicking an employee in audit
-                    },
+                    isSelected: _selectedEmployee?.id == employee.id,
+                    onTap: () => _onEmployeeSelected(employee),
                   ),
                 );
               }).toList(),
@@ -182,5 +215,257 @@ class _AuditPageState extends State<AuditPage> {
     );
   }
 
-  // Deleting the _buildEmployeeCard helper as we are using PremiumCard now
+  Widget _buildAuditPanel() {
+    if (_selectedEmployee == null) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header del Panel
+        Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.blue[50],
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          'AUDITORÍA DE ACTIVIDAD',
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.2,
+                            color: Colors.blue[800],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        _selectedEmployee!.fullName,
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1A1A1A),
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      Text(
+                        _selectedEmployee!.role.toValue().toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey[500],
+                          letterSpacing: 1,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Material(
+                    color: Colors.grey[100],
+                    shape: const CircleBorder(),
+                    child: IconButton(
+                      onPressed: () => setState(() => _selectedEmployee = null),
+                      icon: const Icon(Icons.close, size: 20),
+                      color: Colors.black54,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+
+        const Divider(height: 1),
+
+        // Historial de Eventos
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 32),
+                Row(
+                  children: [
+                    Icon(Icons.history, size: 16, color: Colors.grey[400]),
+                    const SizedBox(width: 8),
+                    Text(
+                      'HISTORIAL RECIENTE',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey[500],
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Expanded(
+                  child: BlocBuilder<AuditBloc, AuditState>(
+                    builder: (context, state) {
+                      if (state is AuditLoading) {
+                        return const Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                          ),
+                        );
+                      }
+                      if (state is AuditLoaded) {
+                        if (state.events.isEmpty) {
+                          return _buildNoActivity();
+                        }
+                        return ListView.separated(
+                          itemCount: state.events.length,
+                          separatorBuilder: (context, index) => const SizedBox(height: 16),
+                          padding: const EdgeInsets.only(bottom: 32),
+                          itemBuilder: (context, index) {
+                            final event = state.events[index];
+                            return _buildAuditItem(event);
+                          },
+                        );
+                      }
+                      return const SizedBox();
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAuditItem(AuditEventEntity event) {
+    final isClockIn = event.eventType.toLowerCase() == 'clock_in';
+    final isClockOut = event.eventType.toLowerCase() == 'clock_out';
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isClockIn ? Colors.blue[100]! : Colors.grey[200]!,
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(5),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: isClockIn
+                  ? Colors.blue[600]
+                  : isClockOut
+                      ? Colors.orange[600]
+                      : Colors.grey[600],
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              isClockIn
+                  ? Icons.login_rounded
+                  : isClockOut
+                      ? Icons.logout_rounded
+                      : Icons.info_outline,
+              size: 20,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isClockIn
+                      ? 'REGISTRO DE ENTRADA'
+                      : isClockOut
+                          ? 'REGISTRO DE SALIDA'
+                          : event.eventType.replaceAll('_', ' ').toUpperCase(),
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: isClockIn ? Colors.blue[900] : const Color(0xFF1A1A1A),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Icon(Icons.access_time, size: 12, color: Colors.grey[400]),
+                    const SizedBox(width: 4),
+                    Text(
+                      DateFormat('hh:mm a').format(event.createdAt),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      width: 4,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      DateFormat('dd MMM, yyyy').format(event.createdAt),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[500],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          Icon(Icons.chevron_right, color: Colors.grey[300], size: 20),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoActivity() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.history, size: 48, color: Colors.grey[300]),
+          const SizedBox(height: 16),
+          const Text(
+            'SIN ACTIVIDAD RECIENTE',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: Colors.black26,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

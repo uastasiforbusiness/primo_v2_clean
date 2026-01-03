@@ -1,5 +1,8 @@
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:uuid/uuid.dart';
+
+import '../core/security/security_service.dart';
 
 // Audit Imports
 import '../features/audit/data/datasources/audit_local_datasource.dart';
@@ -46,7 +49,12 @@ final sl = GetIt.instance;
 
 Future<void> initDependencies() async {
   //! External
-  sl.registerLazySingleton(AppDatabase.new);
+  sl.registerLazySingleton(() => const FlutterSecureStorage());
+  sl.registerLazySingleton<SecurityService>(
+    () => SecurityServiceImpl(sl()),
+  );
+
+  sl.registerLazySingleton(() => AppDatabase(sl()));
   sl.registerLazySingleton(() => const Uuid());
 
   //! Features - Auth
@@ -62,7 +70,7 @@ Future<void> initDependencies() async {
     () => AuthRepositoryImpl(localDataSource: sl()),
   );
   sl.registerLazySingleton<AuthLocalDataSource>(
-    () => AuthLocalDataSourceImpl(database: sl(), uuid: sl()),
+    () => AuthLocalDataSourceImpl(database: sl(), securityService: sl(), uuid: sl()),
   );
 
   //! Features - Employees
@@ -81,7 +89,7 @@ Future<void> initDependencies() async {
   sl.registerLazySingleton(() => DeleteEmployeeUseCase(sl()));
 
   sl.registerLazySingleton<EmployeeRepository>(
-    () => EmployeeRepositoryImpl(localDataSource: sl()),
+    () => EmployeeRepositoryImpl(localDataSource: sl(), securityService: sl()),
   );
 
   sl.registerLazySingleton<EmployeeLocalDataSource>(
