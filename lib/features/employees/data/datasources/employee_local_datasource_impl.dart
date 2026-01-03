@@ -42,16 +42,15 @@ class EmployeeLocalDataSourceImpl implements EmployeeLocalDataSource {
           ),
         );
 
-        // 3. Registrar auditoría (si falla, rollback automático)
-        // TODO: Descomentar cuando se implemente el módulo de auditoría
-        // await database.insertAuditEvent(
-        //   AuditEventsCompanion.insert(
-        //     id: uuid.v4(),
-        //     eventType: 'employee_created',
-        //     employeeId: Value(employee.id),
-        //     metadata: Value('Role: ${employee.role}'),
-        //   ),
-        // );
+        // 3. Registrar auditoría
+        await database.insertAuditEvent(
+          AuditEventsCompanion.insert(
+            id: uuid.v4(),
+            eventType: 'employee_created',
+            employeeId: Value(employee.id),
+            metadata: Value('Role: ${employee.role}'),
+          ),
+        );
       });
     } catch (e) {
       if (e is DuplicateException) rethrow;
@@ -60,11 +59,13 @@ class EmployeeLocalDataSourceImpl implements EmployeeLocalDataSource {
   }
 
   @override
-  Future<void> updateEmployee(Employee employee,
-      {String? newPinHash,
-      String? newPinSalt,
-      String? newPinBlindIndex,
-      int? newSecurityVersion}) async {
+  Future<void> updateEmployee(
+    Employee employee, {
+    String? newPinHash,
+    String? newPinSalt,
+    String? newPinBlindIndex,
+    int? newSecurityVersion,
+  }) async {
     try {
       await database.transaction(() async {
         // 1. Si hay nuevo PIN, validar unicidad (excluyendo el empleado actual)
@@ -100,16 +101,15 @@ class EmployeeLocalDataSourceImpl implements EmployeeLocalDataSource {
 
         await database.updateEmployee(companion);
 
-        // 3. Registrar auditoría (si falla, rollback automático)
-        // TODO: Descomentar cuando se implemente el módulo de auditoría
-        // await database.insertAuditEvent(
-        //   AuditEventsCompanion.insert(
-        //     id: uuid.v4(),
-        //     eventType: 'employee_updated',
-        //     employeeId: Value(employee.id),
-        //     metadata: Value('Role: ${employee.role}, PIN changed: ${newPinHash != null}'),
-        //   ),
-        // );
+        // 3. Registrar auditoría
+        await database.insertAuditEvent(
+          AuditEventsCompanion.insert(
+            id: uuid.v4(),
+            eventType: 'employee_updated',
+            employeeId: Value(employee.id),
+            metadata: Value('Role: ${employee.role}, PIN changed: ${newPinHash != null}'),
+          ),
+        );
       });
     } catch (e) {
       if (e is DuplicateException) rethrow;
@@ -124,16 +124,15 @@ class EmployeeLocalDataSourceImpl implements EmployeeLocalDataSource {
         // 1. Soft delete (isActive = false)
         await database.softDeleteEmployee(employeeId);
 
-        // 2. Registrar auditoría (si falla, rollback automático)
-        // TODO: Descomentar cuando se implemente el módulo de auditoría
-        // await database.insertAuditEvent(
-        //   AuditEventsCompanion.insert(
-        //     id: uuid.v4(),
-        //     eventType: 'employee_deleted',
-        //     employeeId: Value(employeeId),
-        //     metadata: const Value('Soft delete'),
-        //   ),
-        // );
+        // 2. Registrar auditoría
+        await database.insertAuditEvent(
+          AuditEventsCompanion.insert(
+            id: uuid.v4(),
+            eventType: 'employee_deleted',
+            employeeId: Value(employeeId),
+            metadata: const Value('Soft delete'),
+          ),
+        );
       });
     } catch (e) {
       throw DatabaseException('Delete employee failed: ${e.toString()}');
@@ -143,26 +142,38 @@ class EmployeeLocalDataSourceImpl implements EmployeeLocalDataSource {
   @override
   Future<WorkShift> clockIn(String employeeId, double? hourlyRate) async {
     try {
-      // 1. Verify if there is already an active shift
-      final activeShift = await database.getActiveWorkShiftByEmployeeId(employeeId);
-      if (activeShift != null) {
-        throw DuplicateException('Employee already clocked in');
-      }
+      return await database.transaction(() async {
+        // 1. Verify if there is already an active shift
+        final activeShift = await database.getActiveWorkShiftByEmployeeId(employeeId);
+        if (activeShift != null) {
+          throw DuplicateException('Employee already clocked in');
+        }
 
-      final id = uuid.v4();
-      final shift = WorkShiftsCompanion.insert(
-        id: id,
-        employeeId: employeeId,
-        hourlyRateSnapshot: Value(hourlyRate),
-        clockIn: Value(DateTime.now()),
-      );
+        final id = uuid.v4();
+        final shift = WorkShiftsCompanion.insert(
+          id: id,
+          employeeId: employeeId,
+          hourlyRateSnapshot: Value(hourlyRate),
+          clockIn: Value(DateTime.now()),
+        );
 
-      await database.insertWorkShift(shift);
+        await database.insertWorkShift(shift);
 
-      // Return the created shift (fetch it to be sure)
-      final createdShift =
-          await (database.select(database.workShifts)..where((s) => s.id.equals(id))).getSingle();
-      return createdShift;
+        // 2. Log Audit Event
+        await database.insertAuditEvent(
+          AuditEventsCompanion.insert(
+            id: uuid.v4(),
+            eventType: 'clock_in',
+            employeeId: Value(employeeId),
+            metadata: Value('Hourly rate: \$${hourlyRate ?? 0}'),
+          ),
+        );
+
+        // Return the created shift (fetch it to be sure)
+        final createdShift =
+            await (database.select(database.workShifts)..where((s) => s.id.equals(id))).getSingle();
+        return createdShift;
+      });
     } catch (e) {
       if (e is DuplicateException) rethrow;
       throw DatabaseException('Clock-in failed: ${e.toString()}');
@@ -172,18 +183,31 @@ class EmployeeLocalDataSourceImpl implements EmployeeLocalDataSource {
   @override
   Future<WorkShift> clockOut(String employeeId) async {
     try {
-      final activeShift = await database.getActiveWorkShiftByEmployeeId(employeeId);
-      if (activeShift == null) {
-        throw DatabaseException('No active shift found to clock out');
-      }
+      return await database.transaction(() async {
+        final activeShift = await database.getActiveWorkShiftByEmployeeId(employeeId);
+        if (activeShift == null) {
+          throw DatabaseException('No active shift found to clock out');
+        }
 
-      await database.closeWorkShift(activeShift.id);
+        await database.closeWorkShift(activeShift.id);
 
-      // Return updated shift
-      final updatedShift = await (database.select(database.workShifts)
-            ..where((s) => s.id.equals(activeShift.id)))
-          .getSingle();
-      return updatedShift;
+        // 2. Log Audit Event
+        await database.insertAuditEvent(
+          AuditEventsCompanion.insert(
+            id: uuid.v4(),
+            eventType: 'clock_out',
+            employeeId: Value(employeeId),
+            metadata: Value(
+                'Shift duration: ${DateTime.now().difference(activeShift.clockIn).inMinutes} min'),
+          ),
+        );
+
+        // Return updated shift
+        final updatedShift = await (database.select(database.workShifts)
+              ..where((s) => s.id.equals(activeShift.id)))
+            .getSingle();
+        return updatedShift;
+      });
     } catch (e) {
       throw DatabaseException('Clock-out failed: ${e.toString()}');
     }

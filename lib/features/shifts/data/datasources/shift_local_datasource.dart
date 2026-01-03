@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart';
 import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';
 
@@ -48,13 +49,15 @@ class ShiftLocalDataSourceImpl implements ShiftLocalDataSource {
           ),
         );
 
-        // 2. Registrar auditoría (si falla, rollback automático)
-        // TODO: Descomentar cuando se implemente el módulo de auditoría
-        // await auditDataSource.logEvent(
-        //   eventType: 'clock_in',
-        //   employeeId: employeeId,
-        //   metadata: 'Initial cash: \$$initialCash',
-        // );
+        // 2. Registrar auditoría
+        await database.insertAuditEvent(
+          AuditEventsCompanion.insert(
+            id: uuid.v4(),
+            eventType: 'shift_clock_in',
+            employeeId: Value(employeeId),
+            metadata: Value('Initial cash: \$$initialCash'),
+          ),
+        );
 
         // 3. Recuperar shift creado
         final shift = await database.getActiveShiftByEmployeeId(employeeId);
@@ -85,12 +88,14 @@ class ShiftLocalDataSourceImpl implements ShiftLocalDataSource {
         // 2. Cerrar shift
         await database.closeShift(shiftId, finalCash);
 
-        // 3. Registrar auditoría (si falla, rollback automático)
-        // TODO: Descomentar cuando se implemente el módulo de auditoría
-        // await auditDataSource.logEvent(
-        //   eventType: 'clock_out',
-        //   metadata: 'Shift ID: $shiftId, Final cash: \$$finalCash',
-        // );
+        // 3. Registrar auditoría
+        await database.insertAuditEvent(
+          AuditEventsCompanion.insert(
+            id: uuid.v4(),
+            eventType: 'shift_clock_out',
+            metadata: Value('Shift ID: $shiftId, Final cash: \$$finalCash'),
+          ),
+        );
       });
     } catch (e) {
       if (e is ValidationException) rethrow;
@@ -132,12 +137,14 @@ class ShiftLocalDataSourceImpl implements ShiftLocalDataSource {
           ),
         );
 
-        // 4. Registrar auditoría (si falla, rollback automático)
-        // TODO: Descomentar cuando se implemente el módulo de auditoría
-        // await auditDataSource.logEvent(
-        //   eventType: 'break_start',
-        //   metadata: 'Shift ID: $shiftId',
-        // );
+        // 4. Registrar auditoría
+        await database.insertAuditEvent(
+          AuditEventsCompanion.insert(
+            id: uuid.v4(),
+            eventType: 'break_start',
+            metadata: Value('Shift ID: $shiftId'),
+          ),
+        );
       });
     } catch (e) {
       if (e is ValidationException) rethrow;
@@ -160,12 +167,14 @@ class ShiftLocalDataSourceImpl implements ShiftLocalDataSource {
         // 3. Cerrar break
         await database.endBreak(activeBreak.id);
 
-        // 4. Registrar auditoría (si falla, rollback automático)
-        // TODO: Descomentar cuando se implemente el módulo de auditoría
-        // await auditDataSource.logEvent(
-        //   eventType: 'break_end',
-        //   metadata: 'Shift ID: $shiftId',
-        // );
+        // 4. Registrar auditoría
+        await database.insertAuditEvent(
+          AuditEventsCompanion.insert(
+            id: uuid.v4(),
+            eventType: 'break_end',
+            metadata: Value('Shift ID: $shiftId'),
+          ),
+        );
       });
     } catch (e) {
       if (e is ValidationException) rethrow;

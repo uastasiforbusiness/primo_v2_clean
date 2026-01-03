@@ -56,8 +56,8 @@ class _EmployeesPageState extends State<EmployeesPage> {
     });
   }
 
-  void _showErrorDialog(BuildContext context, String message) {
-    showDialog(
+  Future<void> _showErrorDialog(BuildContext context, String message) async {
+    await showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Error'),
@@ -77,9 +77,9 @@ class _EmployeesPageState extends State<EmployeesPage> {
     return BlocProvider(
       create: (context) => sl<EmployeeBloc>()..add(const LoadEmployees()),
       child: BlocListener<EmployeeBloc, EmployeeState>(
-        listener: (context, state) {
+        listener: (context, state) async {
           if (state is EmployeeError) {
-            _showErrorDialog(context, state.message);
+            await _showErrorDialog(context, state.message);
           }
           if (state is EmployeeOperationSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -410,6 +410,7 @@ class _EmployeeForm extends StatefulWidget {
 }
 
 class _EmployeeFormState extends State<_EmployeeForm> {
+  final _formKey = GlobalKey<FormState>();
   late String _id;
   final _nameController = TextEditingController();
   final _lastNameController = TextEditingController();
@@ -441,121 +442,171 @@ class _EmployeeFormState extends State<_EmployeeForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(24.0), // Reduced from 32
-      child: Column(
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.employee != null ? 'EDITAR EMPLEADO' : 'NUEVO EMPLEADO',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.5,
-                      fontSize: 10,
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  _buildTextField('Nombre', _nameController),
-                  const SizedBox(height: 16),
-                  _buildTextField('Apellido', _lastNameController),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Rol',
-                    style:
-                        TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black54),
-                  ),
-                  const SizedBox(height: 8),
-                  DropdownButtonFormField<Role>(
-                    initialValue: _selectedRole,
-                    items: [
-                      DropdownMenuItem(value: Role.admin, child: Text(Role.admin.toValue())),
-                      DropdownMenuItem(
-                        value: Role.supervisor,
-                        child: Text(Role.supervisor.toValue()),
-                      ),
-                      DropdownMenuItem(value: Role.staff, child: Text(Role.staff.toValue())),
-                      DropdownMenuItem(value: Role.kitchen, child: Text(Role.kitchen.toValue())),
-                    ],
-                    onChanged: (val) => setState(() => _selectedRole = val!),
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.grey[50],
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
+    return Form(
+      key: _formKey,
+      child: Padding(
+        padding: const EdgeInsets.all(24.0), // Reduced from 32
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.employee != null ? 'EDITAR EMPLEADO' : 'NUEVO EMPLEADO',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.5,
+                        fontSize: 10,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildTextField('Email (Opcional)', _emailController),
-                  const SizedBox(height: 16),
-                  _buildTextField('Teléfono', _phoneController),
-                  const SizedBox(height: 16),
-                  _buildTextField('Teléfono de Emergencia', _emergencyController),
-                  const SizedBox(height: 16),
-                  _buildTextField(
-                    'Salario por Hora (Opcional)',
-                    _hourlyRateController,
-                    isNumber: true,
-                  ),
-                  const SizedBox(height: 16),
-                  _buildTextField(
-                    widget.employee != null ? 'Nuevo PIN (Opcional)' : 'PIN (4 dígitos)',
-                    _pinController,
-                    isObscure: true,
-                  ),
-                  const SizedBox(height: 32),
-                ],
+                    const SizedBox(height: 32),
+                    _buildTextField('Nombre', _nameController, validator: (v) => _validateField(v, 'Nombre')),
+                    const SizedBox(height: 16),
+                    _buildTextField('Apellido', _lastNameController, validator: (v) => _validateField(v, 'Apellido')),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Rol',
+                      style:
+                          TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black54),
+                    ),
+                    const SizedBox(height: 8),
+                    DropdownButtonFormField<Role>(
+                      initialValue: _selectedRole,
+                      items: [
+                        DropdownMenuItem(value: Role.admin, child: Text(Role.admin.toValue())),
+                        DropdownMenuItem(
+                          value: Role.supervisor,
+                          child: Text(Role.supervisor.toValue()),
+                        ),
+                        DropdownMenuItem(value: Role.staff, child: Text(Role.staff.toValue())),
+                        DropdownMenuItem(value: Role.kitchen, child: Text(Role.kitchen.toValue())),
+                      ],
+                      onChanged: (val) => setState(() => _selectedRole = val!),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: Colors.grey[50],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildTextField('Email (Opcional)', _emailController, validator: _validateEmail),
+                    const SizedBox(height: 16),
+                    _buildTextField('Teléfono', _phoneController, validator: _validatePhone),
+                    const SizedBox(height: 16),
+                    _buildTextField('Teléfono de Emergencia', _emergencyController,
+                      validator: (v) => _validateField(v, 'Teléfono de Emergencia'),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildTextField(
+                      'Salario por Hora (Opcional)',
+                      _hourlyRateController,
+                      isNumber: true,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildTextField(
+                      widget.employee != null ? 'Nuevo PIN (Opcional)' : 'PIN (4 dígitos)',
+                      _pinController,
+                      isObscure: true,
+                      validator: widget.employee != null ? null : _validatePin,
+                    ),
+                    const SizedBox(height: 32),
+                  ],
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: TextButton(
-                  onPressed: widget.onCancel,
-                  child: const Text('CANCELAR', style: TextStyle(fontSize: 12)),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: () {
-                    final employee = EmployeeEntity(
-                      id: _id,
-                      name: _nameController.text,
-                      lastName: _lastNameController.text,
-                      email: _emailController.text.isNotEmpty ? _emailController.text : null,
-                      phone: _phoneController.text.isNotEmpty ? _phoneController.text : null,
-                      emergencyPhone: _emergencyController.text,
-                      hourlyRate: double.tryParse(_hourlyRateController.text),
-                      role: _selectedRole,
-                      isActive: true,
-                      createdAt: DateTime.now(),
-                      updatedAt: DateTime.now(),
-                    );
-                    widget.onSave(employee, _pinController.text);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue[700],
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    elevation: 0,
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: widget.onCancel,
+                    child: const Text('CANCELAR', style: TextStyle(fontSize: 12)),
                   ),
-                  child: const Text('GUARDAR', style: TextStyle(fontSize: 12)),
                 ),
-              ),
-            ],
-          ),
-        ],
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      if (!_formKey.currentState!.validate()) {
+                        return;
+                      }
+                      final employee = EmployeeEntity(
+                        id: _id,
+                        name: _nameController.text,
+                        lastName: _lastNameController.text,
+                        email: _emailController.text.isNotEmpty ? _emailController.text : null,
+                        phone: _phoneController.text.isNotEmpty ? _phoneController.text : null,
+                        emergencyPhone: _emergencyController.text,
+                        hourlyRate: double.tryParse(_hourlyRateController.text),
+                        role: _selectedRole,
+                        isActive: true,
+                        createdAt: DateTime.now(),
+                        updatedAt: DateTime.now(),
+                        securityVersion:1,
+                      );
+                      widget.onSave(employee, _pinController.text);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue[700],
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 0,
+                    ),
+                    child: const Text('GUARDAR', style: TextStyle(fontSize: 12)),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  String? _validateField(String? value, String fieldName) {
+    if (value == null || value.trim().isEmpty) {
+      return '$fieldName es requerido';
+    }
+    return null;
+  }
+
+  String? _validateEmail(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return null;
+    }
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegex.hasMatch(value)) {
+      return 'Email inválido';
+    }
+    return null;
+  }
+
+  String? _validatePhone(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return null;
+    }
+    final phoneRegex = RegExp(r'^[\d\s\+\-\(\)]{8,20}$');
+    if (!phoneRegex.hasMatch(value)) {
+      return 'Teléfono inválido';
+    }
+    return null;
+  }
+
+  String? _validatePin(String? value) {
+    final pinRegex = RegExp(r'^\d{4}$');
+    if (value == null || value.isEmpty) {
+      return 'PIN es requerido';
+    }
+    if (!pinRegex.hasMatch(value)) {
+      return 'PIN debe ser 4 dígitos numéricos';
+    }
+    return null;
   }
 
   Widget _buildTextField(
@@ -563,6 +614,7 @@ class _EmployeeFormState extends State<_EmployeeForm> {
     TextEditingController controller, {
     bool isObscure = false,
     bool isNumber = false,
+    String? Function(String?)? validator,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -572,10 +624,11 @@ class _EmployeeFormState extends State<_EmployeeForm> {
           style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black54),
         ),
         const SizedBox(height: 8),
-        TextField(
+        TextFormField(
           controller: controller,
           obscureText: isObscure,
           keyboardType: isNumber ? const TextInputType.numberWithOptions(decimal: true) : null,
+          validator: validator,
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.grey[50],
@@ -584,6 +637,11 @@ class _EmployeeFormState extends State<_EmployeeForm> {
               borderSide: BorderSide.none,
             ),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Colors.red, width: 1),
+            ),
+            errorStyle: const TextStyle(fontSize: 10, color: Colors.red),
           ),
         ),
       ],

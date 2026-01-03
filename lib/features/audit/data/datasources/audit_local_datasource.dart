@@ -65,45 +65,47 @@ class AuditLocalDataSourceImpl implements AuditLocalDataSource {
 
       // Aplicar filtros
       if (filter != null) {
-        query = query..where((event) {
-          Expression<bool>? condition;
+        query = query
+          ..where((event) {
+            final conditions = <Expression<bool>>[];
 
-          if (filter.eventType != null) {
-            condition = event.eventType.equals(filter.eventType!);
-          }
+            if (filter.eventType != null) {
+              final type = filter.eventType!;
+              conditions.add(
+                type.endsWith('_') ? event.eventType.like('$type%') : event.eventType.equals(type),
+              );
+            }
 
-          if (filter.employeeId != null) {
-            final employeeCondition = event.employeeId.equals(filter.employeeId!);
-            condition = condition == null ? employeeCondition : condition & employeeCondition;
-          }
+            if (filter.employeeId != null) {
+              conditions.add(event.employeeId.equals(filter.employeeId!));
+            }
 
-          if (filter.startDate != null) {
-            final startCondition = event.createdAt.isBiggerOrEqualValue(filter.startDate!);
-            condition = condition == null ? startCondition : condition & startCondition;
-          }
+            if (filter.startDate != null) {
+              conditions.add(event.createdAt.isBiggerOrEqualValue(filter.startDate!));
+            }
 
-          if (filter.endDate != null) {
-            final endCondition = event.createdAt.isSmallerOrEqualValue(filter.endDate!);
-            condition = condition == null ? endCondition : condition & endCondition;
-          }
+            if (filter.endDate != null) {
+              conditions.add(event.createdAt.isSmallerOrEqualValue(filter.endDate!));
+            }
 
-          return condition ?? const Constant(true);
-        });
+            if (conditions.isEmpty) return const Constant(true);
+
+            return conditions.reduce((value, element) => value & element);
+          });
       }
 
       // Aplicar ordenamiento
       if (sort != null) {
-        query = query..orderBy([
-          (event) {
-            final column = _getSortColumn(event, sort.field);
-            return OrderingTerm(
-              expression: column,
-              mode: sort.order == AuditSortOrder.ascending
-                  ? OrderingMode.asc
-                  : OrderingMode.desc,
-            );
-          }
-        ]);
+        query = query
+          ..orderBy([
+            (event) {
+              final column = _getSortColumn(event, sort.field);
+              return OrderingTerm(
+                expression: column,
+                mode: sort.order == AuditSortOrder.ascending ? OrderingMode.asc : OrderingMode.desc,
+              );
+            }
+          ]);
       }
 
       // Aplicar límite
@@ -120,8 +122,7 @@ class AuditLocalDataSourceImpl implements AuditLocalDataSource {
   @override
   Future<AuditEvent?> getEventById(String id) async {
     try {
-      return await (database.select(database.auditEvents)
-            ..where((event) => event.id.equals(id)))
+      return await (database.select(database.auditEvents)..where((event) => event.id.equals(id)))
           .getSingleOrNull();
     } catch (e) {
       throw DatabaseException('Failed to get audit event: ${e.toString()}');
@@ -136,9 +137,10 @@ class AuditLocalDataSourceImpl implements AuditLocalDataSource {
 
       // Aplicar filtros (mismo código que en getAuditEvents)
       if (filter != null) {
-        query = query..where(
-          _buildFilterExpression(database.auditEvents, filter),
-        );
+        query = query
+          ..where(
+            _buildFilterExpression(database.auditEvents, filter),
+          );
       }
 
       final result = await query.getSingle();
@@ -160,27 +162,29 @@ class AuditLocalDataSourceImpl implements AuditLocalDataSource {
   }
 
   Expression<bool> _buildFilterExpression($AuditEventsTable event, AuditFilter filter) {
-    Expression<bool>? condition;
+    final conditions = <Expression<bool>>[];
 
     if (filter.eventType != null) {
-      condition = event.eventType.equals(filter.eventType!);
+      final type = filter.eventType!;
+      conditions.add(
+        type.endsWith('_') ? event.eventType.like('$type%') : event.eventType.equals(type),
+      );
     }
 
     if (filter.employeeId != null) {
-      final employeeCondition = event.employeeId.equals(filter.employeeId!);
-      condition = condition == null ? employeeCondition : condition & employeeCondition;
+      conditions.add(event.employeeId.equals(filter.employeeId!));
     }
 
     if (filter.startDate != null) {
-      final startCondition = event.createdAt.isBiggerOrEqualValue(filter.startDate!);
-      condition = condition == null ? startCondition : condition & startCondition;
+      conditions.add(event.createdAt.isBiggerOrEqualValue(filter.startDate!));
     }
 
     if (filter.endDate != null) {
-      final endCondition = event.createdAt.isSmallerOrEqualValue(filter.endDate!);
-      condition = condition == null ? endCondition : condition & endCondition;
+      conditions.add(event.createdAt.isSmallerOrEqualValue(filter.endDate!));
     }
 
-    return condition ?? const Constant(true);
+    if (conditions.isEmpty) return const Constant(true);
+
+    return conditions.reduce((value, element) => value & element);
   }
 }

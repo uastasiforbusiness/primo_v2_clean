@@ -30,6 +30,7 @@ class _AuditPageState extends State<AuditPage> {
   late final EmployeeBloc _employeeBloc;
   late final AuditBloc _auditBloc;
   EmployeeEntity? _selectedEmployee;
+  AuditEventEntity? _selectedEvent;
 
   @override
   void initState() {
@@ -48,8 +49,33 @@ class _AuditPageState extends State<AuditPage> {
   void _onEmployeeSelected(EmployeeEntity employee) {
     setState(() {
       _selectedEmployee = employee;
+      _selectedEvent = null;
     });
     _auditBloc.add(ApplyAuditFilter(AuditFilter(employeeId: employee.id)));
+  }
+
+  void _onEventSelected(AuditEventEntity event) {
+    setState(() {
+      _selectedEvent = event;
+      _selectedEmployee = null;
+    });
+  }
+
+  void _onCategoryChanged(AuditCategory category) {
+    setState(() {
+      _selectedCategory = category;
+      _selectedEmployee = null;
+      _selectedEvent = null;
+    });
+
+    // Cargar eventos según la categoría
+    if (category == AuditCategory.inventory) {
+      _auditBloc.add(const ApplyAuditFilter(AuditFilter(eventType: 'inventory_')));
+    } else if (category == AuditCategory.sales) {
+      _auditBloc.add(const ApplyAuditFilter(AuditFilter(eventType: 'shift_')));
+    } else {
+      _auditBloc.add(const ClearAuditFilters());
+    }
   }
 
   @override
@@ -71,26 +97,29 @@ class _AuditPageState extends State<AuditPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        _buildTopItem(
-                          category: AuditCategory.employees,
-                          icon: Icons.people_outline,
-                          label: 'Empleados',
-                        ),
-                        const SizedBox(width: 8),
-                        _buildTopItem(
-                          category: AuditCategory.inventory,
-                          icon: Icons.inventory_2_outlined,
-                          label: 'Inventario',
-                        ),
-                        const SizedBox(width: 8),
-                        _buildTopItem(
-                          category: AuditCategory.sales,
-                          icon: Icons.shopping_cart_outlined,
-                          label: 'Venta',
-                        ),
-                      ],
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          _buildTopItem(
+                            category: AuditCategory.employees,
+                            icon: Icons.people_outline,
+                            label: 'Empleados',
+                          ),
+                          const SizedBox(width: 8),
+                          _buildTopItem(
+                            category: AuditCategory.inventory,
+                            icon: Icons.inventory_2_outlined,
+                            label: 'Inventario',
+                          ),
+                          const SizedBox(width: 8),
+                          _buildTopItem(
+                            category: AuditCategory.sales,
+                            icon: Icons.shopping_cart_outlined,
+                            label: 'Venta',
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 32),
                     Expanded(
@@ -101,11 +130,10 @@ class _AuditPageState extends State<AuditPage> {
               ),
             ),
 
-            // Panel Lateral Derecho de Auditoría
             PremiumPanel(
-              isVisible: _selectedEmployee != null,
-              width: 450,
-              child: _buildAuditPanel(),
+              isVisible: _selectedEmployee != null || _selectedEvent != null,
+              width: 320,
+              child: _selectedEmployee != null ? _buildAuditPanel() : _buildEventDetailPanel(),
             ),
           ],
         ),
@@ -123,7 +151,7 @@ class _AuditPageState extends State<AuditPage> {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () => setState(() => _selectedCategory = category),
+        onTap: () => _onCategoryChanged(category),
         borderRadius: BorderRadius.circular(12),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -169,10 +197,165 @@ class _AuditPageState extends State<AuditPage> {
       case AuditCategory.employees:
         return _buildEmployeeList();
       case AuditCategory.inventory:
-        return const Center(child: Text('CONTENIDO DE AUDITORÍA DE INVENTARIO'));
+        return _buildGenericAuditList('AUDITORÍA DE INVENTARIO', Icons.inventory_2_outlined);
       case AuditCategory.sales:
-        return const Center(child: Text('CONTENIDO DE AUDITORÍA DE VENTAS'));
+        return _buildGenericAuditList('AUDITORÍA DE VENTAS', Icons.shopping_cart_outlined);
     }
+  }
+
+  Widget _buildGenericAuditList(String title, IconData icon) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 24, color: Colors.blue[800]),
+            const SizedBox(width: 12),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1A1A1A),
+                letterSpacing: -0.5,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+        Expanded(
+          child: BlocBuilder<AuditBloc, AuditState>(
+            builder: (context, state) {
+              if (state is AuditLoading) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (state is AuditLoaded) {
+                if (state.events.isEmpty) {
+                  return _buildNoActivity();
+                }
+                return ListView.separated(
+                  itemCount: state.events.length,
+                  separatorBuilder: (context, index) => const SizedBox(height: 12),
+                  itemBuilder: (context, index) {
+                    final event = state.events[index];
+                    return _buildEventListItem(event);
+                  },
+                );
+              }
+              return const SizedBox();
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _getEventLabel(String type) {
+    switch (type.toLowerCase()) {
+      case 'clock_in':
+        return 'ASISTENCIA: ENTRADA';
+      case 'clock_out':
+        return 'ASISTENCIA: SALIDA';
+      case 'login_success':
+        return 'SEGURIDAD: ACCESO EXITOSO';
+      case 'login_failed':
+        return 'SEGURIDAD: INTENTO FALLIDO';
+      case 'employee_created':
+        return 'ADMIN: NUEVO EMPLEADO';
+      case 'employee_updated':
+        return 'ADMIN: EMPLEADO ACTUALIZADO';
+      case 'employee_deleted':
+        return 'ADMIN: EMPLEADO ELIMINADO';
+      case 'shift_clock_in':
+        return 'CAJA: APERTURA DE TURNO';
+      case 'shift_clock_out':
+        return 'CAJA: CIERRE DE TURNO';
+      case 'break_start':
+        return 'TURNO: INICIO DE DESCANSO';
+      case 'break_end':
+        return 'TURNO: FIN DE DESCANSO';
+      default:
+        return type.replaceAll('_', ' ').toUpperCase();
+    }
+  }
+
+  Widget _buildEventListItem(AuditEventEntity event) {
+    final isSelected = _selectedEvent?.id == event.id;
+    final localTime = event.createdAt.toLocal();
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _onEventSelected(event),
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: isSelected ? Colors.blue[50] : Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isSelected ? Colors.blue[300]! : Colors.grey[200]!,
+              width: isSelected ? 2 : 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              _buildEventIcon(event.eventType),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _getEventLabel(event.eventType),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: isSelected ? Colors.blue[900] : const Color(0xFF1A1A1A),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      DateFormat('dd MMM, hh:mm a').format(localTime),
+                      style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right, color: Colors.grey[300]),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEventIcon(String type) {
+    IconData iconData = Icons.info_outline;
+    Color color = Colors.grey;
+
+    if (type.contains('clock_in')) {
+      iconData = Icons.login_rounded;
+      color = Colors.blue;
+    } else if (type.contains('clock_out')) {
+      iconData = Icons.logout_rounded;
+      color = Colors.orange;
+    } else if (type.contains('break')) {
+      iconData = Icons.coffee_rounded;
+      color = Colors.brown;
+    } else if (type.contains('inventory')) {
+      iconData = Icons.inventory_2_outlined;
+      color = Colors.green;
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: color.withAlpha(20),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Icon(iconData, size: 20, color: color),
+    );
   }
 
   Widget _buildEmployeeList() {
@@ -215,6 +398,146 @@ class _AuditPageState extends State<AuditPage> {
     );
   }
 
+  Widget _buildEventDetailPanel() {
+    if (_selectedEvent == null) return const SizedBox.shrink();
+
+    final localTime = _selectedEvent!.createdAt.toLocal();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.blue[50],
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            'DETALLE DE EVENTO',
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1.2,
+                              color: Colors.blue[800],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          _getEventLabel(_selectedEvent!.eventType),
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1A1A1A),
+                            letterSpacing: -0.5,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Material(
+                    color: Colors.grey[100],
+                    shape: const CircleBorder(),
+                    child: IconButton(
+                      onPressed: () => setState(() => _selectedEvent = null),
+                      icon: const Icon(Icons.close, size: 20),
+                      color: Colors.black54,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const Divider(height: 1),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildDetailItem(
+                  Icons.calendar_today_outlined,
+                  'Fecha',
+                  DateFormat('dd MMMM, yyyy').format(localTime),
+                ),
+                const SizedBox(height: 24),
+                _buildDetailItem(
+                  Icons.access_time,
+                  'Hora Exacta',
+                  DateFormat('hh:mm:ss a').format(localTime),
+                ),
+                const SizedBox(height: 24),
+                if (_selectedEvent!.employeeId != null)
+                  _buildDetailItem(
+                    Icons.person_outline,
+                    'ID Empleado',
+                    _selectedEvent!.employeeId!,
+                  ),
+                const SizedBox(height: 24),
+                if (_selectedEvent!.metadata != null)
+                  _buildDetailItem(
+                    Icons.info_outline,
+                    'Información Adicional',
+                    _selectedEvent!.metadata!,
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDetailItem(IconData icon, String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 18, color: Colors.grey[400]),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label.toUpperCase(),
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.grey[400],
+                  letterSpacing: 1,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF1A1A1A),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildAuditPanel() {
     if (_selectedEmployee == null) return const SizedBox.shrink();
 
@@ -223,52 +546,56 @@ class _AuditPageState extends State<AuditPage> {
       children: [
         // Header del Panel
         Padding(
-          padding: const EdgeInsets.all(32.0),
+          padding: const EdgeInsets.all(24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.blue[50],
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          'AUDITORÍA DE ACTIVIDAD',
-                          style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 1.2,
-                            color: Colors.blue[800],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.blue[50],
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            'AUDITORÍA DE ACTIVIDAD',
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1.2,
+                              color: Colors.blue[800],
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        _selectedEmployee!.fullName,
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF1A1A1A),
-                          letterSpacing: -0.5,
+                        const SizedBox(height: 12),
+                        Text(
+                          _selectedEmployee!.fullName,
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1A1A1A),
+                            letterSpacing: -0.5,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                      Text(
-                        _selectedEmployee!.role.toValue().toUpperCase(),
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey[500],
-                          letterSpacing: 1,
+                        Text(
+                          _selectedEmployee!.role.toValue().toUpperCase(),
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.grey[500],
+                            letterSpacing: 1,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                   Material(
                     color: Colors.grey[100],
@@ -290,7 +617,7 @@ class _AuditPageState extends State<AuditPage> {
         // Historial de Eventos
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32.0),
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -349,8 +676,9 @@ class _AuditPageState extends State<AuditPage> {
   }
 
   Widget _buildAuditItem(AuditEventEntity event) {
-    final isClockIn = event.eventType.toLowerCase() == 'clock_in';
-    final isClockOut = event.eventType.toLowerCase() == 'clock_out';
+    final localTime = event.createdAt.toLocal();
+    final eventLabel = _getEventLabel(event.eventType);
+    final isAttendance = event.eventType.contains('clock');
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -358,7 +686,7 @@ class _AuditPageState extends State<AuditPage> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isClockIn ? Colors.blue[100]! : Colors.grey[200]!,
+          color: isAttendance ? Colors.blue[100]! : Colors.grey[200]!,
           width: 1,
         ),
         boxShadow: [
@@ -374,18 +702,18 @@ class _AuditPageState extends State<AuditPage> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: isClockIn
+              color: isAttendance
                   ? Colors.blue[600]
-                  : isClockOut
+                  : event.eventType.contains('shift')
                       ? Colors.orange[600]
                       : Colors.grey[600],
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
-              isClockIn
-                  ? Icons.login_rounded
-                  : isClockOut
-                      ? Icons.logout_rounded
+              isAttendance
+                  ? Icons.access_time_filled_rounded
+                  : event.eventType.contains('security') || event.eventType.contains('login')
+                      ? Icons.lock_outline_rounded
                       : Icons.info_outline,
               size: 20,
               color: Colors.white,
@@ -397,31 +725,34 @@ class _AuditPageState extends State<AuditPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  isClockIn
-                      ? 'REGISTRO DE ENTRADA'
-                      : isClockOut
-                          ? 'REGISTRO DE SALIDA'
-                          : event.eventType.replaceAll('_', ' ').toUpperCase(),
+                  eventLabel,
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.bold,
-                    color: isClockIn ? Colors.blue[900] : const Color(0xFF1A1A1A),
+                    color: isAttendance ? Colors.blue[900] : const Color(0xFF1A1A1A),
                   ),
                 ),
                 const SizedBox(height: 4),
-                Row(
+                Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 8,
+                  runSpacing: 4,
                   children: [
-                    Icon(Icons.access_time, size: 12, color: Colors.grey[400]),
-                    const SizedBox(width: 4),
-                    Text(
-                      DateFormat('hh:mm a').format(event.createdAt),
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey[600],
-                      ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.access_time, size: 12, color: Colors.grey[400]),
+                        const SizedBox(width: 4),
+                        Text(
+                          DateFormat('hh:mm a').format(localTime), // Removed seconds for brevity
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 8),
                     Container(
                       width: 4,
                       height: 4,
@@ -430,9 +761,8 @@ class _AuditPageState extends State<AuditPage> {
                         shape: BoxShape.circle,
                       ),
                     ),
-                    const SizedBox(width: 8),
                     Text(
-                      DateFormat('dd MMM, yyyy').format(event.createdAt),
+                      DateFormat('dd MMM').format(localTime), // Shortened date
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey[500],
