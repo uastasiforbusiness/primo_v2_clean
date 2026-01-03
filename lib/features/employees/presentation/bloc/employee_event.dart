@@ -1,0 +1,45 @@
+import 'package:equatable/equatable.dart';
+import 'package:primo_v2/core/entities/employee_entity.dart';
+
+abstract class EmployeeEvent extends Equatable {
+  const EmployeeEvent();
+  @override
+  List<Object?> get props => [];
+}
+
+class LoadEmployees extends EmployeeEvent {
+  const LoadEmployees();
+}
+
+class CreateEmployeeRequested extends EmployeeEvent {
+  final EmployeeEntity employee;
+  final String pin;
+
+  const CreateEmployeeRequested({
+    required this.employee,
+    required this.pin,
+  });
+
+  @override
+  List<Object?> get props => [employee, pin];
+}
+
+class UpdateEmployeeRequested extends EmployeeEvent {
+  final EmployeeEntity employee;
+  final String? newPin;
+
+  const UpdateEmployeeRequested({
+    required this.employee,
+    this.newPin,
+  });
+
+  @override
+  List<Object?> get props => [employee, newPin];
+}
+
+class DeleteEmployeeRequested extends EmployeeEvent {
+  final String id;
+  const DeleteEmployeeRequested(this.id);
+  @override
+  List<Object?> get props => [id];
+}

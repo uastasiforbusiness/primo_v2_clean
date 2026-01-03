@@ -1,0 +1,37 @@
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    # === Code Safety ===
+    avoid_print: true
+    avoid_dynamic_calls: true
+    always_declare_return_types: true
+
+    # === Async / Futures ===
+    unawaited_futures: true
+    discarded_futures: true
+    avoid_void_async: true
+
+    # === Architecture / Immutability ===
+    prefer_final_fields: true
+    prefer_final_locals: true
+    avoid_setters_without_getters: true
+
+    # === Readability ===
+    prefer_single_quotes: true
+    prefer_const_constructors: true
+    prefer_const_literals_to_create_immutables: true
+    unnecessary_lambdas: true
+    unnecessary_this: true
+    directives_ordering: true
+    require_trailing_commas: true
+
+    # === Defensive Programming ===
+    avoid_positional_boolean_parameters: true
+    avoid_unnecessary_containers: true
+    avoid_null_checks_in_equality_operators: true
+    prefer_if_null_operators: true
+
+    # === Code Health ===
+    dead_code: true
+    unnecessary_statements: true

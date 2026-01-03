@@ -1,0 +1,10 @@
+{
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit"
+  },
+  "dart.lineLength": 100,
+  "dart.previewFlutterUiGuides": true,
+  "dart.showTodos": true,
+  "files.trimTrailingWhitespace": true
+}
