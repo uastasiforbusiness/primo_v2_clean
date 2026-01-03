@@ -1,9 +1,0 @@
-{
-  "elements": {},
-  "imports": [
-    "package:logger/logger.dart",
-    "package:primo_v2/core/error/exceptions.dart",
-    "package:primo_v2/features/database/data/app_database.dart",
-    "package:uuid/uuid.dart"
-  ]
-}

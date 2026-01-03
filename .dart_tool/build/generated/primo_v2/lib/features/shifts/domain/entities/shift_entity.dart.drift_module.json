@@ -1,7 +1,0 @@
-{
-  "elements": {},
-  "imports": [
-    "package:equatable/equatable.dart",
-    "package:primo_v2/core/shared_kernel/money.dart"
-  ]
-}

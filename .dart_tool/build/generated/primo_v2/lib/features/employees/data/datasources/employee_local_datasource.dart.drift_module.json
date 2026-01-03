@@ -1,6 +1,0 @@
-{
-  "elements": {},
-  "imports": [
-    "package:primo_v2/features/database/data/app_database.dart"
-  ]
-}

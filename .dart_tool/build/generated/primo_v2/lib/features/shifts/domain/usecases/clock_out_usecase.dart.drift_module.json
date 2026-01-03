@@ -1,9 +1,0 @@
-{
-  "elements": {},
-  "imports": [
-    "package:dartz/dartz.dart",
-    "package:primo_v2/core/error/failures.dart",
-    "package:primo_v2/core/shared_kernel/money.dart",
-    "package:primo_v2/features/shifts/domain/repositories/shift_repository.dart"
-  ]
-}

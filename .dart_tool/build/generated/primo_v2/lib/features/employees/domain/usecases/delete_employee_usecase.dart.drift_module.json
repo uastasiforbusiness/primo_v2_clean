@@ -1,8 +1,0 @@
-{
-  "elements": {},
-  "imports": [
-    "package:dartz/dartz.dart",
-    "package:primo_v2/core/error/failures.dart",
-    "package:primo_v2/features/employees/domain/repositories/employee_repository.dart"
-  ]
-}
