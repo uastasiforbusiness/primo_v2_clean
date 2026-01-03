@@ -42,7 +42,7 @@ class EmployeeLocalDataSourceImpl implements EmployeeLocalDataSource {
           ),
         );
 
-        // 3. Registrar auditoría
+        // 3. Registrar auditoria
         await database.insertAuditEvent(
           AuditEventsCompanion.insert(
             id: uuid.v4(),
@@ -79,7 +79,7 @@ class EmployeeLocalDataSourceImpl implements EmployeeLocalDataSource {
           }
         }
 
-        // 2. Actualizar empleado (usando el nuevo método de update parcial)
+        // 2. Actualizar empleado (usando el nuevo metodo de update parcial)
         final companion = EmployeesCompanion(
           id: Value(employee.id),
           name: Value(employee.name),
@@ -101,7 +101,7 @@ class EmployeeLocalDataSourceImpl implements EmployeeLocalDataSource {
 
         await database.updateEmployee(companion);
 
-        // 3. Registrar auditoría
+        // 3. Registrar auditoria
         await database.insertAuditEvent(
           AuditEventsCompanion.insert(
             id: uuid.v4(),
@@ -124,7 +124,7 @@ class EmployeeLocalDataSourceImpl implements EmployeeLocalDataSource {
         // 1. Soft delete (isActive = false)
         await database.softDeleteEmployee(employeeId);
 
-        // 2. Registrar auditoría
+        // 2. Registrar auditoria
         await database.insertAuditEvent(
           AuditEventsCompanion.insert(
             id: uuid.v4(),
@@ -169,7 +169,7 @@ class EmployeeLocalDataSourceImpl implements EmployeeLocalDataSource {
           ),
         );
 
-        // Return the created shift (fetch it to be sure)
+        // Return created shift (fetch it to be sure)
         final createdShift =
             await (database.select(database.workShifts)..where((s) => s.id.equals(id))).getSingle();
         return createdShift;
@@ -198,7 +198,8 @@ class EmployeeLocalDataSourceImpl implements EmployeeLocalDataSource {
             eventType: 'clock_out',
             employeeId: Value(employeeId),
             metadata: Value(
-                'Shift duration: ${DateTime.now().difference(activeShift.clockIn).inMinutes} min'),
+              'Shift duration: ${DateTime.now().difference(activeShift.clockIn).inMinutes} min',
+            ),
           ),
         );
 

@@ -3,7 +3,6 @@ import 'package:get_it/get_it.dart';
 import 'package:uuid/uuid.dart';
 
 import '../core/security/security_service.dart';
-
 // Audit Imports
 import '../features/audit/data/datasources/audit_local_datasource.dart';
 import '../features/audit/data/repositories/audit_repository_impl.dart';
@@ -17,24 +16,23 @@ import '../features/auth/data/repositories/auth_repository_impl.dart';
 import '../features/auth/domain/repositories/auth_repository.dart';
 import '../features/auth/domain/usecases/login_with_pin_usecase.dart';
 import '../features/auth/presentation/bloc/auth_bloc.dart';
-import '../infrastructure/database/app_database.dart';
 // Employee Imports
 import '../features/employees/data/datasources/employee_local_datasource.dart';
 import '../features/employees/data/datasources/employee_local_datasource_impl.dart';
 import '../features/employees/data/repositories/employee_repository_impl.dart';
+import '../features/employees/data/repositories/work_shift_repository_impl.dart';
 import '../features/employees/domain/repositories/employee_repository.dart';
-import '../features/employees/domain/usecases/create_employee_usecase.dart';
-import '../features/employees/domain/usecases/delete_employee_usecase.dart';
-import '../features/employees/domain/usecases/get_employees_usecase.dart';
-import '../features/employees/domain/usecases/update_employee_usecase.dart';
-import '../features/employees/presentation/bloc/employee_bloc.dart';
 // Work Shift Imports
 import '../features/employees/domain/repositories/work_shift_repository.dart';
-import '../features/employees/data/repositories/work_shift_repository_impl.dart';
 import '../features/employees/domain/usecases/clock_in_usecase.dart';
 import '../features/employees/domain/usecases/clock_out_usecase.dart';
+import '../features/employees/domain/usecases/create_employee_usecase.dart';
+import '../features/employees/domain/usecases/delete_employee_usecase.dart';
 import '../features/employees/domain/usecases/get_active_work_shift_usecase.dart';
+import '../features/employees/domain/usecases/get_employees_usecase.dart';
 import '../features/employees/domain/usecases/get_work_shifts_usecase.dart';
+import '../features/employees/domain/usecases/update_employee_usecase.dart';
+import '../features/employees/presentation/bloc/employee_bloc.dart';
 // Shift Imports
 import '../features/shifts/data/datasources/shift_local_datasource.dart';
 import '../features/shifts/data/repositories/shift_repository_impl.dart';
@@ -44,6 +42,7 @@ import '../features/shifts/domain/usecases/clock_out_usecase.dart';
 import '../features/shifts/domain/usecases/end_break_usecase.dart';
 import '../features/shifts/domain/usecases/start_break_usecase.dart';
 import '../features/shifts/presentation/bloc/shift_bloc.dart';
+import '../infrastructure/database/app_database.dart';
 
 final sl = GetIt.instance;
 
