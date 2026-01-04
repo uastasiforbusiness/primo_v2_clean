@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';
+import 'dart:convert';
 
 import '../../../../core/error/exceptions.dart';
 import '../../../../infrastructure/database/app_database.dart';
@@ -55,7 +56,7 @@ class ShiftLocalDataSourceImpl implements ShiftLocalDataSource {
             id: uuid.v4(),
             eventType: 'shift_clock_in',
             employeeId: Value(employeeId),
-            metadata: Value('Initial cash: \$$initialCash'),
+            metadata: Value(jsonEncode({'initialCash': initialCash})),
           ),
         );
 
@@ -93,7 +94,7 @@ class ShiftLocalDataSourceImpl implements ShiftLocalDataSource {
           AuditEventsCompanion.insert(
             id: uuid.v4(),
             eventType: 'shift_clock_out',
-            metadata: Value('Shift ID: $shiftId, Final cash: \$$finalCash'),
+            metadata: Value(jsonEncode({'shiftId': shiftId, 'finalCash': finalCash})),
           ),
         );
       });
@@ -142,7 +143,7 @@ class ShiftLocalDataSourceImpl implements ShiftLocalDataSource {
           AuditEventsCompanion.insert(
             id: uuid.v4(),
             eventType: 'break_start',
-            metadata: Value('Shift ID: $shiftId'),
+            metadata: Value(jsonEncode({'shiftId': shiftId})),
           ),
         );
       });
@@ -172,7 +173,7 @@ class ShiftLocalDataSourceImpl implements ShiftLocalDataSource {
           AuditEventsCompanion.insert(
             id: uuid.v4(),
             eventType: 'break_end',
-            metadata: Value('Shift ID: $shiftId'),
+            metadata: Value(jsonEncode({'shiftId': shiftId})),
           ),
         );
       });

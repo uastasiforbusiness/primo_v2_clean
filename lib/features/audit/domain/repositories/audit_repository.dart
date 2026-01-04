@@ -10,7 +10,7 @@ abstract class AuditRepository {
   Future<Either<Failure, void>> logEvent({
     required String eventType,
     String? employeeId,
-    String? metadata,
+    Map<String, dynamic>? metadata,
   });
 
   /// Obtiene todos los eventos de auditoría con filtros y ordenamiento

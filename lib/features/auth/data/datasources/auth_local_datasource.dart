@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';
+import 'dart:convert';
 
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/security/security_service.dart';
@@ -12,7 +13,7 @@ abstract class AuthLocalDataSource {
   Future<void> logAuditEvent({
     required String eventType,
     String? employeeId,
-    String? metadata,
+    Map<String, dynamic>? metadata,
   });
 }
 
@@ -44,7 +45,7 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
       if (matchedEmployee == null) {
         await logAuditEvent(
           eventType: 'login_failed',
-          metadata: 'Invalid PIN attempt',
+          metadata: {'reason': 'Invalid PIN attempt'},
         );
         throw AuthException('Invalid PIN');
       }
@@ -53,7 +54,7 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
         await logAuditEvent(
           eventType: 'login_failed',
           employeeId: matchedEmployee.id,
-          metadata: 'Inactive employee',
+          metadata: {'reason': 'Inactive employee'},
         );
         throw AuthException('Employee is inactive');
       }
@@ -90,15 +91,21 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   Future<void> logAuditEvent({
     required String eventType,
     String? employeeId,
-    String? metadata,
+    Map<String, dynamic>? metadata,
   }) async {
     try {
+      // Convertir el Map a JSON string antes de guardarlo
+      String? jsonMetadata;
+      if (metadata != null) {
+        jsonMetadata = jsonEncode(metadata);
+      }
+
       await database.insertAuditEvent(
         AuditEventsCompanion.insert(
           id: uuid.v4(),
           eventType: eventType,
           employeeId: Value(employeeId),
-          metadata: Value(metadata),
+          metadata: Value(jsonMetadata),
         ),
       );
     } catch (e) {

@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
+import 'dart:convert';
 import '../../../../core/error/exceptions.dart';
 import '../../../../infrastructure/database/app_database.dart';
 import 'employee_local_datasource.dart';
@@ -48,7 +49,7 @@ class EmployeeLocalDataSourceImpl implements EmployeeLocalDataSource {
             id: uuid.v4(),
             eventType: 'employee_created',
             employeeId: Value(employee.id),
-            metadata: Value('Role: ${employee.role}'),
+            metadata: Value(jsonEncode({'role': employee.role})),
           ),
         );
       });
@@ -107,7 +108,10 @@ class EmployeeLocalDataSourceImpl implements EmployeeLocalDataSource {
             id: uuid.v4(),
             eventType: 'employee_updated',
             employeeId: Value(employee.id),
-            metadata: Value('Role: ${employee.role}, PIN changed: ${newPinHash != null}'),
+            metadata: Value(jsonEncode({
+              'role': employee.role,
+              'pinChanged': newPinHash != null,
+            })),
           ),
         );
       });
@@ -130,7 +134,7 @@ class EmployeeLocalDataSourceImpl implements EmployeeLocalDataSource {
             id: uuid.v4(),
             eventType: 'employee_deleted',
             employeeId: Value(employeeId),
-            metadata: const Value('Soft delete'),
+            metadata: Value(jsonEncode({'deleteType': 'soft'})),
           ),
         );
       });
@@ -165,7 +169,7 @@ class EmployeeLocalDataSourceImpl implements EmployeeLocalDataSource {
             id: uuid.v4(),
             eventType: 'clock_in',
             employeeId: Value(employeeId),
-            metadata: Value('Hourly rate: \$${hourlyRate ?? 0}'),
+            metadata: Value(jsonEncode({'hourlyRate': hourlyRate ?? 0})),
           ),
         );
 
@@ -197,9 +201,9 @@ class EmployeeLocalDataSourceImpl implements EmployeeLocalDataSource {
             id: uuid.v4(),
             eventType: 'clock_out',
             employeeId: Value(employeeId),
-            metadata: Value(
-              'Shift duration: ${DateTime.now().difference(activeShift.clockIn).inMinutes} min',
-            ),
+            metadata: Value(jsonEncode({
+              'shiftDurationMinutes': DateTime.now().difference(activeShift.clockIn).inMinutes,
+            })),
           ),
         );
 

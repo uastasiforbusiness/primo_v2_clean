@@ -8,7 +8,7 @@ class AuditEventEntity extends Equatable {
   final String id;
   final String eventType;
   final String? employeeId;
-  final String? metadata;
+  final String? metadata; // JSON string que representa un Map<String, dynamic>
   final DateTime createdAt;
 
   const AuditEventEntity({

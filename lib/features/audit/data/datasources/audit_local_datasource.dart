@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
+import 'dart:convert';
 import '../../../../core/error/exceptions.dart';
 import '../../../../infrastructure/database/app_database.dart';
 import '../../domain/value_objects/audit_filter.dart';
@@ -10,7 +11,7 @@ abstract class AuditLocalDataSource {
   Future<void> logEvent({
     required String eventType,
     String? employeeId,
-    String? metadata,
+    Map<String, dynamic>? metadata,
   });
 
   Future<List<AuditEvent>> getAuditEvents({
@@ -38,15 +39,21 @@ class AuditLocalDataSourceImpl implements AuditLocalDataSource {
   Future<void> logEvent({
     required String eventType,
     String? employeeId,
-    String? metadata,
+    Map<String, dynamic>? metadata,
   }) async {
     try {
+      // Convertir el Map a JSON string antes de guardarlo
+      String? jsonMetadata;
+      if (metadata != null) {
+        jsonMetadata = jsonEncode(metadata);
+      }
+
       await database.insertAuditEvent(
         AuditEventsCompanion.insert(
           id: uuid.v4(),
           eventType: eventType,
           employeeId: Value(employeeId),
-          metadata: Value(metadata),
+          metadata: Value(jsonMetadata),
         ),
       );
     } catch (e) {
@@ -113,7 +120,10 @@ class AuditLocalDataSourceImpl implements AuditLocalDataSource {
         query = query..limit(limit);
       }
 
-      return await query.get();
+      final results = await query.get();
+
+      // Convertir los metadatos JSON de vuelta a Map
+      return results.map((event) => _convertJsonMetadata(event)).toList();
     } catch (e) {
       throw DatabaseException('Failed to get audit events: ${e.toString()}');
     }
@@ -122,8 +132,10 @@ class AuditLocalDataSourceImpl implements AuditLocalDataSource {
   @override
   Future<AuditEvent?> getEventById(String id) async {
     try {
-      return await (database.select(database.auditEvents)..where((event) => event.id.equals(id)))
+      final event = await (database.select(database.auditEvents)..where((event) => event.id.equals(id)))
           .getSingleOrNull();
+
+      return event != null ? _convertJsonMetadata(event) : null;
     } catch (e) {
       throw DatabaseException('Failed to get audit event: ${e.toString()}');
     }
@@ -148,6 +160,23 @@ class AuditLocalDataSourceImpl implements AuditLocalDataSource {
     } catch (e) {
       throw DatabaseException('Failed to count audit events: ${e.toString()}');
     }
+  }
+
+  // Método auxiliar para convertir los metadatos JSON de vuelta a Map
+  AuditEvent _convertJsonMetadata(AuditEvent event) {
+    if (event.metadata != null) {
+      try {
+        final decoded = jsonDecode(event.metadata!);
+        if (decoded is Map<String, dynamic>) {
+          // Convertir de vuelta a JSON para mantener consistencia
+          return event.copyWith(metadata: Value(jsonEncode(decoded)));
+        }
+      } catch (e) {
+        // Si hay un error al decodificar, mantener el valor original
+        return event;
+      }
+    }
+    return event;
   }
 
   Expression<Object> _getSortColumn($AuditEventsTable event, AuditSortField field) {

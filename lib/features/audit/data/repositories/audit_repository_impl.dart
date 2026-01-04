@@ -20,7 +20,7 @@ class AuditRepositoryImpl implements AuditRepository {
   Future<Either<Failure, void>> logEvent({
     required String eventType,
     String? employeeId,
-    String? metadata,
+    Map<String, dynamic>? metadata,
   }) async {
     try {
       await localDataSource.logEvent(

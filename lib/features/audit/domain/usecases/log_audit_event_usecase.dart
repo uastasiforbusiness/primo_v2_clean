@@ -16,7 +16,7 @@ class LogAuditEventUseCase {
   Future<Either<Failure, void>> call({
     required String eventType,
     String? employeeId,
-    String? metadata,
+    Map<String, dynamic>? metadata,
   }) async {
     // Validación básica
     if (eventType.trim().isEmpty) {

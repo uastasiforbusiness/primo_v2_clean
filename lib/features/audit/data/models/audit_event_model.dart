@@ -1,3 +1,4 @@
+import 'dart:convert';
 import '../../../../infrastructure/database/app_database.dart';
 import '../../domain/entities/audit_event_entity.dart';
 
@@ -15,11 +16,25 @@ class AuditEventModel extends AuditEventEntity {
 
   /// Crea un modelo desde una fila de Drift
   factory AuditEventModel.fromDrift(AuditEvent event) {
+    // Convertir el JSON string de metadatos a Map<String, dynamic>
+    Map<String, dynamic>? parsedMetadata;
+    if (event.metadata != null) {
+      try {
+        final decoded = jsonDecode(event.metadata!);
+        if (decoded is Map<String, dynamic>) {
+          parsedMetadata = decoded;
+        }
+      } catch (e) {
+        // Si hay un error al decodificar, mantener como string original
+        parsedMetadata = {'raw_data': event.metadata};
+      }
+    }
+
     return AuditEventModel(
       id: event.id,
       eventType: event.eventType,
       employeeId: event.employeeId,
-      metadata: event.metadata,
+      metadata: parsedMetadata != null ? jsonEncode(parsedMetadata) : null,
       createdAt: event.createdAt,
     );
   }

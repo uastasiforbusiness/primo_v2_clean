@@ -59,7 +59,7 @@ class RefreshAuditEvents extends AuditEvent {
 class LogAuditEventRequested extends AuditEvent {
   final String eventType;
   final String? employeeId;
-  final String? metadata;
+  final Map<String, dynamic>? metadata;
 
   const LogAuditEventRequested({
     required this.eventType,
