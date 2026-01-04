@@ -172,7 +172,7 @@ void main() {
         startedAt: DateTime.now(),
       );
 
-      final state = ShiftOnBreak(shift);
+      final state = ShiftOnBreak(shift, startTime: DateTime.now());
 
       expect(state, isA<ShiftOnBreak>());
       expect(state.shift.id, 'shift-001');

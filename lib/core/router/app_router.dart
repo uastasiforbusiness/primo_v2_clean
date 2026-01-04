@@ -93,9 +93,12 @@ class AppRouter {
           GoRoute(
             path: '/dashboard',
             name: 'dashboard',
-            builder: (context, state) {
+            pageBuilder: (context, state) {
               final authState = context.read<AuthBloc>().state;
-              return DashboardPage(employee: (authState as AuthAuthenticated).employee);
+              return NoTransitionPage(
+                key: const ValueKey('dashboard-page'),
+                child: DashboardPage(employee: (authState as AuthAuthenticated).employee),
+              );
             },
           ),
           GoRoute(
@@ -147,7 +150,10 @@ class AppRouter {
       GoRoute(
         path: '/dashboard/break',
         name: 'break',
-        builder: (context, state) => const BreakPage(),
+        pageBuilder: (context, state) => const MaterialPage(
+          key: ValueKey('break-page'),
+          child: BreakPage(),
+        ),
       ),
     ],
 
@@ -201,6 +207,9 @@ class AppRouter {
         if (shiftState is ShiftActive && state.matchedLocation.contains('/clock-in')) {
           return '/dashboard';
         }
+
+        // NOTA: La navegación desde /dashboard/break a /dashboard cuando ShiftActive
+        // se maneja de forma imperativa en BreakPage para evitar conflictos de GlobalKey
 
         // Si está en pausa, no dejarle navegar por el dashboard (solo ver pantalla de descanso)
         if (shiftState is ShiftOnBreak &&

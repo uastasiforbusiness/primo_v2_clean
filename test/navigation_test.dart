@@ -22,7 +22,7 @@ void main() {
       // Esto es lo que ahora hace nuestro código corregido
       expect(mockContext.pop, returnsNormally);
 
-      print('✓ Test passed: Navigation uses context.pop() correctly');
+      debugPrint('✓ Test passed: Navigation uses context.pop() correctly');
     });
   });
 }

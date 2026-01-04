@@ -20,5 +20,5 @@ abstract class ShiftRepository {
 
   Future<Either<Failure, void>> endBreak(String shiftId);
 
-  Future<Either<Failure, bool>> hasActiveBreak(String shiftId);
+  Future<Either<Failure, DateTime?>> getActiveBreakStartTime(String shiftId);
 }

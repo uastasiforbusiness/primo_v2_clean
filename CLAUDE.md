@@ -17,7 +17,7 @@ Sistema POS (Point of Sale) Offline-First construido con Flutter.
 
 ---
 
-## 2. Las 5 Reglas de Oro (INNEGOCIABLES)
+## 2. Las 6 Reglas de Oro (INNEGOCIABLES)
 
 Si rompes una de estas reglas, el código es inválido.
 
@@ -45,6 +45,12 @@ Si rompes una de estas reglas, el código es inválido.
 5.  **La Regla del Tipado Fuerte:**
     * ⛔ Prohibido usar `dynamic`.
     * Usa `Either<Failure, T>` para el manejo de errores.
+
+6.  **La Regla de Metadatos Estructurados:**
+    * Todos los metadatos de auditoría deben ser estructurados como `Map<String, dynamic>` que se convierte a JSON antes de almacenarse.
+    * Esto asegura que todos los eventos de auditoría tengan metadatos consistentes y estructurados.
+    * ⛔ Prohibido almacenar metadatos como cadenas arbitrarias.
+    * ✅ Todos los `logEvent` deben recibir metadatos como objetos estructurados.
 
 ---
 

@@ -20,12 +20,12 @@ class ClockOutUseCase {
     }
 
     // Check if there's an active break
-    final hasActiveBreakResult = await repository.hasActiveBreak(shiftId);
+    final activeBreakResult = await repository.getActiveBreakStartTime(shiftId);
 
-    return hasActiveBreakResult.fold(
+    return activeBreakResult.fold(
       Left.new,
-      (hasBreak) {
-        if (hasBreak) {
+      (startTime) {
+        if (startTime != null) {
           return const Left(
             ValidationFailure(message: 'Cannot clock out with an active break'),
           );

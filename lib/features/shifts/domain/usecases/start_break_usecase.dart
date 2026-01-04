@@ -9,12 +9,12 @@ class StartBreakUseCase {
 
   Future<Either<Failure, void>> call(String shiftId) async {
     // Validación: verificar que no hay break activo
-    final hasBreakResult = await repository.hasActiveBreak(shiftId);
+    final activeBreakResult = await repository.getActiveBreakStartTime(shiftId);
 
-    return hasBreakResult.fold(
+    return activeBreakResult.fold(
       Left.new,
-      (hasBreak) {
-        if (hasBreak) {
+      (startTime) {
+        if (startTime != null) {
           return const Left(
             ValidationFailure(message: 'Break already active'),
           );

@@ -50,8 +50,8 @@ void main() {
     );
   });
 
-  tearDown(() {
-    authBloc.close();
+  tearDown(() async {
+    await authBloc.close();
   });
 
   group('AuthBloc', () {

@@ -1,6 +1,6 @@
+import 'dart:convert';
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
-import 'dart:convert';
 import '../../../../core/error/exceptions.dart';
 import '../../../../infrastructure/database/app_database.dart';
 import '../../domain/value_objects/audit_filter.dart';
@@ -123,7 +123,7 @@ class AuditLocalDataSourceImpl implements AuditLocalDataSource {
       final results = await query.get();
 
       // Convertir los metadatos JSON de vuelta a Map
-      return results.map((event) => _convertJsonMetadata(event)).toList();
+      return results.map(_convertJsonMetadata).toList();
     } catch (e) {
       throw DatabaseException('Failed to get audit events: ${e.toString()}');
     }
@@ -132,7 +132,8 @@ class AuditLocalDataSourceImpl implements AuditLocalDataSource {
   @override
   Future<AuditEvent?> getEventById(String id) async {
     try {
-      final event = await (database.select(database.auditEvents)..where((event) => event.id.equals(id)))
+      final event = await (database.select(database.auditEvents)
+            ..where((event) => event.id.equals(id)))
           .getSingleOrNull();
 
       return event != null ? _convertJsonMetadata(event) : null;

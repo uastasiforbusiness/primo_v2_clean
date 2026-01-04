@@ -98,10 +98,10 @@ class ShiftRepositoryImpl implements ShiftRepository {
   }
 
   @override
-  Future<Either<Failure, bool>> hasActiveBreak(String shiftId) async {
+  Future<Either<Failure, DateTime?>> getActiveBreakStartTime(String shiftId) async {
     try {
-      final hasBreak = await localDataSource.hasActiveBreak(shiftId);
-      return Right(hasBreak);
+      final startTime = await localDataSource.getActiveBreakStartTime(shiftId);
+      return Right(startTime);
     } on DatabaseException catch (e) {
       return Left(DatabaseFailure(message: e.message));
     } catch (e) {

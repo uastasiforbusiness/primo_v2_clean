@@ -1,7 +1,7 @@
+import 'dart:convert';
 import 'package:drift/drift.dart';
 import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';
-import 'dart:convert';
 
 import '../../../../core/error/exceptions.dart';
 import '../../../../infrastructure/database/app_database.dart';
@@ -18,7 +18,7 @@ abstract class ShiftLocalDataSource {
   Future<Shift?> getActiveShift(String employeeId);
   Future<void> startBreak(String shiftId);
   Future<void> endBreak(String shiftId);
-  Future<bool> hasActiveBreak(String shiftId);
+  Future<DateTime?> getActiveBreakStartTime(String shiftId);
 }
 
 class ShiftLocalDataSourceImpl implements ShiftLocalDataSource {
@@ -184,10 +184,10 @@ class ShiftLocalDataSourceImpl implements ShiftLocalDataSource {
   }
 
   @override
-  Future<bool> hasActiveBreak(String shiftId) async {
+  Future<DateTime?> getActiveBreakStartTime(String shiftId) async {
     try {
       final activeBreak = await database.getActiveBreakByShiftId(shiftId);
-      return activeBreak != null;
+      return activeBreak?.startedAt;
     } catch (e) {
       throw DatabaseException('Check active break failed: ${e.toString()}');
     }

@@ -40,10 +40,12 @@ class ShiftBloc extends Bloc<ShiftEvent, ShiftState> {
       (failure) async => emit(ShiftError(failure.message)),
       (shift) async {
         if (shift != null) {
-          final hasBreak = await shiftRepository.hasActiveBreak(shift.id);
-          hasBreak.fold(
+          final activeBreakResult = await shiftRepository.getActiveBreakStartTime(shift.id);
+          activeBreakResult.fold(
             (l) => emit(ShiftActive(shift)),
-            (isOnBreak) => isOnBreak ? emit(ShiftOnBreak(shift)) : emit(ShiftActive(shift)),
+            (startTime) => startTime != null
+                ? emit(ShiftOnBreak(shift, startTime: startTime))
+                : emit(ShiftActive(shift)),
           );
         } else {
           emit(ShiftInactive());
@@ -92,7 +94,7 @@ class ShiftBloc extends Bloc<ShiftEvent, ShiftState> {
     final result = await startBreakUseCase(event.shiftId);
     result.fold(
       (failure) => emit(ShiftError(failure.message)),
-      (_) => emit(ShiftOnBreak(currentShift)),
+      (_) => emit(ShiftOnBreak(currentShift, startTime: DateTime.now())),
     );
   }
 

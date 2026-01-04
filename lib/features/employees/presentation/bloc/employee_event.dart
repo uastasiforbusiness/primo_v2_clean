@@ -14,32 +14,37 @@ class LoadEmployees extends EmployeeEvent {
 class CreateEmployeeRequested extends EmployeeEvent {
   final EmployeeEntity employee;
   final String pin;
+  final String actorId;
 
   const CreateEmployeeRequested({
     required this.employee,
     required this.pin,
+    required this.actorId,
   });
 
   @override
-  List<Object?> get props => [employee, pin];
+  List<Object?> get props => [employee, pin, actorId];
 }
 
 class UpdateEmployeeRequested extends EmployeeEvent {
   final EmployeeEntity employee;
   final String? newPin;
+  final String actorId;
 
   const UpdateEmployeeRequested({
     required this.employee,
     this.newPin,
+    required this.actorId,
   });
 
   @override
-  List<Object?> get props => [employee, newPin];
+  List<Object?> get props => [employee, newPin, actorId];
 }
 
 class DeleteEmployeeRequested extends EmployeeEvent {
   final String id;
-  const DeleteEmployeeRequested(this.id);
+  final String actorId;
+  const DeleteEmployeeRequested(this.id, {required this.actorId});
   @override
-  List<Object?> get props => [id];
+  List<Object?> get props => [id, actorId];
 }

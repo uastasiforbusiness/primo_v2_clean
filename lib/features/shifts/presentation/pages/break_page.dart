@@ -15,10 +15,17 @@ class BreakPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocListener<ShiftBloc, ShiftState>(
+      listenWhen: (previous, current) =>
+          current is ShiftActive || current is ShiftError,
       listener: (context, state) {
         if (state is ShiftActive) {
-          // Si el turno vuelve a estar activo, regresamos al dashboard
-          context.goNamed('dashboard');
+          // Demorar navegación hasta después del frame actual para evitar
+          // conflictos con GoRouterRefreshStream que escucha el mismo stream
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (context.mounted) {
+              context.go('/dashboard');
+            }
+          });
         } else if (state is ShiftError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -60,7 +67,14 @@ class BreakPage extends StatelessWidget {
                   const SizedBox(height: 48),
 
                   // Timer
-                  const BreakTimer(),
+                  BlocBuilder<ShiftBloc, ShiftState>(
+                    builder: (context, state) {
+                      if (state is ShiftOnBreak) {
+                        return BreakTimer(startTime: state.startTime);
+                      }
+                      return const SizedBox();
+                    },
+                  ),
                   const SizedBox(height: 48),
 
                   // Action Buttons
@@ -159,21 +173,20 @@ class BreakPage extends StatelessWidget {
 
 /// BreakTimer - Shows elapsed break time
 class BreakTimer extends StatefulWidget {
-  const BreakTimer({super.key});
+  final DateTime startTime;
+  const BreakTimer({super.key, required this.startTime});
 
   @override
   State<BreakTimer> createState() => _BreakTimerState();
 }
 
 class _BreakTimerState extends State<BreakTimer> {
-  late DateTime _startTime;
   String _formattedTime = '00:00';
   bool _isRunning = true;
 
   @override
   void initState() {
     super.initState();
-    _startTime = DateTime.now();
     _startTimer();
   }
 
@@ -183,7 +196,7 @@ class _BreakTimerState extends State<BreakTimer> {
     Future.delayed(const Duration(seconds: 1), () {
       if (mounted && _isRunning) {
         setState(() {
-          final duration = DateTime.now().difference(_startTime);
+          final duration = DateTime.now().difference(widget.startTime);
           final minutes = duration.inMinutes.toString().padLeft(2, '0');
           final seconds = (duration.inSeconds % 60).toString().padLeft(2, '0');
           _formattedTime = '$minutes:$seconds';

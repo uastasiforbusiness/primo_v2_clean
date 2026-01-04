@@ -4,7 +4,7 @@ import '../../domain/usecases/delete_employee_usecase.dart';
 import '../../domain/usecases/get_employees_usecase.dart';
 import '../../domain/usecases/update_employee_usecase.dart';
 import 'employee_event.dart' as employee_event;
-import 'employee_state.dart'; // Importa los estados del archivo externo
+import 'employee_state.dart';
 
 class EmployeeBloc extends Bloc<employee_event.EmployeeEvent, EmployeeState> {
   final GetEmployeesUseCase getEmployeesUseCase;
@@ -24,63 +24,36 @@ class EmployeeBloc extends Bloc<employee_event.EmployeeEvent, EmployeeState> {
     on<employee_event.DeleteEmployeeRequested>(_onDeleteEmployee);
   }
 
-  Future<void> _onLoadEmployees(
-    employee_event.LoadEmployees event,
-    Emitter<EmployeeState> emit,
-  ) async {
+  Future<void> _onLoadEmployees(employee_event.LoadEmployees event, Emitter<EmployeeState> emit) async {
     emit(EmployeeLoading());
     final result = await getEmployeesUseCase();
-    result.fold(
-      (failure) => emit(EmployeeError(failure.message)),
-      (employees) => emit(EmployeeLoaded(employees)),
-    );
+    result.fold((f) => emit(EmployeeError(f.message)), (e) => emit(EmployeeLoaded(e)));
   }
 
-  Future<void> _onCreateEmployee(
-    employee_event.CreateEmployeeRequested event,
-    Emitter<EmployeeState> emit,
-  ) async {
+  Future<void> _onCreateEmployee(employee_event.CreateEmployeeRequested event, Emitter<EmployeeState> emit) async {
     emit(EmployeeLoading());
-    final result = await createEmployeeUseCase(event.employee, event.pin);
-
-    await result.fold(
-      (failure) async => emit(EmployeeError(failure.message)),
-      (_) async {
-        emit(const EmployeeOperationSuccess('Empleado creado exitosamente'));
-        add(const employee_event.LoadEmployees());
-      },
-    );
+    final result = await createEmployeeUseCase(event.employee, event.pin, actorId: event.actorId);
+    result.fold((f) => emit(EmployeeError(f.message)), (_) {
+      emit(const EmployeeOperationSuccess('Empleado creado exitosamente'));
+      add(const employee_event.LoadEmployees());
+    });
   }
 
-  Future<void> _onUpdateEmployee(
-    employee_event.UpdateEmployeeRequested event,
-    Emitter<EmployeeState> emit,
-  ) async {
+  Future<void> _onUpdateEmployee(employee_event.UpdateEmployeeRequested event, Emitter<EmployeeState> emit) async {
     emit(EmployeeLoading());
-    final result = await updateEmployeeUseCase(event.employee, newPin: event.newPin);
-
-    await result.fold(
-      (failure) async => emit(EmployeeError(failure.message)),
-      (_) async {
-        emit(const EmployeeOperationSuccess('Empleado actualizado exitosamente'));
-        add(const employee_event.LoadEmployees());
-      },
-    );
+    final result = await updateEmployeeUseCase(event.employee, newPin: event.newPin, actorId: event.actorId);
+    result.fold((f) => emit(EmployeeError(f.message)), (_) {
+      emit(const EmployeeOperationSuccess('Empleado actualizado exitosamente'));
+      add(const employee_event.LoadEmployees());
+    });
   }
 
-  Future<void> _onDeleteEmployee(
-    employee_event.DeleteEmployeeRequested event,
-    Emitter<EmployeeState> emit,
-  ) async {
+  Future<void> _onDeleteEmployee(employee_event.DeleteEmployeeRequested event, Emitter<EmployeeState> emit) async {
     emit(EmployeeLoading());
-    final result = await deleteEmployeeUseCase(event.id);
-
-    await result.fold(
-      (failure) async => emit(EmployeeError(failure.message)),
-      (_) async {
-        emit(const EmployeeOperationSuccess('Empleado eliminado exitosamente'));
-        add(const employee_event.LoadEmployees());
-      },
-    );
+    final result = await deleteEmployeeUseCase(employeeId: event.id, actorId: event.actorId);
+    result.fold((f) => emit(EmployeeError(f.message)), (_) {
+      emit(const EmployeeOperationSuccess('Empleado eliminado exitosamente'));
+      add(const employee_event.LoadEmployees());
+    });
   }
 }

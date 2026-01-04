@@ -51,14 +51,16 @@ class _AuditPageState extends State<AuditPage> {
       _selectedEmployee = employee;
       _selectedEvent = null;
     });
-    _auditBloc.add(ApplyAuditFilter(
-      AuditFilter(
-        employeeId: employee.id,
-        eventType: null,
-        startDate: null,
-        endDate: null,
+    _auditBloc.add(
+      ApplyAuditFilter(
+        AuditFilter(
+          employeeId: employee.id,
+          eventType: null,
+          startDate: null,
+          endDate: null,
+        ),
       ),
-    ));
+    );
   }
 
   void _onEventSelected(AuditEventEntity event) {
@@ -645,40 +647,40 @@ class _AuditPageState extends State<AuditPage> {
                   ],
                 ),
                 const SizedBox(height: 24),
-        Expanded(
-          child: BlocBuilder<AuditBloc, AuditState>(
-            builder: (context, state) {
-              if (state is AuditLoading) {
-                return const Center(
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
-                  ),
-                );
-              }
-              if (state is AuditLoaded) {
-                // Filtrar eventos SOLO del empleado seleccionado
-                final employeeEvents = state.events
-                  .where((event) => event.employeeId == _selectedEmployee?.id)
-                  .toList();
+                Expanded(
+                  child: BlocBuilder<AuditBloc, AuditState>(
+                    builder: (context, state) {
+                      if (state is AuditLoading) {
+                        return const Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                          ),
+                        );
+                      }
+                      if (state is AuditLoaded) {
+                        // Filtrar eventos SOLO del empleado seleccionado
+                        final employeeEvents = state.events
+                            .where((event) => event.employeeId == _selectedEmployee?.id)
+                            .toList();
 
-                if (employeeEvents.isEmpty) {
-                  return _buildNoActivity();
-                }
-                return ListView.separated(
-                  itemCount: employeeEvents.length,
-                  separatorBuilder: (context, index) => const SizedBox(height: 16),
-                  padding: const EdgeInsets.only(bottom: 32),
-                  itemBuilder: (context, index) {
-                    final event = employeeEvents[index];
-                    return _buildAuditItem(event);
-                  },
-                );
-              }
-              return const SizedBox();
-            },
-          ),
-        ),
+                        if (employeeEvents.isEmpty) {
+                          return _buildNoActivity();
+                        }
+                        return ListView.separated(
+                          itemCount: employeeEvents.length,
+                          separatorBuilder: (context, index) => const SizedBox(height: 16),
+                          padding: const EdgeInsets.only(bottom: 32),
+                          itemBuilder: (context, index) {
+                            final event = employeeEvents[index];
+                            return _buildAuditItem(event);
+                          },
+                        );
+                      }
+                      return const SizedBox();
+                    },
+                  ),
+                ),
               ],
             ),
           ),

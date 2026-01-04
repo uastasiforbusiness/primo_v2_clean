@@ -45,7 +45,7 @@ class AppSidebar extends StatelessWidget {
           filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white.withAlpha(180),
+              color: Colors.white.withAlpha(220),
               borderRadius: BorderRadius.circular(24),
               border: Border.all(color: Colors.white.withAlpha(100), width: 1.5),
               boxShadow: [

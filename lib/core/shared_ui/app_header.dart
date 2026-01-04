@@ -143,7 +143,9 @@ class _AppHeaderState extends State<AppHeader> {
             return PopupMenuButton<String>(
               offset: const Offset(0, 50),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              position: PopupMenuPosition.under,
+              color: Colors.white.withAlpha(245), // Efecto similar al Sidebar
+              elevation: 4,
+              shadowColor: Colors.black.withAlpha(50),
               enabled: isMenuEnabled,
               onSelected: (value) {
                 if (value == 'pause' && isActive) {

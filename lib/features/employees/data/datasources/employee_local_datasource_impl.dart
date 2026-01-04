@@ -1,6 +1,6 @@
+import 'dart:convert';
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
-import 'dart:convert';
 import '../../../../core/error/exceptions.dart';
 import '../../../../infrastructure/database/app_database.dart';
 import 'employee_local_datasource.dart';
@@ -17,16 +17,14 @@ class EmployeeLocalDataSourceImpl implements EmployeeLocalDataSource {
   }
 
   @override
-  Future<void> createEmployee(Employee employee) async {
+  Future<void> createEmployee(Employee employee, {required String performedBy}) async {
     try {
       await database.transaction(() async {
-        // 1. Validar unicidad de PIN
         final isPinUnique = await database.isPinUnique(employee.pinHash);
         if (!isPinUnique) {
           throw DuplicateException('PIN already exists');
         }
 
-        // 2. Insertar empleado
         await database.insertEmployee(
           EmployeesCompanion.insert(
             id: employee.id,
@@ -43,13 +41,18 @@ class EmployeeLocalDataSourceImpl implements EmployeeLocalDataSource {
           ),
         );
 
-        // 3. Registrar auditoría
         await database.insertAuditEvent(
           AuditEventsCompanion.insert(
             id: uuid.v4(),
             eventType: 'employee_created',
-            employeeId: Value(employee.id),
-            metadata: Value(jsonEncode({'role': employee.role})),
+            employeeId: Value(performedBy),
+            metadata: Value(
+              jsonEncode({
+                'target_employee_id': employee.id,
+                'target_name': employee.name,
+                'role': employee.role,
+              }),
+            ),
           ),
         );
       });
@@ -62,6 +65,7 @@ class EmployeeLocalDataSourceImpl implements EmployeeLocalDataSource {
   @override
   Future<void> updateEmployee(
     Employee employee, {
+    required String performedBy,
     String? newPinHash,
     String? newPinSalt,
     String? newPinBlindIndex,
@@ -69,18 +73,16 @@ class EmployeeLocalDataSourceImpl implements EmployeeLocalDataSource {
   }) async {
     try {
       await database.transaction(() async {
-        // 1. Si hay nuevo PIN, validar unicidad (excluyendo el empleado actual)
         if (newPinBlindIndex != null) {
-          final isPinUnique = await database.isPinUnique(
+          final isUnique = await database.isPinUnique(
             newPinBlindIndex,
             excludeEmployeeId: employee.id,
           );
-          if (!isPinUnique) {
+          if (!isUnique) {
             throw DuplicateException('PIN already exists');
           }
         }
 
-        // 2. Actualizar empleado (usando el nuevo método de update parcial)
         final companion = EmployeesCompanion(
           id: Value(employee.id),
           name: Value(employee.name),
@@ -102,16 +104,17 @@ class EmployeeLocalDataSourceImpl implements EmployeeLocalDataSource {
 
         await database.updateEmployee(companion);
 
-        // 3. Registrar auditoría
         await database.insertAuditEvent(
           AuditEventsCompanion.insert(
             id: uuid.v4(),
             eventType: 'employee_updated',
-            employeeId: Value(employee.id),
-            metadata: Value(jsonEncode({
-              'role': employee.role,
-              'pinChanged': newPinHash != null,
-            })),
+            employeeId: Value(performedBy),
+            metadata: Value(
+              jsonEncode({
+                'target_employee_id': employee.id,
+                'pin_changed': newPinHash != null,
+              }),
+            ),
           ),
         );
       });
@@ -122,19 +125,22 @@ class EmployeeLocalDataSourceImpl implements EmployeeLocalDataSource {
   }
 
   @override
-  Future<void> deleteEmployee(String employeeId) async {
+  Future<void> deleteEmployee(String employeeId, {required String performedBy}) async {
     try {
       await database.transaction(() async {
-        // 1. Soft delete (isActive = false)
         await database.softDeleteEmployee(employeeId);
 
-        // 2. Registrar auditoría
         await database.insertAuditEvent(
           AuditEventsCompanion.insert(
             id: uuid.v4(),
             eventType: 'employee_deleted',
-            employeeId: Value(employeeId),
-            metadata: Value(jsonEncode({'deleteType': 'soft'})),
+            employeeId: Value(performedBy),
+            metadata: Value(
+              jsonEncode({
+                'target_employee_id': employeeId,
+                'action': 'soft_delete',
+              }),
+            ),
           ),
         );
       });
@@ -147,7 +153,6 @@ class EmployeeLocalDataSourceImpl implements EmployeeLocalDataSource {
   Future<WorkShift> clockIn(String employeeId, double? hourlyRate) async {
     try {
       return await database.transaction(() async {
-        // 1. Verify if there is already an active shift
         final activeShift = await database.getActiveWorkShiftByEmployeeId(employeeId);
         if (activeShift != null) {
           throw DuplicateException('Employee already clocked in');
@@ -163,7 +168,6 @@ class EmployeeLocalDataSourceImpl implements EmployeeLocalDataSource {
 
         await database.insertWorkShift(shift);
 
-        // 2. Log Audit Event
         await database.insertAuditEvent(
           AuditEventsCompanion.insert(
             id: uuid.v4(),
@@ -173,7 +177,6 @@ class EmployeeLocalDataSourceImpl implements EmployeeLocalDataSource {
           ),
         );
 
-        // Return the created shift (fetch it to be sure)
         final createdShift =
             await (database.select(database.workShifts)..where((s) => s.id.equals(id))).getSingle();
         return createdShift;
@@ -195,19 +198,19 @@ class EmployeeLocalDataSourceImpl implements EmployeeLocalDataSource {
 
         await database.closeWorkShift(activeShift.id);
 
-        // 2. Log Audit Event
         await database.insertAuditEvent(
           AuditEventsCompanion.insert(
             id: uuid.v4(),
             eventType: 'clock_out',
             employeeId: Value(employeeId),
-            metadata: Value(jsonEncode({
-              'shiftDurationMinutes': DateTime.now().difference(activeShift.clockIn).inMinutes,
-            })),
+            metadata: Value(
+              jsonEncode({
+                'shiftDurationMinutes': DateTime.now().difference(activeShift.clockIn).inMinutes,
+              }),
+            ),
           ),
         );
 
-        // Return updated shift
         final updatedShift = await (database.select(database.workShifts)
               ..where((s) => s.id.equals(activeShift.id)))
             .getSingle();

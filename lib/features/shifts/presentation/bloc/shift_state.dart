@@ -8,6 +8,7 @@ abstract class ShiftState extends Equatable {
 }
 
 class ShiftInitial extends ShiftState {}
+
 class ShiftLoading extends ShiftState {}
 
 class ShiftActive extends ShiftState {
@@ -19,9 +20,10 @@ class ShiftActive extends ShiftState {
 
 class ShiftOnBreak extends ShiftState {
   final ShiftEntity shift;
-  const ShiftOnBreak(this.shift);
+  final DateTime startTime;
+  const ShiftOnBreak(this.shift, {required this.startTime});
   @override
-  List<Object?> get props => [shift];
+  List<Object?> get props => [shift, startTime];
 }
 
 class ShiftInactive extends ShiftState {
