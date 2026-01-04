@@ -1,5 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../domain/repositories/audit_repository.dart';
 import '../../domain/usecases/get_audit_events_usecase.dart';
+import '../../domain/usecases/log_audit_event_usecase.dart';
 import '../../domain/value_objects/audit_filter.dart';
 import '../../domain/value_objects/audit_sort.dart';
 import 'audit_event.dart';
@@ -7,6 +9,8 @@ import 'audit_state.dart';
 
 class AuditBloc extends Bloc<AuditEvent, AuditState> {
   final GetAuditEventsUseCase getAuditEventsUseCase;
+  final LogAuditEventUseCase logAuditEventUseCase;
+  final AuditRepository repository;
 
   // Estado interno para mantener filtros y ordenamiento actuales
   AuditFilter? _currentFilter;
@@ -14,12 +18,15 @@ class AuditBloc extends Bloc<AuditEvent, AuditState> {
 
   AuditBloc({
     required this.getAuditEventsUseCase,
+    required this.logAuditEventUseCase,
+    required this.repository,
   }) : super(const AuditInitial()) {
     on<LoadAuditEvents>(_onLoadAuditEvents);
     on<ApplyAuditFilter>(_onApplyAuditFilter);
     on<ChangeAuditSort>(_onChangeAuditSort);
     on<ClearAuditFilters>(_onClearAuditFilters);
     on<RefreshAuditEvents>(_onRefreshAuditEvents);
+    on<LogAuditEventRequested>(_onLogAuditEvent);
   }
 
   Future<void> _onLoadAuditEvents(
@@ -40,6 +47,10 @@ class AuditBloc extends Bloc<AuditEvent, AuditState> {
       limit: event.limit,
     );
 
+    // Obtener el total de eventos
+    final countResult = await repository.getEventCount(filter: _currentFilter);
+    final totalCount = countResult.getOrElse(() => 0);
+
     result.fold(
       (failure) => emit(AuditError(failure.message)),
       (events) => emit(
@@ -47,7 +58,7 @@ class AuditBloc extends Bloc<AuditEvent, AuditState> {
           events: events,
           currentFilter: _currentFilter,
           currentSort: _currentSort,
-          totalCount: events.length,
+          totalCount: totalCount,
         ),
       ),
     );
@@ -66,6 +77,10 @@ class AuditBloc extends Bloc<AuditEvent, AuditState> {
       sort: _currentSort,
     );
 
+    // Obtener el total de eventos
+    final countResult = await repository.getEventCount(filter: _currentFilter);
+    final totalCount = countResult.getOrElse(() => 0);
+
     result.fold(
       (failure) => emit(AuditError(failure.message)),
       (events) => emit(
@@ -73,7 +88,7 @@ class AuditBloc extends Bloc<AuditEvent, AuditState> {
           events: events,
           currentFilter: _currentFilter,
           currentSort: _currentSort,
-          totalCount: events.length,
+          totalCount: totalCount,
         ),
       ),
     );
@@ -92,6 +107,10 @@ class AuditBloc extends Bloc<AuditEvent, AuditState> {
       sort: _currentSort,
     );
 
+    // Obtener el total de eventos
+    final countResult = await repository.getEventCount(filter: _currentFilter);
+    final totalCount = countResult.getOrElse(() => 0);
+
     result.fold(
       (failure) => emit(AuditError(failure.message)),
       (events) => emit(
@@ -99,7 +118,7 @@ class AuditBloc extends Bloc<AuditEvent, AuditState> {
           events: events,
           currentFilter: _currentFilter,
           currentSort: _currentSort,
-          totalCount: events.length,
+          totalCount: totalCount,
         ),
       ),
     );
@@ -118,6 +137,10 @@ class AuditBloc extends Bloc<AuditEvent, AuditState> {
       sort: _currentSort,
     );
 
+    // Obtener el total de eventos
+    final countResult = await repository.getEventCount(filter: null);
+    final totalCount = countResult.getOrElse(() => 0);
+
     result.fold(
       (failure) => emit(AuditError(failure.message)),
       (events) => emit(
@@ -125,7 +148,7 @@ class AuditBloc extends Bloc<AuditEvent, AuditState> {
           events: events,
           currentFilter: null,
           currentSort: _currentSort,
-          totalCount: events.length,
+          totalCount: totalCount,
         ),
       ),
     );
@@ -141,6 +164,10 @@ class AuditBloc extends Bloc<AuditEvent, AuditState> {
       sort: _currentSort,
     );
 
+    // Obtener el total de eventos
+    final countResult = await repository.getEventCount(filter: _currentFilter);
+    final totalCount = countResult.getOrElse(() => 0);
+
     result.fold(
       (failure) => emit(AuditError(failure.message)),
       (events) => emit(
@@ -148,9 +175,25 @@ class AuditBloc extends Bloc<AuditEvent, AuditState> {
           events: events,
           currentFilter: _currentFilter,
           currentSort: _currentSort,
-          totalCount: events.length,
+          totalCount: totalCount,
         ),
       ),
+    );
+  }
+
+  Future<void> _onLogAuditEvent(
+    LogAuditEventRequested event,
+    Emitter<AuditState> emit,
+  ) async {
+    final result = await logAuditEventUseCase(
+      eventType: event.eventType,
+      employeeId: event.employeeId,
+      metadata: event.metadata,
+    );
+
+    result.fold(
+      (failure) => emit(AuditError(failure.message)),
+      (_) => null,
     );
   }
 }

@@ -144,6 +144,8 @@ Future<void> initDependencies() async {
   sl.registerFactory(
     () => AuditBloc(
       getAuditEventsUseCase: sl(),
+      logAuditEventUseCase: sl(),
+      repository: sl(),
     ),
   );
 }

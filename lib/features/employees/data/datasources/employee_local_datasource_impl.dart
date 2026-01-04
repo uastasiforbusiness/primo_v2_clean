@@ -12,7 +12,7 @@ class EmployeeLocalDataSourceImpl implements EmployeeLocalDataSource {
 
   @override
   Future<List<Employee>> getEmployees() async {
-    return await database.getAllEmployees();
+    return await database.getActiveEmployees();
   }
 
   @override

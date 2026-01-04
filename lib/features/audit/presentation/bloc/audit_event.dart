@@ -54,3 +54,19 @@ class ClearAuditFilters extends AuditEvent {
 class RefreshAuditEvents extends AuditEvent {
   const RefreshAuditEvents();
 }
+
+/// Evento para registrar un evento de auditoría
+class LogAuditEventRequested extends AuditEvent {
+  final String eventType;
+  final String? employeeId;
+  final String? metadata;
+
+  const LogAuditEventRequested({
+    required this.eventType,
+    this.employeeId,
+    this.metadata,
+  });
+
+  @override
+  List<Object?> get props => [eventType, employeeId, metadata];
+}
